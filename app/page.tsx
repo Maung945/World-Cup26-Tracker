@@ -2,7 +2,6 @@
 
 import { supabase } from "@/lib/supabase";
 import React, { useMemo, useState } from "react";
-import Select from "react-select";
 
 type Team = {
   code: string;
@@ -30,6 +29,14 @@ type Match = {
   scoreB: string;
   status: "Scheduled" | "Live" | "Half Time" | "Full Time";
   venue?: string;
+};
+
+type Participant = {
+  id: number;
+  name: string;
+  team1: string;
+  team2: string;
+  user_id?: string;
 };
 
 const teams: Team[] = [
@@ -318,6 +325,8 @@ const progressOptions: Team["status"][] = [
   "Eliminated",
 ];
 
+const PICK_CUTOFF = new Date("2026-06-10T23:59:59-07:00");
+
 function flagText(teamName: string) {
   if (teamName === "England") return "🏴 England";
   if (teamName === "Scotland") return "🏴 Scotland";
@@ -330,16 +339,49 @@ export default function Home() {
   const [participantName, setParticipantName] = useState("");
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
-  const [participants, setParticipants] = useState<any[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [teamData, setTeamData] = useState<Team[]>(teams);
   const [matches, setMatches] = useState<Match[]>(starterMatches);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<
     "matches" | "bracket" | "standings"
   >("matches");
+  const [user, setUser] = useState<any>(null);
+  const [email, setEmail] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [myPick, setMyPick] = useState<Participant | null>(null);
+
+  const picksLocked = new Date() > PICK_CUTOFF;
 
   React.useEffect(() => {
     fetchParticipants();
+
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+
+      if (data.user) {
+        fetchMyPick(data.user.id);
+      }
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          fetchMyPick(session.user.id);
+        } else {
+          setMyPick(null);
+          setParticipantName("");
+          setTeam1("");
+          setTeam2("");
+        }
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   async function fetchParticipants() {
@@ -351,6 +393,54 @@ export default function Home() {
     if (!error && data) {
       setParticipants(data);
     }
+  }
+
+  async function fetchMyPick(userId: string) {
+    const { data, error } = await supabase
+      .from("participants")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && data) {
+      setMyPick(data);
+      setParticipantName(data.name);
+      setTeam1(data.team1);
+      setTeam2(data.team2);
+    } else {
+      setMyPick(null);
+    }
+  }
+
+  async function loginWithEmail(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      setAuthMessage("Please enter your email address.");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      setAuthMessage(error.message);
+    } else {
+      setAuthMessage("Check your email for the login link.");
+    }
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setMyPick(null);
+    setParticipantName("");
+    setTeam1("");
+    setTeam2("");
   }
 
   const selectedByTeam = useMemo(() => {
@@ -382,26 +472,50 @@ export default function Home() {
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!participantName.trim() || !team1 || !team2 || team1 === team2) return;
-
-    const { error } = await supabase.from("participants").insert([
-      {
-        name: participantName.trim(),
-        team1,
-        team2,
-      },
-    ]);
-
-    if (error) {
-      console.error("Supabase insert error:", error.message);
-      alert(error.message);
+    if (!user) {
+      alert("Please log in before submitting your picks.");
       return;
     }
 
-    setParticipantName("");
-    setTeam1("");
-    setTeam2("");
-    fetchParticipants();
+    if (picksLocked) {
+      alert("Picks are locked. You can no longer change your teams.");
+      return;
+    }
+
+    if (!participantName.trim() || !team1 || !team2 || team1 === team2) return;
+
+    if (myPick) {
+      const { error } = await supabase
+        .from("participants")
+        .update({
+          name: participantName.trim(),
+          team1,
+          team2,
+        })
+        .eq("user_id", user.id);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabase.from("participants").insert([
+        {
+          name: participantName.trim(),
+          team1,
+          team2,
+          user_id: user.id,
+        },
+      ]);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+    }
+
+    await fetchParticipants();
+    await fetchMyPick(user.id);
   }
 
   function updateTeamStatus(teamName: string, status: Team["status"]) {
@@ -538,7 +652,70 @@ export default function Home() {
         {activeTab === "matches" && (
           <>
             <section className="rounded-2xl bg-white p-6 shadow">
-              <h2 className="mb-4 text-xl font-semibold">Add Participant</h2>
+              <h2 className="text-xl font-semibold">Login Required</h2>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
+                <li>
+                  Each participant must log in with email.
+                </li>
+
+                <li>
+                  You can submit only one set of picks per account.
+                </li>
+
+                <li>
+                  You may update your name or teams until{" "}
+                  <strong>June 10, 2026 at 11:59 PM PDT</strong>.
+                  After that, all picks are locked.
+                </li>
+              </ul>
+
+              {picksLocked && (
+                <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700">
+                  Picks are now locked. No more team changes are allowed.
+                </p>
+              )}
+
+              {user ? (
+                <div className="mt-4 flex flex-col gap-3 rounded-xl bg-green-50 p-4 md:flex-row md:items-center md:justify-between">
+                  <p className="text-sm text-green-800">
+                    Logged in as <strong>{user.email}</strong>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                  >
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <form
+                  onSubmit={loginWithEmail}
+                  className="mt-4 flex flex-col gap-3 md:flex-row"
+                >
+                  <input
+                    className="flex-1 rounded-xl border p-3"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <button className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800">
+                    Send Login Link
+                  </button>
+                </form>
+              )}
+
+              {authMessage && (
+                <p className="mt-3 text-sm font-medium text-blue-700">
+                  {authMessage}
+                </p>
+              )}
+            </section>
+
+            <section className="rounded-2xl bg-white p-6 shadow">
+              <h2 className="mb-4 text-xl font-semibold">
+                {myPick ? "Update Your Picks" : "Add Participant"}
+              </h2>
               <form
                 onSubmit={addParticipant}
                 className="grid gap-4 md:grid-cols-4"
@@ -548,11 +725,13 @@ export default function Home() {
                   placeholder="Participant name"
                   value={participantName}
                   onChange={(e) => setParticipantName(e.target.value)}
+                  disabled={!user || picksLocked}
                 />
                 <select
-                  className="rounded-xl border p-3"
+                  className="rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-gray-100"
                   value={team1}
                   onChange={(e) => setTeam1(e.target.value)}
+                  disabled={!user || picksLocked}
                 >
                   <option value="">Favorite Team 1</option>
                   {[...teamData]
@@ -564,9 +743,10 @@ export default function Home() {
                   ))}
                 </select>
                 <select
-                  className="rounded-xl border p-3"
+                  className="rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-gray-100"
                   value={team2}
                   onChange={(e) => setTeam2(e.target.value)}
+                  disabled={!user || picksLocked}
                 >
                   <option value="">Favorite Team 2</option>
                   {[...teamData]
@@ -577,10 +757,19 @@ export default function Home() {
                     </option>
                   ))}
                 </select>
-                <button className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800">
-                  Submit Picks
+                <button
+                  disabled={!user || picksLocked}
+                  className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                >
+                  {myPick ? "Update Picks" : "Submit Picks"}
                 </button>
               </form>
+
+              {!user && (
+                <p className="mt-3 text-sm text-gray-500">
+                  Log in first to enable the pick form.
+                </p>
+              )}
 
               {team1 && team2 && team1 === team2 && (
                 <p className="mt-3 text-red-600">
@@ -698,11 +887,12 @@ export default function Home() {
         )}
 
         {activeTab === "bracket" && (() => {
-          const cardWidth = 320;
-          const cardHeight = 150;
-          const rowGap = 42;
+          const cardWidth = 330;
+          const cardHeight = 145;
+          const rowGap = 46;
           const step = cardHeight + rowGap;
-          const colGap = 140;
+          const colGap = 150;
+          const headerOffset = 52;
 
           const rounds = [
             { title: "Round of 32", stage: "Round of 32" },
@@ -718,9 +908,9 @@ export default function Home() {
           }));
 
           const topFor = (roundIndex: number, index: number) => {
-            const spacingMultiplier = Math.pow(2, roundIndex);
-            const offset = (spacingMultiplier - 1) / 2;
-            return (index * spacingMultiplier + offset) * step;
+            const spacing = Math.pow(2, roundIndex);
+            const offset = (spacing - 1) / 2;
+            return headerOffset + (index * spacing + offset) * step;
           };
 
           const centerY = (roundIndex: number, index: number) =>
@@ -729,7 +919,10 @@ export default function Home() {
           const leftFor = (roundIndex: number) =>
             roundIndex * (cardWidth + colGap);
 
-          const bracketHeight = 16 * step;
+          const bracketWidth =
+            rounds.length * cardWidth + (rounds.length - 1) * colGap;
+
+          const bracketHeight = headerOffset + 16 * step + 120;
 
           return (
             <section className="space-y-6">
@@ -743,14 +936,11 @@ export default function Home() {
               <div className="overflow-x-auto rounded-2xl bg-white p-6 shadow">
                 <div
                   className="relative"
-                  style={{
-                    width: rounds.length * cardWidth + (rounds.length - 1) * colGap,
-                    height: bracketHeight,
-                  }}
+                  style={{ width: bracketWidth, height: bracketHeight }}
                 >
                   <svg
                     className="pointer-events-none absolute left-0 top-0 z-0"
-                    width={rounds.length * cardWidth + (rounds.length - 1) * colGap}
+                    width={bracketWidth}
                     height={bracketHeight}
                   >
                     {bracketRounds.slice(0, -1).flatMap((round, roundIndex) => {
@@ -778,8 +968,10 @@ export default function Home() {
                         H ${sourceX}
                       `}
                               fill="none"
-                              stroke="#9CA3AF"
+                              stroke="#94A3B8"
                               strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
 
                             <path
@@ -788,8 +980,10 @@ export default function Home() {
                         H ${targetX}
                       `}
                               fill="none"
-                              stroke="#9CA3AF"
+                              stroke="#94A3B8"
                               strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                           </g>
                         );
@@ -800,7 +994,7 @@ export default function Home() {
                   {bracketRounds.map((round, roundIndex) => (
                     <div key={round.stage}>
                       <h3
-                        className="absolute top-0 z-10 text-center text-sm font-bold uppercase tracking-wide text-gray-500"
+                        className="absolute top-0 z-10 rounded-full bg-gray-100 px-4 py-2 text-center text-xs font-bold uppercase tracking-wide text-gray-600"
                         style={{
                           left: leftFor(roundIndex),
                           width: cardWidth,
@@ -815,9 +1009,9 @@ export default function Home() {
                           className="absolute z-10"
                           style={{
                             left: leftFor(roundIndex),
-                            top: topFor(roundIndex, matchIndex) + 36,
+                            top: topFor(roundIndex, matchIndex),
                             width: cardWidth,
-                            minHeight: cardHeight,
+                            height: cardHeight,
                           }}
                         >
                           <BracketMatchCard match={match} />
