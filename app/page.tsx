@@ -342,8 +342,8 @@ export default function Home() {
   const [matches, setMatches] = useState<Match[]>(starterMatches);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "matches" | "bracket" | "standings"
-  >("matches");
+    "participants" | "matches" | "bracket" | "standings"
+  >("participants");
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [authMessage, setAuthMessage] = useState("");
@@ -466,6 +466,36 @@ export default function Home() {
   const filteredTeams = teamData.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const scoredParticipants = useMemo(() => {
+    const getTeamPoints = (teamName: string) => {
+      return matches.reduce((points, match) => {
+        const isTeamA = match.teamA === teamName;
+        const isTeamB = match.teamB === teamName;
+
+        if (!isTeamA && !isTeamB) return points;
+        if (match.scoreA.trim() === "" || match.scoreB.trim() === "") return points;
+
+        const scoreA = Number(match.scoreA);
+        const scoreB = Number(match.scoreB);
+
+        if (Number.isNaN(scoreA) || Number.isNaN(scoreB)) return points;
+
+        if (scoreA === scoreB) return points + 1;
+        if (isTeamA && scoreA > scoreB) return points + 3;
+        if (isTeamB && scoreB > scoreA) return points + 3;
+
+        return points;
+      }, 0);
+    };
+
+    return participants
+      .map((participant) => ({
+        ...participant,
+        score: getTeamPoints(participant.team1) + getTeamPoints(participant.team2),
+      }))
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+  }, [participants, matches]);
 
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -618,7 +648,7 @@ export default function Home() {
         <header className="rounded-2xl bg-white p-6 shadow">
           <section className="overflow-hidden rounded-2xl bg-black text-white shadow">
             <div className="flex">
-              {(["matches", "bracket", "standings"] as const).map((tab) => (
+              {(["participants", "matches", "bracket", "standings"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -634,32 +664,45 @@ export default function Home() {
             </div>
           </section>
 
-          <h1 className="mt-6 text-3xl font-bold">
-            World Cup 2026 Team Picker
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Participants choose two favorite teams. Hover over any team in the
-            match schedule to see who picked it.
-          </p>
+          <header className="mt-6 rounded-3xl bg-white px-8 py-8 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <img
+                src="/logos/nutanix.png"
+                alt="Nutanix"
+                className="h-40 w-auto object-contain drop-shadow-2xl"
+              />
+
+              <div className="px-6 text-center">
+                <h1 className="text-5xl font-extrabold tracking-tight">
+                  World Cup 2026 Team Picker
+                </h1>
+
+                <p className="mt-4 text-lg text-gray-600">
+                  Participants choose two favorite teams and compete throughout
+                  the FIFA World Cup 2026.
+                </p>
+              </div>
+
+              <img
+                src="/logos/fifa.png"
+                alt="FIFA"
+                className="h-44 w-auto object-contain drop-shadow-2xl"
+              />
+            </div>
+          </header>
         </header>
 
-        {activeTab === "matches" && (
+        {activeTab === "participants" && (
           <>
             <section className="rounded-2xl bg-white p-6 shadow">
               <h2 className="text-xl font-semibold">Login Required</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
-                <li>
-                  Each participant must log in with email.
-                </li>
-
-                <li>
-                  You can submit only one set of picks per account.
-                </li>
-
+                <li>Each participant must log in with email.</li>
+                <li>You can submit only one set of picks per account.</li>
                 <li>
                   You may update your name or teams until{" "}
-                  <strong>June 10, 2026 at 11:59 PM PDT</strong>.
-                  After that, all picks are locked.
+                  <strong>June 10, 2026 at 11:59 PM PDT</strong>. After that,
+                  all picks are locked.
                 </li>
               </ul>
 
@@ -721,17 +764,17 @@ export default function Home() {
                   onChange={(e) => setParticipantName(e.target.value)}
                   disabled={!user || picksLocked}
                 />
-                
+
                 <Select
                   isDisabled={!user || picksLocked}
                   placeholder="Favorite Team 1"
                   value={
                     team1
                       ? {
-                        value: team1,
-                        label: team1,
-                        image: flagMap[team1],
-                      }
+                          value: team1,
+                          label: team1,
+                          image: flagMap[team1],
+                        }
                       : null
                   }
                   onChange={(selected) => setTeam1(selected?.value || "")}
@@ -742,7 +785,6 @@ export default function Home() {
                       label: team.name,
                       image: flagMap[team.name],
                     }))}
-
                   formatOptionLabel={(option: any) => (
                     <div className="flex items-center gap-3">
                       <img
@@ -754,20 +796,20 @@ export default function Home() {
                     </div>
                   )}
                 />
-                
+
                 <Select
                   isDisabled={!user || picksLocked}
                   placeholder="Favorite Team 2"
                   value={
-                    team1
+                    team2
                       ? {
-                        value: team1,
-                        label: team1,
-                        image: flagMap[team1],
-                      }
+                          value: team2,
+                          label: team2,
+                          image: flagMap[team2],
+                        }
                       : null
                   }
-                  onChange={(selected) => setTeam1(selected?.value || "")}
+                  onChange={(selected) => setTeam2(selected?.value || "")}
                   options={[...teamData]
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((team) => ({
@@ -775,7 +817,6 @@ export default function Home() {
                       label: team.name,
                       image: flagMap[team.name],
                     }))}
-
                   formatOptionLabel={(option: any) => (
                     <div className="flex items-center gap-3">
                       <img
@@ -810,38 +851,59 @@ export default function Home() {
             </section>
 
             <section className="rounded-2xl bg-white p-6 shadow">
-              <h2 className="mb-4 text-xl font-semibold">Participant Picks</h2>
+              <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                <div>
+                  <h2 className="text-xl font-semibold">Participant Leaderboard</h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Scoring: win = 3 points, draw = 1 point, loss = 0 points.
+                  </p>
+                </div>
+                <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
+                  {participants.length} participants
+                </span>
+              </div>
+
               {participants.length === 0 ? (
                 <p className="text-gray-500">No participants yet.</p>
               ) : (
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="p-3">#</th>
-                      <th className="p-3">Name</th>
-                      <th className="p-3">Team 1</th>
-                      <th className="p-3">Team 2</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {participants.map((participant, index) => (
-                      <tr key={participant.id} className="border-b">
-                        <td className="p-3">{index + 1}</td>
-                        <td className="p-3">{participant.name}</td>
-                        <td className="p-3">
-                          <TeamDisplay teamName={participant.team1} />
-                        </td>
-                        <td className="p-3">
-                          <TeamDisplay teamName={participant.team2} />
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b bg-gray-50">
+                        <th className="p-3">Rank</th>
+                        <th className="p-3">Name</th>
+                        <th className="p-3">Team 1</th>
+                        <th className="p-3">Team 2</th>
+                        <th className="p-3 text-right">Score</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {scoredParticipants.map((participant, index) => (
+                        <tr key={participant.id} className="border-b">
+                          <td className="p-3 font-semibold">{index + 1}</td>
+                          <td className="p-3">{participant.name}</td>
+                          <td className="p-3">
+                            <TeamDisplay teamName={participant.team1} />
+                          </td>
+                          <td className="p-3">
+                            <TeamDisplay teamName={participant.team2} />
+                          </td>
+                          <td className="p-3 text-right text-lg font-bold">
+                            {participant.score}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </section>
+          </>
+        )}
 
-            <section className="space-y-6">
+        {activeTab === "matches" && (
+          <>
+<section className="space-y-6">
               <div className="rounded-2xl bg-white p-6 shadow">
                 <h2 className="text-2xl font-bold">Matches</h2>
                 <p className="mt-1 text-sm text-gray-500">
