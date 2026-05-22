@@ -194,125 +194,110 @@ const shortCodeMap: Record<string, string> = {
 };
 
 const starterMatches: Match[] = [
-  { id: 1, stage: "Group A", date: "Thu, Jun 11, 2026", time: "3:00 PM PDT", teamA: "Mexico", teamB: "South Africa", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 2, stage: "Group A", date: "Thu, Jun 11, 2026", time: "10:00 PM PDT", teamA: "South Korea", teamB: "Czechia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 3, stage: "Group B", date: "Fri, Jun 12, 2026", time: "3:00 PM PDT", teamA: "Canada", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 4, stage: "Group D", date: "Fri, Jun 12, 2026", time: "9:00 PM PDT", teamA: "United States", teamB: "Paraguay", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 5, stage: "Group C", date: "Sat, Jun 13, 2026", time: "12:00 PM PDT", teamA: "Brazil", teamB: "Morocco", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 6, stage: "Group D", date: "Sat, Jun 13, 2026", time: "6:00 PM PDT", teamA: "Australia", teamB: "Türkiye", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 7, stage: "Group C", date: "Sat, Jun 13, 2026", time: "9:00 PM PDT", teamA: "Haiti", teamB: "Scotland", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 8, stage: "Group B", date: "Sat, Jun 13, 2026", time: "3:00 PM PDT", teamA: "Switzerland", teamB: "Bosnia and Herzegovina", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 9, stage: "Group E", date: "Sun, Jun 14, 2026", time: "1:00 PM PDT", teamA: "Germany", teamB: "Curaçao", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 10, stage: "Group F", date: "Sun, Jun 14, 2026", time: "4:00 PM PDT", teamA: "Netherlands", teamB: "Japan", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 11, stage: "Group E", date: "Sun, Jun 14, 2026", time: "7:00 PM PDT", teamA: "Ivory Coast", teamB: "Ecuador", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 12, stage: "Group F", date: "Sun, Jun 14, 2026", time: "10:00 PM PDT", teamA: "Sweden", teamB: "Tunisia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 13, stage: "Group H", date: "Mon, Jun 15, 2026", time: "6:00 PM PDT", teamA: "Saudi Arabia", teamB: "Uruguay", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 14, stage: "Group H", date: "Mon, Jun 15, 2026", time: "12:00 PM PDT", teamA: "Spain", teamB: "Cape Verde", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 15, stage: "Group G", date: "Mon, Jun 15, 2026", time: "9:00 PM PDT", teamA: "Iran", teamB: "New Zealand", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 16, stage: "Group G", date: "Mon, Jun 15, 2026", time: "3:00 PM PDT", teamA: "Belgium", teamB: "Egypt", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 17, stage: "Group I", date: "Tue, Jun 16, 2026", time: "3:00 PM PDT", teamA: "France", teamB: "Senegal", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 18, stage: "Group I", date: "Tue, Jun 16, 2026", time: "6:00 PM PDT", teamA: "Iraq", teamB: "Norway", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 19, stage: "Group J", date: "Tue, Jun 16, 2026", time: "9:00 PM PDT", teamA: "Argentina", teamB: "Algeria", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 20, stage: "Group J", date: "Tue, Jun 16, 2026", time: "12:00 AM PDT", teamA: "Austria", teamB: "Jordan", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 21, stage: "Group L", date: "Wed, Jun 17, 2026", time: "7:00 PM PDT", teamA: "Ghana", teamB: "Panama", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 22, stage: "Group L", date: "Wed, Jun 17, 2026", time: "4:00 PM PDT", teamA: "England", teamB: "Croatia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 23, stage: "Group K", date: "Wed, Jun 17, 2026", time: "1:00 PM PDT", teamA: "Portugal", teamB: "DR Congo", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 24, stage: "Group K", date: "Wed, Jun 17, 2026", time: "10:00 PM PDT", teamA: "Uzbekistan", teamB: "Colombia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 25, stage: "Group A", date: "Thu, Jun 18, 2026", time: "12:00 PM PDT", teamA: "Czechia", teamB: "South Africa", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 26, stage: "Group B", date: "Thu, Jun 18, 2026", time: "3:00 PM PDT", teamA: "Switzerland", teamB: "Bosnia and Herzegovina", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 27, stage: "Group B", date: "Thu, Jun 18, 2026", time: "6:00 PM PDT", teamA: "Canada", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 28, stage: "Group A", date: "Thu, Jun 18, 2026", time: "9:00 PM PDT", teamA: "Mexico", teamB: "South Korea", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 29, stage: "Group C", date: "Fri, Jun 19, 2026", time: "8:30 PM PDT", teamA: "Brazil", teamB: "Haiti", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 30, stage: "Group C", date: "Fri, Jun 19, 2026", time: "6:00 PM PDT", teamA: "Scotland", teamB: "Morocco", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 31, stage: "Group D", date: "Fri, Jun 19, 2026", time: "11:00 PM PDT", teamA: "Türkiye", teamB: "United States", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 32, stage: "Group D", date: "Fri, Jun 19, 2026", time: "3:00 PM PDT", teamA: "United States", teamB: "Australia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 33, stage: "Group E", date: "Sat, Jun 20, 2026", time: "4:00 PM PDT", teamA: "Germany", teamB: "Ivory Coast", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 34, stage: "Group E", date: "Sat, Jun 20, 2026", time: "8:00 PM PDT", teamA: "Ecuador", teamB: "Curaçao", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 35, stage: "Group F", date: "Sat, Jun 20, 2026", time: "1:00 PM PDT", teamA: "Netherlands", teamB: "Sweden", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 36, stage: "Group F", date: "Sat, Jun 20, 2026", time: "12:00 AM PDT", teamA: "Tunisia", teamB: "Japan", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 37, stage: "Group H", date: "Sun, Jun 21, 2026", time: "6:00 PM PDT", teamA: "Uruguay", teamB: "Cape Verde", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 38, stage: "Group H", date: "Sun, Jun 21, 2026", time: "12:00 PM PDT", teamA: "Spain", teamB: "Saudi Arabia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 39, stage: "Group G", date: "Sun, Jun 21, 2026", time: "3:00 PM PDT", teamA: "Belgium", teamB: "Iran", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 40, stage: "Group G", date: "Sun, Jun 21, 2026", time: "9:00 PM PDT", teamA: "New Zealand", teamB: "Egypt", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 41, stage: "Group I", date: "Mon, Jun 22, 2026", time: "8:00 PM PDT", teamA: "Norway", teamB: "Senegal", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 42, stage: "Group I", date: "Mon, Jun 22, 2026", time: "5:00 PM PDT", teamA: "France", teamB: "Iraq", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 43, stage: "Group J", date: "Mon, Jun 22, 2026", time: "1:00 PM PDT", teamA: "Argentina", teamB: "Austria", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 44, stage: "Group J", date: "Mon, Jun 22, 2026", time: "11:00 PM PDT", teamA: "Jordan", teamB: "Algeria", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 45, stage: "Group L", date: "Tue, Jun 23, 2026", time: "4:00 PM PDT", teamA: "England", teamB: "Ghana", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 46, stage: "Group L", date: "Tue, Jun 23, 2026", time: "7:00 PM PDT", teamA: "Panama", teamB: "Croatia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 47, stage: "Group K", date: "Tue, Jun 23, 2026", time: "1:00 PM PDT", teamA: "Portugal", teamB: "Uzbekistan", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 48, stage: "Group K", date: "Tue, Jun 23, 2026", time: "10:00 PM PDT", teamA: "Colombia", teamB: "DR Congo", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 49, stage: "Group A", date: "Wed, Jun 24, 2026", time: "12:00 PM PDT", teamA: "Mexico", teamB: "Czechia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 50, stage: "Group A", date: "Wed, Jun 24, 2026", time: "3:00 PM PDT", teamA: "South Africa", teamB: "South Korea", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 51, stage: "Group B", date: "Wed, Jun 24, 2026", time: "6:00 PM PDT", teamA: "Canada", teamB: "Switzerland", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 52, stage: "Group B", date: "Wed, Jun 24, 2026", time: "9:00 PM PDT", teamA: "Bosnia and Herzegovina", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 53, stage: "Group C", date: "Thu, Jun 25, 2026", time: "12:00 PM PDT", teamA: "Brazil", teamB: "Scotland", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 54, stage: "Group C", date: "Thu, Jun 25, 2026", time: "3:00 PM PDT", teamA: "Morocco", teamB: "Haiti", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 55, stage: "Group D", date: "Thu, Jun 25, 2026", time: "6:00 PM PDT", teamA: "United States", teamB: "Australia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 56, stage: "Group D", date: "Thu, Jun 25, 2026", time: "9:00 PM PDT", teamA: "Paraguay", teamB: "Türkiye", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 57, stage: "Group E", date: "Fri, Jun 26, 2026", time: "12:00 PM PDT", teamA: "Germany", teamB: "Ecuador", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 58, stage: "Group E", date: "Fri, Jun 26, 2026", time: "3:00 PM PDT", teamA: "Ivory Coast", teamB: "Curaçao", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 59, stage: "Group F", date: "Fri, Jun 26, 2026", time: "6:00 PM PDT", teamA: "Netherlands", teamB: "Tunisia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 60, stage: "Group F", date: "Fri, Jun 26, 2026", time: "9:00 PM PDT", teamA: "Japan", teamB: "Sweden", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 61, stage: "Group G", date: "Sat, Jun 27, 2026", time: "12:00 PM PDT", teamA: "Belgium", teamB: "New Zealand", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 62, stage: "Group G", date: "Sat, Jun 27, 2026", time: "3:00 PM PDT", teamA: "Egypt", teamB: "Iran", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 63, stage: "Group H", date: "Sat, Jun 27, 2026", time: "6:00 PM PDT", teamA: "Spain", teamB: "Uruguay", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 64, stage: "Group H", date: "Sat, Jun 27, 2026", time: "9:00 PM PDT", teamA: "Cape Verde", teamB: "Saudi Arabia", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 65, stage: "Group I", date: "Sat, Jun 27, 2026", time: "11:00 PM PDT", teamA: "France", teamB: "Norway", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 66, stage: "Group I", date: "Sat, Jun 27, 2026", time: "1:00 PM PDT", teamA: "Senegal", teamB: "Iraq", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 67, stage: "Group J", date: "Sat, Jun 27, 2026", time: "5:00 PM PDT", teamA: "Argentina", teamB: "Jordan", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 68, stage: "Group J", date: "Sat, Jun 27, 2026", time: "8:00 PM PDT", teamA: "Algeria", teamB: "Austria", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 69, stage: "Group K", date: "Sat, Jun 27, 2026", time: "10:00 PM PDT", teamA: "Portugal", teamB: "Colombia", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 70, stage: "Group K", date: "Sat, Jun 27, 2026", time: "2:00 PM PDT", teamA: "DR Congo", teamB: "Uzbekistan", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 71, stage: "Group L", date: "Sat, Jun 27, 2026", time: "4:00 PM PDT", teamA: "England", teamB: "Panama", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 72, stage: "Group L", date: "Sat, Jun 27, 2026", time: "7:00 PM PDT", teamA: "Croatia", teamB: "Ghana", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 73, stage: "Round of 32", date: "Sun, Jun 28, 2026", time: "3:00 PM PDT", teamA: "2A", teamB: "2B", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 74, stage: "Round of 32", date: "Sun, Jun 28, 2026", time: "4:30 PM PDT", teamA: "1E", teamB: "3ABCDF", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 75, stage: "Round of 32", date: "Sun, Jun 28, 2026", time: "9:00 PM PDT", teamA: "1F", teamB: "2C", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 76, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "1:00 PM PDT", teamA: "1C", teamB: "2F", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 77, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "5:00 PM PDT", teamA: "1I", teamB: "3CDFGH", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 78, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "1:00 PM PDT", teamA: "2E", teamB: "2I", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 79, stage: "Round of 32", date: "Tue, Jun 30, 2026", time: "9:00 PM PDT", teamA: "1A", teamB: "3CEFHI", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 80, stage: "Round of 32", date: "Tue, Jun 30, 2026", time: "12:00 PM PDT", teamA: "1L", teamB: "3EHIJK", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 81, stage: "Round of 32", date: "Wed, Jul 1, 2026", time: "8:00 PM PDT", teamA: "1D", teamB: "3BEFIJ", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 82, stage: "Round of 32", date: "Wed, Jul 1, 2026", time: "4:00 PM PDT", teamA: "1G", teamB: "3AEHIJ", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 83, stage: "Round of 32", date: "Thu, Jul 2, 2026", time: "7:00 PM PDT", teamA: "2K", teamB: "2L", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 84, stage: "Round of 32", date: "Thu, Jul 2, 2026", time: "3:00 PM PDT", teamA: "1H", teamB: "2J", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 85, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "11:00 PM PDT", teamA: "1B", teamB: "3EFGIJ", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 86, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "6:00 PM PDT", teamA: "1J", teamB: "2H", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 87, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "9:30 PM PDT", teamA: "1K", teamB: "3DEIJL", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 88, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "2:00 PM PDT", teamA: "2D", teamB: "2G", scoreA: "", scoreB: "", status: "Scheduled" },
-  
-  { id: 89, stage: "Round of 16", date: "Sat, Jul 4, 2026", time: "5:00 PM PDT", teamA: "W74", teamB: "W77", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 90, stage: "Round of 16", date: "Sat, Jul 4, 2026", time: "1:00 PM PDT", teamA: "W73", teamB: "W75", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 91, stage: "Round of 16", date: "Sun, Jul 5, 2026", time: "4:00 PM PDT", teamA: "W76", teamB: "W78", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 92, stage: "Round of 16", date: "Sun, Jul 5, 2026", time: "8:00 PM PDT", teamA: "W79", teamB: "W80", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 93, stage: "Round of 16", date: "Mon, Jul 6, 2026", time: "3:00 PM PDT", teamA: "W83", teamB: "W84", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 94, stage: "Round of 16", date: "Mon, Jul 6, 2026", time: "8:00 PM PDT", teamA: "W81", teamB: "W82", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 95, stage: "Round of 16", date: "Tue, Jul 7, 2026", time: "12:00 PM PDT", teamA: "W86", teamB: "W88", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 96, stage: "Round of 16", date: "Tue, Jul 7, 2026", time: "4:00 PM PDT", teamA: "W85", teamB: "W87", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 97, stage: "Quarter Final", date: "Thu, Jul 9, 2026", time: "4:00 PM PDT", teamA: "W89", teamB: "W90", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 98, stage: "Quarter Final", date: "Fri, Jul 10, 2026", time: "3:00 PM PDT", teamA: "W93", teamB: "W94", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 99, stage: "Quarter Final", date: "Sat, Jul 11, 2026", time: "5:00 PM PDT", teamA: "W91", teamB: "W92", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 100, stage: "Quarter Final", date: "Sat, Jul 11, 2026", time: "9:00 PM PDT", teamA: "W95", teamB: "W96", scoreA: "", scoreB: "", status: "Scheduled" },
-
-  { id: 101, stage: "Semi Final", date: "Tue, Jul 14, 2026", time: "3:00 PM PDT", teamA: "W97", teamB: "W98", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 102, stage: "Semi Final", date: "Wed, Jul 15, 2026", time: "3:00 PM PDT", teamA: "W99", teamB: "W100", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 103, stage: "Bronze Final", date: "Sat, Jul 18, 2026", time: "5:00 PM PDT", teamA: "L101", teamB: "L102", scoreA: "", scoreB: "", status: "Scheduled" },
-  { id: 104, stage: "Final", date: "Sun, Jul 19, 2026", time: "3:00 PM PDT", teamA: "W101", teamB: "W102", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 1, stage: "Group A", date: "Thu, Jun 11, 2026", time: "11:00 AM PDT", teamA: "Mexico", teamB: "South Africa", scoreA: "", scoreB: "", status: "Scheduled", venue: "Mexico City Stadium, Mexico City" },
+  { id: 2, stage: "Group A", date: "Thu, Jun 11, 2026", time: "6:00 PM PDT", teamA: "South Korea", teamB: "Czechia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Guadalajara Stadium, Guadalajara" },
+  { id: 3, stage: "Group B", date: "Fri, Jun 12, 2026", time: "9:00 AM PDT", teamA: "Canada", teamB: "Bosnia and Herzegovina", scoreA: "", scoreB: "", status: "Scheduled", venue: "Toronto Stadium, Toronto" },
+  { id: 4, stage: "Group D", date: "Fri, Jun 12, 2026", time: "6:00 PM PDT", teamA: "United States", teamB: "Paraguay", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 5, stage: "Group B", date: "Sat, Jun 13, 2026", time: "12:00 PM PDT", teamA: "Qatar", teamB: "Switzerland", scoreA: "", scoreB: "", status: "Scheduled", venue: "San Francisco Bay Area Stadium, San Francisco Bay Area" },
+  { id: 6, stage: "Group C", date: "Sat, Jun 13, 2026", time: "12:00 PM PDT", teamA: "Brazil", teamB: "Morocco", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
+  { id: 7, stage: "Group C", date: "Sat, Jun 13, 2026", time: "3:00 PM PDT", teamA: "Haiti", teamB: "Scotland", scoreA: "", scoreB: "", status: "Scheduled", venue: "Boston Stadium, Boston" },
+  { id: 8, stage: "Group D", date: "Sat, Jun 13, 2026", time: "9:00 PM PDT", teamA: "Australia", teamB: "T\u00fcrkiye", scoreA: "", scoreB: "", status: "Scheduled", venue: "BC Place Vancouver, Vancouver" },
+  { id: 9, stage: "Group E", date: "Sun, Jun 14, 2026", time: "8:00 AM PDT", teamA: "Germany", teamB: "Cura\u00e7ao", scoreA: "", scoreB: "", status: "Scheduled", venue: "Houston Stadium, Houston" },
+  { id: 10, stage: "Group F", date: "Sun, Jun 14, 2026", time: "11:00 AM PDT", teamA: "Netherlands", teamB: "Japan", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 11, stage: "Group E", date: "Sun, Jun 14, 2026", time: "1:00 PM PDT", teamA: "Ivory Coast", teamB: "Ecuador", scoreA: "", scoreB: "", status: "Scheduled", venue: "Philadelphia Stadium, Philadelphia" },
+  { id: 12, stage: "Group F", date: "Sun, Jun 14, 2026", time: "7:00 PM PDT", teamA: "Sweden", teamB: "Tunisia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Monterrey Stadium, Monterrey" },
+  { id: 13, stage: "Group H", date: "Mon, Jun 15, 2026", time: "6:00 AM PDT", teamA: "Spain", teamB: "Cape Verde", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 14, stage: "Group G", date: "Mon, Jun 15, 2026", time: "12:00 PM PDT", teamA: "Belgium", teamB: "Egypt", scoreA: "", scoreB: "", status: "Scheduled", venue: "Seattle Stadium, Seattle" },
+  { id: 15, stage: "Group H", date: "Mon, Jun 15, 2026", time: "12:00 PM PDT", teamA: "Saudi Arabia", teamB: "Uruguay", scoreA: "", scoreB: "", status: "Scheduled", venue: "Miami Stadium, Miami" },
+  { id: 16, stage: "Group G", date: "Mon, Jun 15, 2026", time: "6:00 PM PDT", teamA: "Iran", teamB: "New Zealand", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 17, stage: "Group I", date: "Tue, Jun 16, 2026", time: "9:00 AM PDT", teamA: "France", teamB: "Senegal", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
+  { id: 18, stage: "Group I", date: "Tue, Jun 16, 2026", time: "12:00 PM PDT", teamA: "Iraq", teamB: "Norway", scoreA: "", scoreB: "", status: "Scheduled", venue: "Boston Stadium, Boston" },
+  { id: 19, stage: "Group J", date: "Tue, Jun 16, 2026", time: "4:00 PM PDT", teamA: "Argentina", teamB: "Algeria", scoreA: "", scoreB: "", status: "Scheduled", venue: "Kansas City Stadium, Kansas City" },
+  { id: 20, stage: "Group J", date: "Tue, Jun 16, 2026", time: "9:00 PM PDT", teamA: "Austria", teamB: "Jordan", scoreA: "", scoreB: "", status: "Scheduled", venue: "San Francisco Bay Area Stadium, San Francisco Bay Area" },
+  { id: 21, stage: "Group K", date: "Wed, Jun 17, 2026", time: "8:00 AM PDT", teamA: "Portugal", teamB: "DR Congo", scoreA: "", scoreB: "", status: "Scheduled", venue: "Houston Stadium, Houston" },
+  { id: 22, stage: "Group L", date: "Wed, Jun 17, 2026", time: "11:00 AM PDT", teamA: "England", teamB: "Croatia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 23, stage: "Group L", date: "Wed, Jun 17, 2026", time: "1:00 PM PDT", teamA: "Ghana", teamB: "Panama", scoreA: "", scoreB: "", status: "Scheduled", venue: "Toronto Stadium, Toronto" },
+  { id: 24, stage: "Group K", date: "Wed, Jun 17, 2026", time: "6:00 PM PDT", teamA: "Uzbekistan", teamB: "Colombia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Mexico City Stadium, Mexico City" },
+  { id: 25, stage: "Group A", date: "Thu, Jun 18, 2026", time: "6:00 AM PDT", teamA: "Czechia", teamB: "South Africa", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 26, stage: "Group B", date: "Thu, Jun 18, 2026", time: "12:00 PM PDT", teamA: "Switzerland", teamB: "Bosnia and Herzegovina", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 27, stage: "Group B", date: "Thu, Jun 18, 2026", time: "3:00 PM PDT", teamA: "Canada", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled", venue: "BC Place Vancouver, Vancouver" },
+  { id: 28, stage: "Group A", date: "Thu, Jun 18, 2026", time: "5:00 PM PDT", teamA: "Mexico", teamB: "South Korea", scoreA: "", scoreB: "", status: "Scheduled", venue: "Guadalajara Stadium, Guadalajara" },
+  { id: 29, stage: "Group D", date: "Fri, Jun 19, 2026", time: "12:00 PM PDT", teamA: "United States", teamB: "Australia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Seattle Stadium, Seattle" },
+  { id: 30, stage: "Group C", date: "Fri, Jun 19, 2026", time: "12:00 PM PDT", teamA: "Scotland", teamB: "Morocco", scoreA: "", scoreB: "", status: "Scheduled", venue: "Boston Stadium, Boston" },
+  { id: 31, stage: "Group C", date: "Fri, Jun 19, 2026", time: "2:30 PM PDT", teamA: "Brazil", teamB: "Haiti", scoreA: "", scoreB: "", status: "Scheduled", venue: "Philadelphia Stadium, Philadelphia" },
+  { id: 32, stage: "Group D", date: "Fri, Jun 19, 2026", time: "8:00 PM PDT", teamA: "T\u00fcrkiye", teamB: "Paraguay", scoreA: "", scoreB: "", status: "Scheduled", venue: "San Francisco Bay Area Stadium, San Francisco Bay Area" },
+  { id: 33, stage: "Group F", date: "Sat, Jun 20, 2026", time: "8:00 AM PDT", teamA: "Netherlands", teamB: "Sweden", scoreA: "", scoreB: "", status: "Scheduled", venue: "Houston Stadium, Houston" },
+  { id: 34, stage: "Group E", date: "Sat, Jun 20, 2026", time: "10:00 AM PDT", teamA: "Germany", teamB: "Ivory Coast", scoreA: "", scoreB: "", status: "Scheduled", venue: "Toronto Stadium, Toronto" },
+  { id: 35, stage: "Group E", date: "Sat, Jun 20, 2026", time: "3:00 PM PDT", teamA: "Ecuador", teamB: "Cura\u00e7ao", scoreA: "", scoreB: "", status: "Scheduled", venue: "Kansas City Stadium, Kansas City" },
+  { id: 36, stage: "Group F", date: "Sat, Jun 20, 2026", time: "8:00 PM PDT", teamA: "Tunisia", teamB: "Japan", scoreA: "", scoreB: "", status: "Scheduled", venue: "Monterrey Stadium, Monterrey" },
+  { id: 37, stage: "Group H", date: "Sun, Jun 21, 2026", time: "6:00 AM PDT", teamA: "Spain", teamB: "Saudi Arabia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 38, stage: "Group G", date: "Sun, Jun 21, 2026", time: "12:00 PM PDT", teamA: "Belgium", teamB: "Iran", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 39, stage: "Group H", date: "Sun, Jun 21, 2026", time: "12:00 PM PDT", teamA: "Uruguay", teamB: "Cape Verde", scoreA: "", scoreB: "", status: "Scheduled", venue: "Miami Stadium, Miami" },
+  { id: 40, stage: "Group G", date: "Sun, Jun 21, 2026", time: "6:00 PM PDT", teamA: "New Zealand", teamB: "Egypt", scoreA: "", scoreB: "", status: "Scheduled", venue: "BC Place Vancouver, Vancouver" },
+  { id: 41, stage: "Group J", date: "Mon, Jun 22, 2026", time: "8:00 AM PDT", teamA: "Argentina", teamB: "Austria", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 42, stage: "Group I", date: "Mon, Jun 22, 2026", time: "11:00 AM PDT", teamA: "France", teamB: "Iraq", scoreA: "", scoreB: "", status: "Scheduled", venue: "Philadelphia Stadium, Philadelphia" },
+  { id: 43, stage: "Group I", date: "Mon, Jun 22, 2026", time: "2:00 PM PDT", teamA: "Norway", teamB: "Senegal", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
+  { id: 44, stage: "Group J", date: "Mon, Jun 22, 2026", time: "8:00 PM PDT", teamA: "Jordan", teamB: "Algeria", scoreA: "", scoreB: "", status: "Scheduled", venue: "San Francisco Bay Area Stadium, San Francisco Bay Area" },
+  { id: 45, stage: "Group K", date: "Tue, Jun 23, 2026", time: "8:00 AM PDT", teamA: "Portugal", teamB: "Uzbekistan", scoreA: "", scoreB: "", status: "Scheduled", venue: "Houston Stadium, Houston" },
+  { id: 46, stage: "Group L", date: "Tue, Jun 23, 2026", time: "10:00 AM PDT", teamA: "England", teamB: "Ghana", scoreA: "", scoreB: "", status: "Scheduled", venue: "Boston Stadium, Boston" },
+  { id: 47, stage: "Group L", date: "Tue, Jun 23, 2026", time: "1:00 PM PDT", teamA: "Panama", teamB: "Croatia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Toronto Stadium, Toronto" },
+  { id: 48, stage: "Group K", date: "Tue, Jun 23, 2026", time: "7:00 PM PDT", teamA: "Colombia", teamB: "DR Congo", scoreA: "", scoreB: "", status: "Scheduled", venue: "Guadalajara Stadium, Guadalajara" },
+  { id: 49, stage: "Group B", date: "Wed, Jun 24, 2026", time: "12:00 PM PDT", teamA: "Switzerland", teamB: "Canada", scoreA: "", scoreB: "", status: "Scheduled", venue: "BC Place Vancouver, Vancouver" },
+  { id: 50, stage: "Group B", date: "Wed, Jun 24, 2026", time: "12:00 PM PDT", teamA: "Bosnia and Herzegovina", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled", venue: "Seattle Stadium, Seattle" },
+  { id: 51, stage: "Group C", date: "Wed, Jun 24, 2026", time: "12:00 PM PDT", teamA: "Scotland", teamB: "Brazil", scoreA: "", scoreB: "", status: "Scheduled", venue: "Miami Stadium, Miami" },
+  { id: 52, stage: "Group C", date: "Wed, Jun 24, 2026", time: "12:00 PM PDT", teamA: "Morocco", teamB: "Haiti", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 53, stage: "Group A", date: "Wed, Jun 24, 2026", time: "5:00 PM PDT", teamA: "Czechia", teamB: "Mexico", scoreA: "", scoreB: "", status: "Scheduled", venue: "Mexico City Stadium, Mexico City" },
+  { id: 54, stage: "Group A", date: "Wed, Jun 24, 2026", time: "5:00 PM PDT", teamA: "South Africa", teamB: "South Korea", scoreA: "", scoreB: "", status: "Scheduled", venue: "Monterrey Stadium, Monterrey" },
+  { id: 55, stage: "Group E", date: "Thu, Jun 25, 2026", time: "10:00 AM PDT", teamA: "Ecuador", teamB: "Germany", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
+  { id: 56, stage: "Group E", date: "Thu, Jun 25, 2026", time: "10:00 AM PDT", teamA: "Cura\u00e7ao", teamB: "Ivory Coast", scoreA: "", scoreB: "", status: "Scheduled", venue: "Philadelphia Stadium, Philadelphia" },
+  { id: 57, stage: "Group F", date: "Thu, Jun 25, 2026", time: "2:00 PM PDT", teamA: "Tunisia", teamB: "Netherlands", scoreA: "", scoreB: "", status: "Scheduled", venue: "Kansas City Stadium, Kansas City" },
+  { id: 58, stage: "Group F", date: "Thu, Jun 25, 2026", time: "2:00 PM PDT", teamA: "Japan", teamB: "Sweden", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 59, stage: "Group D", date: "Thu, Jun 25, 2026", time: "7:00 PM PDT", teamA: "T\u00fcrkiye", teamB: "United States", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 60, stage: "Group D", date: "Thu, Jun 25, 2026", time: "7:00 PM PDT", teamA: "Paraguay", teamB: "Australia", scoreA: "", scoreB: "", status: "Scheduled", venue: "San Francisco Bay Area Stadium, San Francisco Bay Area" },
+  { id: 61, stage: "Group I", date: "Fri, Jun 26, 2026", time: "9:00 AM PDT", teamA: "Norway", teamB: "France", scoreA: "", scoreB: "", status: "Scheduled", venue: "Boston Stadium, Boston" },
+  { id: 62, stage: "Group I", date: "Fri, Jun 26, 2026", time: "9:00 AM PDT", teamA: "Senegal", teamB: "Iraq", scoreA: "", scoreB: "", status: "Scheduled", venue: "Toronto Stadium, Toronto" },
+  { id: 63, stage: "Group H", date: "Fri, Jun 26, 2026", time: "4:00 PM PDT", teamA: "Uruguay", teamB: "Spain", scoreA: "", scoreB: "", status: "Scheduled", venue: "Guadalajara Stadium, Guadalajara" },
+  { id: 64, stage: "Group H", date: "Fri, Jun 26, 2026", time: "3:00 PM PDT", teamA: "Cape Verde", teamB: "Saudi Arabia", scoreA: "", scoreB: "", status: "Scheduled", venue: "Houston Stadium, Houston" },
+  { id: 65, stage: "Group G", date: "Fri, Jun 26, 2026", time: "8:00 PM PDT", teamA: "New Zealand", teamB: "Belgium", scoreA: "", scoreB: "", status: "Scheduled", venue: "BC Place Vancouver, Vancouver" },
+  { id: 66, stage: "Group G", date: "Fri, Jun 26, 2026", time: "8:00 PM PDT", teamA: "Egypt", teamB: "Iran", scoreA: "", scoreB: "", status: "Scheduled", venue: "Seattle Stadium, Seattle" },
+  { id: 67, stage: "Group L", date: "Sat, Jun 27, 2026", time: "11:00 AM PDT", teamA: "Panama", teamB: "England", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
+  { id: 68, stage: "Group L", date: "Sat, Jun 27, 2026", time: "11:00 AM PDT", teamA: "Croatia", teamB: "Ghana", scoreA: "", scoreB: "", status: "Scheduled", venue: "Philadelphia Stadium, Philadelphia" },
+  { id: 69, stage: "Group K", date: "Sat, Jun 27, 2026", time: "1:30 PM PDT", teamA: "Colombia", teamB: "Portugal", scoreA: "", scoreB: "", status: "Scheduled", venue: "Miami Stadium, Miami" },
+  { id: 70, stage: "Group K", date: "Sat, Jun 27, 2026", time: "1:30 PM PDT", teamA: "DR Congo", teamB: "Uzbekistan", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 71, stage: "Group J", date: "Sat, Jun 27, 2026", time: "5:00 PM PDT", teamA: "Jordan", teamB: "Argentina", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 72, stage: "Group J", date: "Sat, Jun 27, 2026", time: "5:00 PM PDT", teamA: "Algeria", teamB: "Austria", scoreA: "", scoreB: "", status: "Scheduled", venue: "Kansas City Stadium, Kansas City" },
+  { id: 73, stage: "Round of 32", date: "Sun, Jun 28, 2026", time: "12:00 PM PDT", teamA: "2A", teamB: "2B", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 74, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "8:00 AM PDT", teamA: "1C", teamB: "2F", scoreA: "", scoreB: "", status: "Scheduled", venue: "Houston Stadium, Houston" },
+  { id: 75, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "10:30 AM PDT", teamA: "1E", teamB: "3ABCDF", scoreA: "", scoreB: "", status: "Scheduled", venue: "Boston Stadium, Boston" },
+  { id: 76, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "5:00 PM PDT", teamA: "1F", teamB: "2C", scoreA: "", scoreB: "", status: "Scheduled", venue: "Monterrey Stadium, Monterrey" },
+  { id: 77, stage: "Round of 32", date: "Tue, Jun 30, 2026", time: "8:00 AM PDT", teamA: "2E", teamB: "2I", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 78, stage: "Round of 32", date: "Tue, Jun 30, 2026", time: "11:00 AM PDT", teamA: "1I", teamB: "3CDFGH", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
+  { id: 79, stage: "Round of 32", date: "Tue, Jun 30, 2026", time: "5:00 PM PDT", teamA: "1A", teamB: "3CEFHI", scoreA: "", scoreB: "", status: "Scheduled", venue: "Mexico City Stadium, Mexico City" },
+  { id: 80, stage: "Round of 32", date: "Wed, Jul 1, 2026", time: "6:00 AM PDT", teamA: "1L", teamB: "3EHIJK", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 81, stage: "Round of 32", date: "Wed, Jul 1, 2026", time: "1:00 PM PDT", teamA: "1G", teamB: "3AEHIJ", scoreA: "", scoreB: "", status: "Scheduled", venue: "Seattle Stadium, Seattle" },
+  { id: 82, stage: "Round of 32", date: "Wed, Jul 1, 2026", time: "5:00 PM PDT", teamA: "1D", teamB: "3BEFIJ", scoreA: "", scoreB: "", status: "Scheduled", venue: "San Francisco Bay Area Stadium, San Francisco Bay Area" },
+  { id: 83, stage: "Round of 32", date: "Thu, Jul 2, 2026", time: "12:00 PM PDT", teamA: "1H", teamB: "2J", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 84, stage: "Round of 32", date: "Thu, Jul 2, 2026", time: "1:00 PM PDT", teamA: "2K", teamB: "2L", scoreA: "", scoreB: "", status: "Scheduled", venue: "Toronto Stadium, Toronto" },
+  { id: 85, stage: "Round of 32", date: "Thu, Jul 2, 2026", time: "8:00 PM PDT", teamA: "1B", teamB: "3EFGIJ", scoreA: "", scoreB: "", status: "Scheduled", venue: "BC Place Vancouver, Vancouver" },
+  { id: 86, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "9:00 AM PDT", teamA: "2D", teamB: "2G", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 87, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "12:00 PM PDT", teamA: "1J", teamB: "2H", scoreA: "", scoreB: "", status: "Scheduled", venue: "Miami Stadium, Miami" },
+  { id: 88, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "4:30 PM PDT", teamA: "1K", teamB: "3DEIJL", scoreA: "", scoreB: "", status: "Scheduled", venue: "Kansas City Stadium, Kansas City" },
+  { id: 89, stage: "Round of 16", date: "Sat, Jul 4, 2026", time: "8:00 AM PDT", teamA: "W73", teamB: "W75", scoreA: "", scoreB: "", status: "Scheduled", venue: "Houston Stadium, Houston" },
+  { id: 90, stage: "Round of 16", date: "Sat, Jul 4, 2026", time: "11:00 AM PDT", teamA: "W74", teamB: "W77", scoreA: "", scoreB: "", status: "Scheduled", venue: "Philadelphia Stadium, Philadelphia" },
+  { id: 91, stage: "Round of 16", date: "Sun, Jul 5, 2026", time: "10:00 AM PDT", teamA: "W76", teamB: "W78", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
+  { id: 92, stage: "Round of 16", date: "Sun, Jul 5, 2026", time: "4:00 PM PDT", teamA: "W79", teamB: "W80", scoreA: "", scoreB: "", status: "Scheduled", venue: "Mexico City Stadium, Mexico City" },
+  { id: 93, stage: "Round of 16", date: "Mon, Jul 6, 2026", time: "10:00 AM PDT", teamA: "W83", teamB: "W84", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 94, stage: "Round of 16", date: "Mon, Jul 6, 2026", time: "5:00 PM PDT", teamA: "W81", teamB: "W82", scoreA: "", scoreB: "", status: "Scheduled", venue: "Seattle Stadium, Seattle" },
+  { id: 95, stage: "Round of 16", date: "Tue, Jul 7, 2026", time: "6:00 AM PDT", teamA: "W86", teamB: "W88", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 96, stage: "Round of 16", date: "Tue, Jul 7, 2026", time: "1:00 PM PDT", teamA: "W85", teamB: "W87", scoreA: "", scoreB: "", status: "Scheduled", venue: "BC Place Vancouver, Vancouver" },
+  { id: 97, stage: "Quarter Final", date: "Thu, Jul 9, 2026", time: "10:00 AM PDT", teamA: "W89", teamB: "W90", scoreA: "", scoreB: "", status: "Scheduled", venue: "Boston Stadium, Boston" },
+  { id: 98, stage: "Quarter Final", date: "Fri, Jul 10, 2026", time: "12:00 PM PDT", teamA: "W93", teamB: "W94", scoreA: "", scoreB: "", status: "Scheduled", venue: "Los Angeles Stadium, Los Angeles" },
+  { id: 99, stage: "Quarter Final", date: "Sat, Jul 11, 2026", time: "11:00 AM PDT", teamA: "W91", teamB: "W92", scoreA: "", scoreB: "", status: "Scheduled", venue: "Miami Stadium, Miami" },
+  { id: 100, stage: "Quarter Final", date: "Sat, Jul 11, 2026", time: "4:00 PM PDT", teamA: "W95", teamB: "W96", scoreA: "", scoreB: "", status: "Scheduled", venue: "Kansas City Stadium, Kansas City" },
+  { id: 101, stage: "Semi Final", date: "Tue, Jul 14, 2026", time: "10:00 AM PDT", teamA: "W97", teamB: "W98", scoreA: "", scoreB: "", status: "Scheduled", venue: "Dallas Stadium, Dallas" },
+  { id: 102, stage: "Semi Final", date: "Wed, Jul 15, 2026", time: "9:00 AM PDT", teamA: "W99", teamB: "W100", scoreA: "", scoreB: "", status: "Scheduled", venue: "Atlanta Stadium, Atlanta" },
+  { id: 103, stage: "Bronze Final", date: "Sat, Jul 18, 2026", time: "11:00 AM PDT", teamA: "L101", teamB: "L102", scoreA: "", scoreB: "", status: "Scheduled", venue: "Miami Stadium, Miami" },
+  { id: 104, stage: "Final", date: "Sun, Jul 19, 2026", time: "9:00 AM PDT", teamA: "W101", teamB: "W102", scoreA: "", scoreB: "", status: "Scheduled", venue: "New York New Jersey Stadium, New York/New Jersey" },
 ];
 
 const progressOptions: Team["status"][] = [
@@ -327,6 +312,8 @@ const progressOptions: Team["status"][] = [
 ];
 
 const PICK_CUTOFF = new Date("2026-06-10T23:59:59-07:00");
+
+const ADMIN_EMAILS = ["ma_945@outlook.com"];
 
 function flagText(teamName: string) {
   return teamName;
@@ -348,11 +335,17 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [myPick, setMyPick] = useState<Participant | null>(null);
+  const [scoreSaveMessage, setScoreSaveMessage] = useState("");
+
+  const isAdmin = Boolean(
+    user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())
+  );
 
   const picksLocked = new Date() > PICK_CUTOFF;
 
   React.useEffect(() => {
     fetchParticipants();
+    fetchMatchScores();
 
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
@@ -390,6 +383,32 @@ export default function Home() {
 
     if (!error && data) {
       setParticipants(data);
+    }
+  }
+
+  async function fetchMatchScores() {
+    const { data, error } = await supabase.from("match_scores").select("*");
+
+    if (error) {
+      console.error("Match score fetch error:", error.message);
+      return;
+    }
+
+    if (data) {
+      setMatches((current) =>
+        current.map((match) => {
+          const savedScore = data.find((row) => row.match_id === match.id);
+
+          if (!savedScore) return match;
+
+          return {
+            ...match,
+            scoreA: savedScore.score_a ?? "",
+            scoreB: savedScore.score_b ?? "",
+            status: savedScore.status ?? match.status,
+          };
+        })
+      );
     }
   }
 
@@ -454,11 +473,31 @@ export default function Home() {
   }, [participants, teamData]);
 
   const groupedMatches = useMemo(() => {
+    const timeToMinutes = (time: string) => {
+      const match = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return 0;
+
+      let hours = Number(match[1]);
+      const minutes = Number(match[2]);
+      const period = match[3].toUpperCase();
+
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+
+      return hours * 60 + minutes;
+    };
+
     return matches.reduce<Record<string, Match[]>>((groups, match) => {
       if (!groups[match.date]) {
         groups[match.date] = [];
       }
+
       groups[match.date].push(match);
+
+      groups[match.date].sort(
+        (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time)
+      );
+
       return groups;
     }, {});
   }, [matches]);
@@ -559,11 +598,125 @@ export default function Home() {
     field: "scoreA" | "scoreB",
     value: string
   ) {
+    if (!isAdmin) return;
+
     setMatches((current) =>
       current.map((match) =>
         match.id === matchId ? { ...match, [field]: value } : match
       )
     );
+  }
+
+  function updateMatchStatus(matchId: number, status: Match["status"]) {
+    if (!isAdmin) return;
+
+    setMatches((current) =>
+      current.map((match) =>
+        match.id === matchId ? { ...match, status } : match
+      )
+    );
+  }
+
+  async function saveAllScores() {
+    if (!isAdmin) {
+      alert("Only admins can save match scores.");
+      return;
+    }
+
+    const rows = matches
+      .filter(
+        (match) =>
+          match.scoreA.trim() !== "" ||
+          match.scoreB.trim() !== "" ||
+          match.status !== "Scheduled"
+      )
+      .map((match) => ({
+        match_id: match.id,
+        score_a: match.scoreA,
+        score_b: match.scoreB,
+        status: match.status,
+        updated_by: user.id,
+      }));
+
+    const { error } = await supabase
+      .from("match_scores")
+      .upsert(rows, { onConflict: "match_id" });
+
+    if (error) {
+      console.error("Score save error:", error.message);
+      setScoreSaveMessage(error.message);
+      return;
+    }
+
+    setScoreSaveMessage("Scores saved successfully.");
+    await fetchMatchScores();
+  }
+
+  async function resetAllScores() {
+    if (!isAdmin) {
+      alert("Only admins can reset match scores.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to reset all match scores and statuses? This will set every match back to blank and Scheduled."
+    );
+
+    if (!confirmed) return;
+
+    const rows = starterMatches.map((match) => ({
+      match_id: match.id,
+      score_a: "",
+      score_b: "",
+      status: "Scheduled",
+      updated_by: user.id,
+    }));
+
+    const { error } = await supabase
+      .from("match_scores")
+      .upsert(rows, { onConflict: "match_id" });
+
+    if (error) {
+      console.error("Score reset error:", error.message);
+      setScoreSaveMessage(error.message);
+      return;
+    }
+
+    setMatches(starterMatches);
+    setScoreSaveMessage("All scores have been reset.");
+    await fetchMatchScores();
+  }
+
+  async function deleteParticipant(participant: Participant) {
+    if (!isAdmin) {
+      alert("Only admins can delete participants.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete ${participant.name}? This will remove their picks from the leaderboard.`
+    );
+
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("participants")
+      .delete()
+      .eq("id", participant.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    if (myPick?.id === participant.id) {
+      setMyPick(null);
+      setParticipantName("");
+      setTeam1("");
+      setTeam2("");
+    }
+
+    await fetchParticipants();
   }
 
   function TeamDisplay({ teamName }: { teamName: string }) {
@@ -605,6 +758,8 @@ export default function Home() {
   }
 
   function BracketMatchCard({ match }: { match: Match }) {
+    const hasScore = match.scoreA.trim() !== "" && match.scoreB.trim() !== "";
+
     return (
       <div className="rounded-xl border bg-white shadow-sm">
         <div className="border-b bg-gray-50 px-4 py-2">
@@ -612,29 +767,44 @@ export default function Home() {
             Match {match.id} • {match.date}
           </p>
           <p className="text-xs text-gray-500">{match.time}</p>
+          {match.venue && (
+            <p className="mt-1 text-xs text-gray-400">{match.venue}</p>
+          )}
         </div>
 
         <div className="space-y-3 p-4">
           <div className="flex items-center justify-between gap-3">
             <TeamDisplay teamName={match.teamA} />
-            <input
-              className="w-12 rounded-lg border bg-white p-1 text-center font-bold"
-              value={match.scoreA}
-              onChange={(e) =>
-                updateMatchScore(match.id, "scoreA", e.target.value)
-              }
-            />
+            {isAdmin ? (
+              <input
+                className="w-12 rounded-lg border bg-white p-1 text-center font-bold"
+                value={match.scoreA}
+                onChange={(e) =>
+                  updateMatchScore(match.id, "scoreA", e.target.value)
+                }
+              />
+            ) : (
+              <span className="w-12 rounded-lg bg-gray-100 p-1 text-center font-bold">
+                {hasScore ? match.scoreA : "-"}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-3">
             <TeamDisplay teamName={match.teamB} />
-            <input
-              className="w-12 rounded-lg border bg-white p-1 text-center font-bold"
-              value={match.scoreB}
-              onChange={(e) =>
-                updateMatchScore(match.id, "scoreB", e.target.value)
-              }
-            />
+            {isAdmin ? (
+              <input
+                className="w-12 rounded-lg border bg-white p-1 text-center font-bold"
+                value={match.scoreB}
+                onChange={(e) =>
+                  updateMatchScore(match.id, "scoreB", e.target.value)
+                }
+              />
+            ) : (
+              <span className="w-12 rounded-lg bg-gray-100 p-1 text-center font-bold">
+                {hasScore ? match.scoreB : "-"}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -766,6 +936,8 @@ export default function Home() {
                 />
 
                 <Select
+                  instanceId="favorite-team-1"
+                  inputId="favorite-team-1"
                   isDisabled={!user || picksLocked}
                   placeholder="Favorite Team 1"
                   value={
@@ -798,6 +970,8 @@ export default function Home() {
                 />
 
                 <Select
+                  instanceId="favorite-team-2"
+                  inputId="favorite-team-2"
                   isDisabled={!user || picksLocked}
                   placeholder="Favorite Team 2"
                   value={
@@ -875,6 +1049,7 @@ export default function Home() {
                         <th className="p-3">Team 1</th>
                         <th className="p-3">Team 2</th>
                         <th className="p-3 text-right">Score</th>
+                        {isAdmin && <th className="p-3 text-right">Admin</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -891,6 +1066,17 @@ export default function Home() {
                           <td className="p-3 text-right text-lg font-bold">
                             {participant.score}
                           </td>
+                          {isAdmin && (
+                            <td className="p-3 text-right">
+                              <button
+                                type="button"
+                                onClick={() => deleteParticipant(participant)}
+                                className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -905,11 +1091,48 @@ export default function Home() {
           <>
 <section className="space-y-6">
               <div className="rounded-2xl bg-white p-6 shadow">
-                <h2 className="text-2xl font-bold">Matches</h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  All times are Pacific Time. Hover over a team to see
-                  participants who selected that team.
-                </p>
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold">Matches</h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      All times are Pacific Time. Hover over a team to see
+                      participants who selected that team.
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-gray-700">
+                      {isAdmin
+                        ? "Admin mode: you can edit scores and match status."
+                        : "Viewer mode: only the admin can update match scores."}
+                    </p>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="flex flex-col items-start gap-2 md:items-end">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={saveAllScores}
+                          className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800"
+                        >
+                          Save Scores
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={resetAllScores}
+                          className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700"
+                        >
+                          Reset Scores
+                        </button>
+                      </div>
+
+                      {scoreSaveMessage && (
+                        <p className="text-sm font-medium text-green-700">
+                          {scoreSaveMessage}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {Object.entries(groupedMatches).map(([date, dateMatches]) => (
@@ -932,35 +1155,71 @@ export default function Home() {
                         </div>
 
                         <div className="rounded-2xl bg-gray-100 px-6 py-4 text-center">
-                          <p className="text-sm font-semibold text-gray-500">
-                            {match.status}
-                          </p>
+                          {isAdmin ? (
+                            <select
+                              className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
+                              value={match.status}
+                              onChange={(e) =>
+                                updateMatchStatus(
+                                  match.id,
+                                  e.target.value as Match["status"]
+                                )
+                              }
+                            >
+                              <option value="Scheduled">Scheduled</option>
+                              <option value="Live">Live</option>
+                              <option value="Half Time">Half Time</option>
+                              <option value="Full Time">Full Time</option>
+                            </select>
+                          ) : (
+                            <p className="text-sm font-semibold text-gray-500">
+                              {match.status}
+                            </p>
+                          )}
+
                           <p className="mt-1 text-lg font-bold">{match.time}</p>
 
+                          {match.venue && (
+                            <p className="mt-1 text-xs font-medium text-gray-500">
+                              {match.venue}
+                            </p>
+                          )}
+
                           <div className="mt-3 flex items-center justify-center gap-3">
-                            <input
-                              className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
-                              value={match.scoreA}
-                              onChange={(e) =>
-                                updateMatchScore(
-                                  match.id,
-                                  "scoreA",
-                                  e.target.value
-                                )
-                              }
-                            />
-                            <span className="font-semibold text-gray-400">-</span>
-                            <input
-                              className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
-                              value={match.scoreB}
-                              onChange={(e) =>
-                                updateMatchScore(
-                                  match.id,
-                                  "scoreB",
-                                  e.target.value
-                                )
-                              }
-                            />
+                            {isAdmin ? (
+                              <>
+                                <input
+                                  className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                                  value={match.scoreA}
+                                  onChange={(e) =>
+                                    updateMatchScore(
+                                      match.id,
+                                      "scoreA",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                                <span className="font-semibold text-gray-400">-</span>
+                                <input
+                                  className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                                  value={match.scoreB}
+                                  onChange={(e) =>
+                                    updateMatchScore(
+                                      match.id,
+                                      "scoreB",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </>
+                            ) : (
+                              <div className="rounded-xl bg-white px-5 py-2 text-xl font-extrabold">
+                                {match.scoreA.trim() !== "" &&
+                                match.scoreB.trim() !== ""
+                                  ? `${match.scoreA} - ${match.scoreB}`
+                                  : "-"}
+                              </div>
+                            )}
                           </div>
                         </div>
 
