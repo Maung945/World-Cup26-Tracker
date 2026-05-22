@@ -98,6 +98,108 @@ const progressOptions: Team["status"][] = [
   "Eliminated",
 ];
 
+const flagMap: Record<string, string> = {
+  Mexico: "🇲🇽",
+  "South Africa": "🇿🇦",
+  "South Korea": "🇰🇷",
+  Czechia: "🇨🇿",
+  Canada: "🇨🇦",
+  "Bosnia and Herzegovina": "🇧🇦",
+  Qatar: "🇶🇦",
+  Switzerland: "🇨🇭",
+  Brazil: "🇧🇷",
+  Morocco: "🇲🇦",
+  Haiti: "🇭🇹",
+  Scotland: "🏴",
+  "United States": "🇺🇸",
+  Paraguay: "🇵🇾",
+  Australia: "🇦🇺",
+  Türkiye: "🇹🇷",
+  Germany: "🇩🇪",
+  Curaçao: "🇨🇼",
+  "Ivory Coast": "🇨🇮",
+  Ecuador: "🇪🇨",
+  Netherlands: "🇳🇱",
+  Japan: "🇯🇵",
+  Sweden: "🇸🇪",
+  Tunisia: "🇹🇳",
+  Belgium: "🇧🇪",
+  Egypt: "🇪🇬",
+  Iran: "🇮🇷",
+  "New Zealand": "🇳🇿",
+  Spain: "🇪🇸",
+  "Cape Verde": "🇨🇻",
+  "Saudi Arabia": "🇸🇦",
+  Uruguay: "🇺🇾",
+  France: "🇫🇷",
+  Senegal: "🇸🇳",
+  Iraq: "🇮🇶",
+  Norway: "🇳🇴",
+  Argentina: "🇦🇷",
+  Algeria: "🇩🇿",
+  Austria: "🇦🇹",
+  Jordan: "🇯🇴",
+  Portugal: "🇵🇹",
+  "DR Congo": "🇨🇩",
+  Uzbekistan: "🇺🇿",
+  Colombia: "🇨🇴",
+  England: "🏴",
+  Croatia: "🇭🇷",
+  Ghana: "🇬🇭",
+  Panama: "🇵🇦",
+};
+
+const shortCodeMap: Record<string, string> = {
+  Mexico: "MEX",
+  "South Africa": "RSA",
+  "South Korea": "KOR",
+  Czechia: "CZE",
+  Canada: "CAN",
+  "Bosnia and Herzegovina": "BIH",
+  Qatar: "QAT",
+  Switzerland: "SUI",
+  Brazil: "BRA",
+  Morocco: "MAR",
+  Haiti: "HAI",
+  Scotland: "SCO",
+  "United States": "USA",
+  Paraguay: "PAR",
+  Australia: "AUS",
+  Türkiye: "TUR",
+  Germany: "GER",
+  Curaçao: "CUW",
+  "Ivory Coast": "CIV",
+  Ecuador: "ECU",
+  Netherlands: "NED",
+  Japan: "JPN",
+  Sweden: "SWE",
+  Tunisia: "TUN",
+  Belgium: "BEL",
+  Egypt: "EGY",
+  Iran: "IRN",
+  "New Zealand": "NZL",
+  Spain: "ESP",
+  "Cape Verde": "CPV",
+  "Saudi Arabia": "KSA",
+  Uruguay: "URU",
+  France: "FRA",
+  Senegal: "SEN",
+  Iraq: "IRQ",
+  Norway: "NOR",
+  Argentina: "ARG",
+  Algeria: "ALG",
+  Austria: "AUT",
+  Jordan: "JOR",
+  Portugal: "POR",
+  "DR Congo": "COD",
+  Uzbekistan: "UZB",
+  Colombia: "COL",
+  England: "ENG",
+  Croatia: "CRO",
+  Ghana: "GHA",
+  Panama: "PAN",
+};
+
 export default function Home() {
   const [participantName, setParticipantName] = useState("");
   const [team1, setTeam1] = useState("");
@@ -249,47 +351,50 @@ export default function Home() {
           </section>
         )}
 
-        <section className="rounded-2xl bg-white p-6 shadow">
-          <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
-            <h2 className="text-xl font-semibold">Team Chart</h2>
-            <input
-              className="rounded-xl border p-3"
-              placeholder="Search team"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+        {activeTab === "standings" && (
+          <section className="rounded-2xl bg-white p-6 shadow">
+            <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+              <h2 className="text-xl font-semibold">Team Chart</h2>
+              <input
+                className="rounded-xl border p-3"
+                placeholder="Search team"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredTeams.map((team) => {
-              const names = selectedByTeam[team.name] || [];
-              return (
-                <div key={team.code} className="group relative rounded-2xl border bg-gray-50 p-4 shadow-sm hover:bg-white hover:shadow-md">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">Group {team.group}</p>
-                      <h3 className="font-bold">{team.name}</h3>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {filteredTeams.map((team) => {
+                const names = selectedByTeam[team.name] || [];
+                return (
+                  <div key={team.code} className="group relative rounded-2xl border bg-gray-50 p-4 shadow-sm hover:bg-white hover:shadow-md">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">Group {team.group}</p>
+                        <h3 className="font-bold">{team.name}</h3>
+                      </div>
+                      <span className="rounded-full bg-gray-200 px-3 py-1 text-sm">{names.length}</span>
                     </div>
-                    <span className="rounded-full bg-gray-200 px-3 py-1 text-sm">{names.length}</span>
-                  </div>
-                  <p className="mt-3 rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-800">{team.status}</p>
+                    <p className="mt-3 rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-800">{team.status}</p>
 
-                  <div className="absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-black p-4 text-white shadow-xl group-hover:block">
-                    <p className="font-semibold">Participants</p>
-                    {names.length === 0 ? (
-                      <p className="mt-2 text-sm text-gray-300">No one picked this team yet.</p>
-                    ) : (
-                      <ul className="mt-2 space-y-1 text-sm">
-                        {names.map((name, index) => <li key={`${name}-${index}`}>{index + 1}. {name}</li>)}
-                      </ul>
-                    )}
+                    <div className="absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-black p-4 text-white shadow-xl group-hover:block">
+                      <p className="font-semibold">Participants</p>
+                      {names.length === 0 ? (
+                        <p className="mt-2 text-sm text-gray-300">No one picked this team yet.</p>
+                      ) : (
+                        <ul className="mt-2 space-y-1 text-sm">
+                          {names.map((name, index) => <li key={`${name}-${index}`}>{index + 1}. {name}</li>)}
+                        </ul>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
+        {activeTab === "matches" && (
         <section className="rounded-2xl bg-white p-6 shadow">
           <h2 className="mb-4 text-xl font-semibold">Match Schedule and Scores</h2>
           <div className="overflow-x-auto">
@@ -311,11 +416,61 @@ export default function Home() {
                     <td className="p-3">{match.stage}</td>
                     <td className="p-3">{match.date}</td>
                     <td className="p-3">{match.time}</td>
-                    <td className="p-3 font-medium">{match.teamA}</td>
+                    <td className="p-3 font-medium">
+                      <div className="group relative flex w-fit cursor-pointer items-center gap-2">
+                        <span className="text-2xl">{flagMap[match.teamA]}</span>
+                        <span className="font-semibold">
+                          {shortCodeMap[match.teamA]}
+                        </span>
+
+                        <div className="absolute left-0 top-full z-30 mt-2 hidden min-w-52 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
+                          <p className="mb-2 text-xs font-semibold text-gray-300">
+                            Picked by
+                          </p>
+
+                          {(selectedByTeam[match.teamA] || []).length === 0 ? (
+                            <p className="text-sm text-gray-400">
+                              No participants yet
+                            </p>
+                          ) : (
+                            (selectedByTeam[match.teamA] || []).map((name, index) => (
+                              <p key={`${name}-${index}`} className="text-sm">
+                                {name}
+                              </p>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </td>
                     <td className="p-3">
                       <input className="w-16 rounded-lg border p-2" value={match.scoreA} onChange={(e) => updateMatchScore(match.id, "scoreA", e.target.value)} />
                     </td>
-                    <td className="p-3 font-medium">{match.teamB}</td>
+                    <td className="p-3 font-medium">
+                      <div className="group relative flex w-fit cursor-pointer items-center gap-2">
+                        <span className="text-2xl">{flagMap[match.teamB]}</span>
+                        <span className="font-semibold">
+                          {shortCodeMap[match.teamB]}
+                        </span>
+
+                        <div className="absolute left-0 top-full z-30 mt-2 hidden min-w-52 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
+                          <p className="mb-2 text-xs font-semibold text-gray-300">
+                            Picked by
+                          </p>
+
+                          {(selectedByTeam[match.teamB] || []).length === 0 ? (
+                            <p className="text-sm text-gray-400">
+                              No participants yet
+                            </p>
+                          ) : (
+                            (selectedByTeam[match.teamB] || []).map((name, index) => (
+                              <p key={`${name}-${index}`} className="text-sm">
+                                {name}
+                              </p>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </td>
                     <td className="p-3">
                       <input className="w-16 rounded-lg border p-2" value={match.scoreB} onChange={(e) => updateMatchScore(match.id, "scoreB", e.target.value)} />
                     </td>
@@ -325,6 +480,7 @@ export default function Home() {
             </table>
           </div>
         </section>
+        )}
         
         {activeTab === "bracket" && (
           <section className="rounded-2xl bg-white p-6 shadow">
