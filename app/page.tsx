@@ -106,7 +106,10 @@ export default function Home() {
   const [teamData, setTeamData] = useState<Team[]>(teams);
   const [matches, setMatches] = useState<Match[]>(starterMatches);
   const [search, setSearch] = useState("");
-  
+  const [activeTab, setActiveTab] = useState<
+    "matches" | "bracket" | "standings"
+  >("matches");
+
   React.useEffect(() => {
     fetchParticipants();
   }, []);
@@ -181,35 +184,70 @@ export default function Home() {
     <main className="min-h-screen bg-gray-100 p-6 text-gray-900">
       <section className="mx-auto max-w-7xl space-y-6">
         <header className="rounded-2xl bg-white p-6 shadow">
+          <section className="rounded-2xl bg-black text-white shadow overflow-hidden">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab("matches")}
+                className={`flex-1 p-4 text-sm font-semibold transition ${activeTab === "matches"
+                    ? "border-b-4 border-white bg-gray-900"
+                    : "bg-black hover:bg-gray-800"
+                  }`}
+              >
+                MATCHES
+              </button>
+
+              <button
+                onClick={() => setActiveTab("bracket")}
+                className={`flex-1 p-4 text-sm font-semibold transition ${activeTab === "bracket"
+                    ? "border-b-4 border-white bg-gray-900"
+                    : "bg-black hover:bg-gray-800"
+                  }`}
+              >
+                BRACKET
+              </button>
+
+              <button
+                onClick={() => setActiveTab("standings")}
+                className={`flex-1 p-4 text-sm font-semibold transition ${activeTab === "standings"
+                    ? "border-b-4 border-white bg-gray-900"
+                    : "bg-black hover:bg-gray-800"
+                  }`}
+              >
+                STANDINGS
+              </button>
+            </div>
+          </section>
           <h1 className="text-3xl font-bold">World Cup 2026 Team Picker</h1>
           <p className="mt-2 text-gray-600">
             Participants choose two favorite teams. Hover over any team to see who picked it. Update scores and team progress from the admin sections below.
           </p>
         </header>
 
-        <section className="rounded-2xl bg-white p-6 shadow">
-          <h2 className="mb-4 text-xl font-semibold">Add Participant</h2>
-          <form onSubmit={addParticipant} className="grid gap-4 md:grid-cols-4">
-            <input
-              className="rounded-xl border p-3"
-              placeholder="Participant name"
-              value={participantName}
-              onChange={(e) => setParticipantName(e.target.value)}
-            />
-            <select className="rounded-xl border p-3" value={team1} onChange={(e) => setTeam1(e.target.value)}>
-              <option value="">Favorite Team 1</option>
-              {teamData.map((team) => <option key={team.code} value={team.name}>{team.name}</option>)}
-            </select>
-            <select className="rounded-xl border p-3" value={team2} onChange={(e) => setTeam2(e.target.value)}>
-              <option value="">Favorite Team 2</option>
-              {teamData.map((team) => <option key={team.code} value={team.name}>{team.name}</option>)}
-            </select>
-            <button className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800">
-              Submit Picks
-            </button>
-          </form>
-          {team1 && team2 && team1 === team2 && <p className="mt-3 text-red-600">Please choose two different teams.</p>}
-        </section>
+        {activeTab === "matches" && (
+          <section className="rounded-2xl bg-white p-6 shadow">
+            <h2 className="mb-4 text-xl font-semibold">Add Participant</h2>
+            <form onSubmit={addParticipant} className="grid gap-4 md:grid-cols-4">
+              <input
+                className="rounded-xl border p-3"
+                placeholder="Participant name"
+                value={participantName}
+                onChange={(e) => setParticipantName(e.target.value)}
+              />
+              <select className="rounded-xl border p-3" value={team1} onChange={(e) => setTeam1(e.target.value)}>
+                <option value="">Favorite Team 1</option>
+                {teamData.map((team) => <option key={team.code} value={team.name}>{team.name}</option>)}
+              </select>
+              <select className="rounded-xl border p-3" value={team2} onChange={(e) => setTeam2(e.target.value)}>
+                <option value="">Favorite Team 2</option>
+                {teamData.map((team) => <option key={team.code} value={team.name}>{team.name}</option>)}
+              </select>
+              <button className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800">
+                Submit Picks
+              </button>
+            </form>
+            {team1 && team2 && team1 === team2 && <p className="mt-3 text-red-600">Please choose two different teams.</p>}
+          </section>
+        )}
 
         <section className="rounded-2xl bg-white p-6 shadow">
           <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
@@ -287,48 +325,52 @@ export default function Home() {
             </table>
           </div>
         </section>
+        
+        {activeTab === "bracket" && (
+          <section className="rounded-2xl bg-white p-6 shadow">
+            <h2 className="mb-4 text-xl font-semibold">Update Team Progress</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {teamData.map((team) => (
+                <div key={team.code} className="flex items-center justify-between gap-3 rounded-xl border p-3">
+                  <span className="font-medium">{team.name}</span>
+                  <select className="rounded-lg border p-2" value={team.status} onChange={(e) => updateTeamStatus(team.name, e.target.value as Team["status"])}>
+                    {progressOptions.map((status) => <option key={status} value={status}>{status}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
-        <section className="rounded-2xl bg-white p-6 shadow">
-          <h2 className="mb-4 text-xl font-semibold">Update Team Progress</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {teamData.map((team) => (
-              <div key={team.code} className="flex items-center justify-between gap-3 rounded-xl border p-3">
-                <span className="font-medium">{team.name}</span>
-                <select className="rounded-lg border p-2" value={team.status} onChange={(e) => updateTeamStatus(team.name, e.target.value as Team["status"])}>
-                  {progressOptions.map((status) => <option key={status} value={status}>{status}</option>)}
-                </select>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white p-6 shadow">
-          <h2 className="mb-4 text-xl font-semibold">Participant Picks</h2>
-          {participants.length === 0 ? (
-            <p className="text-gray-500">No participants yet.</p>
-          ) : (
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="p-3">#</th>
-                  <th className="p-3">Name</th>
-                  <th className="p-3">Team 1</th>
-                  <th className="p-3">Team 2</th>
-                </tr>
-              </thead>
-              <tbody>
-                {participants.map((participant, index) => (
-                  <tr key={participant.id} className="border-b">
-                    <td className="p-3">{index + 1}</td>
-                    <td className="p-3">{participant.name}</td>
-                    <td className="p-3">{participant.team1}</td>
-                    <td className="p-3">{participant.team2}</td>
+        {activeTab === "standings" && (
+          <section className="rounded-2xl bg-white p-6 shadow">
+            <h2 className="mb-4 text-xl font-semibold">Participant Picks</h2>
+            {participants.length === 0 ? (
+              <p className="text-gray-500">No participants yet.</p>
+            ) : (
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="p-3">#</th>
+                    <th className="p-3">Name</th>
+                    <th className="p-3">Team 1</th>
+                    <th className="p-3">Team 2</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
+                </thead>
+                <tbody>
+                  {participants.map((participant, index) => (
+                    <tr key={participant.id} className="border-b">
+                      <td className="p-3">{index + 1}</td>
+                      <td className="p-3">{participant.name}</td>
+                      <td className="p-3">{participant.team1}</td>
+                      <td className="p-3">{participant.team2}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </section>
+        )}
       </section>
     </main>
   );
