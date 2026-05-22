@@ -91,54 +91,54 @@ const teams: Team[] = [
 ];
 
 const flagMap: Record<string, string> = {
-  Mexico: "🇲🇽",
-  "South Africa": "🇿🇦",
-  "South Korea": "🇰🇷",
-  Czechia: "🇨🇿",
-  Canada: "🇨🇦",
-  "Bosnia and Herzegovina": "🇧🇦",
-  Qatar: "🇶🇦",
-  Switzerland: "🇨🇭",
-  Brazil: "🇧🇷",
-  Morocco: "🇲🇦",
-  Haiti: "🇭🇹",
+  Mexico: "/flags/mexico.png",
+  "South Africa": "/flags/south-africa.png",
+  "South Korea": "/flags/south-korea.png",
+  Czechia: "/flags/czechia.png",
+  Canada: "/flags/canada.png",
+  "Bosnia and Herzegovina": "/flags/bosnia-and-herzegovina.png",
+  Qatar: "/flags/qatar.png",
+  Switzerland: "/flags/switzerland.png",
+  Brazil: "/flags/brazil.png",
+  Morocco: "/flags/morocco.png",
+  Haiti: "/flags/haiti.png",
   Scotland: "/flags/scotland.png",
-  "United States": "🇺🇸",
-  Paraguay: "🇵🇾",
-  Australia: "🇦🇺",
-  Türkiye: "🇹🇷",
-  Germany: "🇩🇪",
-  Curaçao: "🇨🇼",
-  "Ivory Coast": "🇨🇮",
-  Ecuador: "🇪🇨",
-  Netherlands: "🇳🇱",
-  Japan: "🇯🇵",
-  Sweden: "🇸🇪",
-  Tunisia: "🇹🇳",
-  Belgium: "🇧🇪",
-  Egypt: "🇪🇬",
-  Iran: "🇮🇷",
-  "New Zealand": "🇳🇿",
-  Spain: "🇪🇸",
-  "Cape Verde": "🇨🇻",
-  "Saudi Arabia": "🇸🇦",
-  Uruguay: "🇺🇾",
-  France: "🇫🇷",
-  Senegal: "🇸🇳",
-  Iraq: "🇮🇶",
-  Norway: "🇳🇴",
-  Argentina: "🇦🇷",
-  Algeria: "🇩🇿",
-  Austria: "🇦🇹",
-  Jordan: "🇯🇴",
-  Portugal: "🇵🇹",
-  "DR Congo": "🇨🇩",
-  Uzbekistan: "🇺🇿",
-  Colombia: "🇨🇴",
+  "United States": "/flags/usa.png",
+  Paraguay: "/flags/paraguay.png",
+  Australia: "/flags/australia.png",
+  Türkiye: "/flags/turkey.png",
+  Germany: "/flags/germany.png",
+  Curaçao: "/flags/curaçao.png",
+  "Ivory Coast": "/flags/ivory-coast.png",
+  Ecuador: "/flags/ecuador.png",
+  Netherlands: "/flags/netherland.png",
+  Japan: "/flags/japan.png",
+  Sweden: "/flags/sweden.png",
+  Tunisia: "/flags/tunisia.png",
+  Belgium: "/flags/belgium.png",
+  Egypt: "/flags/egypt.png",
+  Iran: "/flags/iran.png",
+  "New Zealand": "/flags/new-zealand.png",
+  Spain: "/flags/spain.png",
+  "Cape Verde": "/flags/cape-verde.png",
+  "Saudi Arabia": "/flags/saudi-arabia.png",
+  Uruguay: "/flags/uruguay.png",
+  France: "/flags/france.png",
+  Senegal: "/flags/senegal.png",
+  Iraq: "/flags/iraq.png",
+  Norway: "/flags/norway.png",
+  Argentina: "/flags/argentina.png",
+  Algeria: "/flags/algeria.png",
+  Austria: "/flags/austria.png",
+  Jordan: "/flags/jordan.png",
+  Portugal: "/flags/portugal.png",
+  "DR Congo": "/flags/dr-congo.png",
+  Uzbekistan: "/flags/uzbekistan.png",
+  Colombia: "/flags/colombia.png",
   England: "/flags/england.png",
-  Croatia: "🇭🇷",
-  Ghana: "🇬🇭",
-  Panama: "🇵🇦",
+  Croatia: "/flags/croatia.png",
+  Ghana: "/flags/ghana.png",
+  Panama: "/flags/panama.png",
 };
 
 const shortCodeMap: Record<string, string> = {
@@ -544,15 +544,11 @@ export default function Home() {
 
     return (
       <div className="group relative flex w-fit items-center gap-2">
-        {flagMap[teamName]?.startsWith("/") ? (
-          <img
-            src={flagMap[teamName]}
-            alt={`${teamName} flag`}
-            className="h-6 w-6 rounded-sm object-cover"
-          />
-        ) : (
-          <span className="text-2xl">{flagMap[teamName] || "🏆"}</span>
-        )}
+        <img
+          src={flagMap[teamName] || "/flags/world-cup.png"}
+          alt={`${teamName} flag`}
+          className="h-6 w-8 rounded-sm object-cover"
+        />
         <span className="font-semibold">
           {teamName}
         </span>
