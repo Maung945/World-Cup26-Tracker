@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import React, { useMemo, useState } from "react";
+import Select from "react-select";
 
 type Team = {
   code: string;
@@ -94,7 +95,7 @@ const flagMap: Record<string, string> = {
   Brazil: "🇧🇷",
   Morocco: "🇲🇦",
   Haiti: "🇭🇹",
-  Scotland: "🏴",
+  Scotland: "/flags/scotland.png",
   "United States": "🇺🇸",
   Paraguay: "🇵🇾",
   Australia: "🇦🇺",
@@ -127,7 +128,7 @@ const flagMap: Record<string, string> = {
   "DR Congo": "🇨🇩",
   Uzbekistan: "🇺🇿",
   Colombia: "🇨🇴",
-  England: "🏴",
+  England: "/flags/england.png",
   Croatia: "🇭🇷",
   Ghana: "🇬🇭",
   Panama: "🇵🇦",
@@ -317,6 +318,14 @@ const progressOptions: Team["status"][] = [
   "Eliminated",
 ];
 
+function flagText(teamName: string) {
+  if (teamName === "England") return "🏴 England";
+  if (teamName === "Scotland") return "🏴 Scotland";
+
+  return `${flagMap[teamName] || "🏆"} ${teamName}`;
+}
+
+
 export default function Home() {
   const [participantName, setParticipantName] = useState("");
   const [team1, setTeam1] = useState("");
@@ -421,7 +430,15 @@ export default function Home() {
 
     return (
       <div className="group relative flex w-fit items-center gap-2">
-        <span className="text-2xl">{flagMap[teamName] || "🏆"}</span>
+        {flagMap[teamName]?.startsWith("/") ? (
+          <img
+            src={flagMap[teamName]}
+            alt={`${teamName} flag`}
+            className="h-6 w-6 rounded-sm object-cover"
+          />
+        ) : (
+          <span className="text-2xl">{flagMap[teamName] || "🏆"}</span>
+        )}
         <span className="font-semibold">
           {teamName}
         </span>
@@ -448,6 +465,44 @@ export default function Home() {
       </div>
     );
   }
+
+  function BracketMatchCard({ match }: { match: Match }) {
+    return (
+      <div className="rounded-xl border bg-white shadow-sm">
+        <div className="border-b bg-gray-50 px-4 py-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Match {match.id} • {match.date}
+          </p>
+          <p className="text-xs text-gray-500">{match.time}</p>
+        </div>
+
+        <div className="space-y-3 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <TeamDisplay teamName={match.teamA} />
+            <input
+              className="w-12 rounded-lg border bg-white p-1 text-center font-bold"
+              value={match.scoreA}
+              onChange={(e) =>
+                updateMatchScore(match.id, "scoreA", e.target.value)
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <TeamDisplay teamName={match.teamB} />
+            <input
+              className="w-12 rounded-lg border bg-white p-1 text-center font-bold"
+              value={match.scoreB}
+              onChange={(e) =>
+                updateMatchScore(match.id, "scoreB", e.target.value)
+              }
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <main className="min-h-screen bg-gray-100 p-6 text-gray-900">
@@ -500,9 +555,11 @@ export default function Home() {
                   onChange={(e) => setTeam1(e.target.value)}
                 >
                   <option value="">Favorite Team 1</option>
-                  {teamData.map((team) => (
+                  {[...teamData]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((team) => (
                     <option key={team.code} value={team.name}>
-                      {flagMap[team.name]} {team.name}
+                      {flagText(team.name)}
                     </option>
                   ))}
                 </select>
@@ -512,9 +569,11 @@ export default function Home() {
                   onChange={(e) => setTeam2(e.target.value)}
                 >
                   <option value="">Favorite Team 2</option>
-                  {teamData.map((team) => (
+                  {[...teamData]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((team) => (
                     <option key={team.code} value={team.name}>
-                      {flagMap[team.name]} {team.name}
+                      {flagText(team.name)}
                     </option>
                   ))}
                 </select>
@@ -530,11 +589,43 @@ export default function Home() {
               )}
             </section>
 
+            <section className="rounded-2xl bg-white p-6 shadow">
+              <h2 className="mb-4 text-xl font-semibold">Participant Picks</h2>
+              {participants.length === 0 ? (
+                <p className="text-gray-500">No participants yet.</p>
+              ) : (
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="p-3">#</th>
+                      <th className="p-3">Name</th>
+                      <th className="p-3">Team 1</th>
+                      <th className="p-3">Team 2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {participants.map((participant, index) => (
+                      <tr key={participant.id} className="border-b">
+                        <td className="p-3">{index + 1}</td>
+                        <td className="p-3">{participant.name}</td>
+                        <td className="p-3">
+                          <TeamDisplay teamName={participant.team1} />
+                        </td>
+                        <td className="p-3">
+                          <TeamDisplay teamName={participant.team2} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+
             <section className="space-y-6">
               <div className="rounded-2xl bg-white p-6 shadow">
                 <h2 className="text-2xl font-bold">Matches</h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  All times are Eastern Time. Hover over a team to see
+                  All times are Pacific Time. Hover over a team to see
                   participants who selected that team.
                 </p>
               </div>
@@ -606,36 +697,153 @@ export default function Home() {
           </>
         )}
 
-        {activeTab === "bracket" && (
-          <section className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold">Update Team Progress</h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {teamData.map((team) => (
+        {activeTab === "bracket" && (() => {
+          const cardWidth = 320;
+          const cardHeight = 150;
+          const rowGap = 42;
+          const step = cardHeight + rowGap;
+          const colGap = 140;
+
+          const rounds = [
+            { title: "Round of 32", stage: "Round of 32" },
+            { title: "Round of 16", stage: "Round of 16" },
+            { title: "Quarter Finals", stage: "Quarter Final" },
+            { title: "Semi Finals", stage: "Semi Final" },
+            { title: "Final", stage: "Final" },
+          ];
+
+          const bracketRounds = rounds.map((round) => ({
+            ...round,
+            matches: matches.filter((match) => match.stage === round.stage),
+          }));
+
+          const topFor = (roundIndex: number, index: number) => {
+            const spacingMultiplier = Math.pow(2, roundIndex);
+            const offset = (spacingMultiplier - 1) / 2;
+            return (index * spacingMultiplier + offset) * step;
+          };
+
+          const centerY = (roundIndex: number, index: number) =>
+            topFor(roundIndex, index) + cardHeight / 2;
+
+          const leftFor = (roundIndex: number) =>
+            roundIndex * (cardWidth + colGap);
+
+          const bracketHeight = 16 * step;
+
+          return (
+            <section className="space-y-6">
+              <div className="rounded-2xl bg-white p-6 shadow">
+                <h2 className="text-2xl font-bold">Knockout Bracket</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Winners advance from each match into the next round.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto rounded-2xl bg-white p-6 shadow">
                 <div
-                  key={team.code}
-                  className="flex items-center justify-between gap-3 rounded-xl border p-3"
+                  className="relative"
+                  style={{
+                    width: rounds.length * cardWidth + (rounds.length - 1) * colGap,
+                    height: bracketHeight,
+                  }}
                 >
-                  <span className="font-medium">
-                    {flagMap[team.name]} {team.name}
-                  </span>
-                  <select
-                    className="rounded-lg border p-2"
-                    value={team.status}
-                    onChange={(e) =>
-                      updateTeamStatus(team.name, e.target.value as Team["status"])
-                    }
+                  <svg
+                    className="pointer-events-none absolute left-0 top-0 z-0"
+                    width={rounds.length * cardWidth + (rounds.length - 1) * colGap}
+                    height={bracketHeight}
                   >
-                    {progressOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
+                    {bracketRounds.slice(0, -1).flatMap((round, roundIndex) => {
+                      const nextRound = bracketRounds[roundIndex + 1];
+
+                      return nextRound.matches.map((_, nextIndex) => {
+                        const sourceIndexA = nextIndex * 2;
+                        const sourceIndexB = nextIndex * 2 + 1;
+
+                        const sourceYA = centerY(roundIndex, sourceIndexA);
+                        const sourceYB = centerY(roundIndex, sourceIndexB);
+                        const targetY = centerY(roundIndex + 1, nextIndex);
+
+                        const sourceX = leftFor(roundIndex) + cardWidth;
+                        const targetX = leftFor(roundIndex + 1);
+                        const midX = sourceX + colGap / 2;
+
+                        return (
+                          <g key={`${round.stage}-${nextIndex}`}>
+                            <path
+                              d={`
+                        M ${sourceX} ${sourceYA}
+                        H ${midX}
+                        V ${sourceYB}
+                        H ${sourceX}
+                      `}
+                              fill="none"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                            />
+
+                            <path
+                              d={`
+                        M ${midX} ${targetY}
+                        H ${targetX}
+                      `}
+                              fill="none"
+                              stroke="#9CA3AF"
+                              strokeWidth="2"
+                            />
+                          </g>
+                        );
+                      });
+                    })}
+                  </svg>
+
+                  {bracketRounds.map((round, roundIndex) => (
+                    <div key={round.stage}>
+                      <h3
+                        className="absolute top-0 z-10 text-center text-sm font-bold uppercase tracking-wide text-gray-500"
+                        style={{
+                          left: leftFor(roundIndex),
+                          width: cardWidth,
+                        }}
+                      >
+                        {round.title}
+                      </h3>
+
+                      {round.matches.map((match, matchIndex) => (
+                        <div
+                          key={match.id}
+                          className="absolute z-10"
+                          style={{
+                            left: leftFor(roundIndex),
+                            top: topFor(roundIndex, matchIndex) + 36,
+                            width: cardWidth,
+                            minHeight: cardHeight,
+                          }}
+                        >
+                          <BracketMatchCard match={match} />
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+
+                <div className="mt-10 rounded-2xl border bg-gray-50 p-4">
+                  <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-500">
+                    Bronze Final
+                  </h3>
+
+                  <div className="max-w-sm">
+                    {matches
+                      .filter((match) => match.stage === "Bronze Final")
+                      .map((match) => (
+                        <BracketMatchCard key={match.id} match={match} />
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        })()}
 
         {activeTab === "standings" && (
           <>
@@ -664,7 +872,7 @@ export default function Home() {
                             Group {team.group}
                           </p>
                           <h3 className="font-bold">
-                            {flagMap[team.name]} {team.name}
+                            <TeamDisplay teamName={team.name} />
                           </h3>
                         </div>
                         <span className="rounded-full bg-gray-200 px-3 py-1 text-sm">
@@ -697,37 +905,7 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-2xl bg-white p-6 shadow">
-              <h2 className="mb-4 text-xl font-semibold">Participant Picks</h2>
-              {participants.length === 0 ? (
-                <p className="text-gray-500">No participants yet.</p>
-              ) : (
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="p-3">#</th>
-                      <th className="p-3">Name</th>
-                      <th className="p-3">Team 1</th>
-                      <th className="p-3">Team 2</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {participants.map((participant, index) => (
-                      <tr key={participant.id} className="border-b">
-                        <td className="p-3">{index + 1}</td>
-                        <td className="p-3">{participant.name}</td>
-                        <td className="p-3">
-                          {flagMap[participant.team1]} {participant.team1}
-                        </td>
-                        <td className="p-3">
-                          {flagMap[participant.team2]} {participant.team2}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </section>
+
           </>
         )}
       </section>
