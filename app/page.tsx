@@ -1,4 +1,5 @@
 "use client";
+
 import { supabase } from "@/lib/supabase";
 import React, { useMemo, useState } from "react";
 
@@ -6,14 +7,15 @@ type Team = {
   code: string;
   name: string;
   group: string;
-  status: "Group Stage" | "Round of 32" | "Round of 16" | "Quarter Final" | "Semi Final" | "Final" | "Champion" | "Eliminated";
-};
-
-type Participant = {
-  id: number;
-  name: string;
-  team1: string;
-  team2: string;
+  status:
+    | "Group Stage"
+    | "Round of 32"
+    | "Round of 16"
+    | "Quarter Final"
+    | "Semi Final"
+    | "Final"
+    | "Champion"
+    | "Eliminated";
 };
 
 type Match = {
@@ -25,6 +27,8 @@ type Match = {
   teamB: string;
   scoreA: string;
   scoreB: string;
+  status: "Scheduled" | "Live" | "Half Time" | "Full Time";
+  venue?: string;
 };
 
 const teams: Team[] = [
@@ -76,26 +80,6 @@ const teams: Team[] = [
   { code: "CRO", name: "Croatia", group: "L", status: "Group Stage" },
   { code: "GHA", name: "Ghana", group: "L", status: "Group Stage" },
   { code: "PAN", name: "Panama", group: "L", status: "Group Stage" },
-];
-
-const starterMatches: Match[] = [
-  { id: 1, stage: "Group A", date: "Thu Jun 11", time: "3:00 PM ET", teamA: "Mexico", teamB: "South Africa", scoreA: "", scoreB: "" },
-  { id: 2, stage: "Group A", date: "Thu Jun 11", time: "10:00 PM ET", teamA: "South Korea", teamB: "Czechia", scoreA: "", scoreB: "" },
-  { id: 3, stage: "Group B", date: "Fri Jun 12", time: "3:00 PM ET", teamA: "Canada", teamB: "Qatar", scoreA: "", scoreB: "" },
-  { id: 4, stage: "Group D", date: "Fri Jun 12", time: "9:00 PM ET", teamA: "United States", teamB: "Paraguay", scoreA: "", scoreB: "" },
-  { id: 5, stage: "Group C", date: "Sat Jun 13", time: "12:00 PM ET", teamA: "Brazil", teamB: "Morocco", scoreA: "", scoreB: "" },
-  { id: 6, stage: "Group E", date: "Sat Jun 13", time: "3:00 PM ET", teamA: "Germany", teamB: "Curaçao", scoreA: "", scoreB: "" },
-];
-
-const progressOptions: Team["status"][] = [
-  "Group Stage",
-  "Round of 32",
-  "Round of 16",
-  "Quarter Final",
-  "Semi Final",
-  "Final",
-  "Champion",
-  "Eliminated",
 ];
 
 const flagMap: Record<string, string> = {
@@ -200,6 +184,139 @@ const shortCodeMap: Record<string, string> = {
   Panama: "PAN",
 };
 
+const starterMatches: Match[] = [
+  { id: 1, stage: "Group A", date: "Thu, Jun 11, 2026", time: "3:00 PM PDT", teamA: "Mexico", teamB: "South Africa", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 2, stage: "Group A", date: "Thu, Jun 11, 2026", time: "10:00 PM PDT", teamA: "South Korea", teamB: "Czechia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 3, stage: "Group B", date: "Fri, Jun 12, 2026", time: "3:00 PM PDT", teamA: "Canada", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 4, stage: "Group D", date: "Fri, Jun 12, 2026", time: "9:00 PM PDT", teamA: "United States", teamB: "Paraguay", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 5, stage: "Group C", date: "Sat, Jun 13, 2026", time: "12:00 PM PDT", teamA: "Brazil", teamB: "Morocco", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 6, stage: "Group D", date: "Sat, Jun 13, 2026", time: "6:00 PM PDT", teamA: "Australia", teamB: "Türkiye", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 7, stage: "Group C", date: "Sat, Jun 13, 2026", time: "9:00 PM PDT", teamA: "Haiti", teamB: "Scotland", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 8, stage: "Group B", date: "Sat, Jun 13, 2026", time: "3:00 PM PDT", teamA: "Switzerland", teamB: "Bosnia and Herzegovina", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 9, stage: "Group E", date: "Sun, Jun 14, 2026", time: "1:00 PM PDT", teamA: "Germany", teamB: "Curaçao", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 10, stage: "Group F", date: "Sun, Jun 14, 2026", time: "4:00 PM PDT", teamA: "Netherlands", teamB: "Japan", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 11, stage: "Group E", date: "Sun, Jun 14, 2026", time: "7:00 PM PDT", teamA: "Ivory Coast", teamB: "Ecuador", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 12, stage: "Group F", date: "Sun, Jun 14, 2026", time: "10:00 PM PDT", teamA: "Sweden", teamB: "Tunisia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 13, stage: "Group H", date: "Mon, Jun 15, 2026", time: "6:00 PM PDT", teamA: "Saudi Arabia", teamB: "Uruguay", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 14, stage: "Group H", date: "Mon, Jun 15, 2026", time: "12:00 PM PDT", teamA: "Spain", teamB: "Cape Verde", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 15, stage: "Group G", date: "Mon, Jun 15, 2026", time: "9:00 PM PDT", teamA: "Iran", teamB: "New Zealand", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 16, stage: "Group G", date: "Mon, Jun 15, 2026", time: "3:00 PM PDT", teamA: "Belgium", teamB: "Egypt", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 17, stage: "Group I", date: "Tue, Jun 16, 2026", time: "3:00 PM PDT", teamA: "France", teamB: "Senegal", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 18, stage: "Group I", date: "Tue, Jun 16, 2026", time: "6:00 PM PDT", teamA: "Iraq", teamB: "Norway", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 19, stage: "Group J", date: "Tue, Jun 16, 2026", time: "9:00 PM PDT", teamA: "Argentina", teamB: "Algeria", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 20, stage: "Group J", date: "Tue, Jun 16, 2026", time: "12:00 AM PDT", teamA: "Austria", teamB: "Jordan", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 21, stage: "Group L", date: "Wed, Jun 17, 2026", time: "7:00 PM PDT", teamA: "Ghana", teamB: "Panama", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 22, stage: "Group L", date: "Wed, Jun 17, 2026", time: "4:00 PM PDT", teamA: "England", teamB: "Croatia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 23, stage: "Group K", date: "Wed, Jun 17, 2026", time: "1:00 PM PDT", teamA: "Portugal", teamB: "DR Congo", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 24, stage: "Group K", date: "Wed, Jun 17, 2026", time: "10:00 PM PDT", teamA: "Uzbekistan", teamB: "Colombia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 25, stage: "Group A", date: "Thu, Jun 18, 2026", time: "12:00 PM PDT", teamA: "Czechia", teamB: "South Africa", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 26, stage: "Group B", date: "Thu, Jun 18, 2026", time: "3:00 PM PDT", teamA: "Switzerland", teamB: "Bosnia and Herzegovina", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 27, stage: "Group B", date: "Thu, Jun 18, 2026", time: "6:00 PM PDT", teamA: "Canada", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 28, stage: "Group A", date: "Thu, Jun 18, 2026", time: "9:00 PM PDT", teamA: "Mexico", teamB: "South Korea", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 29, stage: "Group C", date: "Fri, Jun 19, 2026", time: "8:30 PM PDT", teamA: "Brazil", teamB: "Haiti", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 30, stage: "Group C", date: "Fri, Jun 19, 2026", time: "6:00 PM PDT", teamA: "Scotland", teamB: "Morocco", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 31, stage: "Group D", date: "Fri, Jun 19, 2026", time: "11:00 PM PDT", teamA: "Türkiye", teamB: "United States", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 32, stage: "Group D", date: "Fri, Jun 19, 2026", time: "3:00 PM PDT", teamA: "United States", teamB: "Australia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 33, stage: "Group E", date: "Sat, Jun 20, 2026", time: "4:00 PM PDT", teamA: "Germany", teamB: "Ivory Coast", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 34, stage: "Group E", date: "Sat, Jun 20, 2026", time: "8:00 PM PDT", teamA: "Ecuador", teamB: "Curaçao", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 35, stage: "Group F", date: "Sat, Jun 20, 2026", time: "1:00 PM PDT", teamA: "Netherlands", teamB: "Sweden", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 36, stage: "Group F", date: "Sat, Jun 20, 2026", time: "12:00 AM PDT", teamA: "Tunisia", teamB: "Japan", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 37, stage: "Group H", date: "Sun, Jun 21, 2026", time: "6:00 PM PDT", teamA: "Uruguay", teamB: "Cape Verde", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 38, stage: "Group H", date: "Sun, Jun 21, 2026", time: "12:00 PM PDT", teamA: "Spain", teamB: "Saudi Arabia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 39, stage: "Group G", date: "Sun, Jun 21, 2026", time: "3:00 PM PDT", teamA: "Belgium", teamB: "Iran", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 40, stage: "Group G", date: "Sun, Jun 21, 2026", time: "9:00 PM PDT", teamA: "New Zealand", teamB: "Egypt", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 41, stage: "Group I", date: "Mon, Jun 22, 2026", time: "8:00 PM PDT", teamA: "Norway", teamB: "Senegal", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 42, stage: "Group I", date: "Mon, Jun 22, 2026", time: "5:00 PM PDT", teamA: "France", teamB: "Iraq", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 43, stage: "Group J", date: "Mon, Jun 22, 2026", time: "1:00 PM PDT", teamA: "Argentina", teamB: "Austria", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 44, stage: "Group J", date: "Mon, Jun 22, 2026", time: "11:00 PM PDT", teamA: "Jordan", teamB: "Algeria", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 45, stage: "Group L", date: "Tue, Jun 23, 2026", time: "4:00 PM PDT", teamA: "England", teamB: "Ghana", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 46, stage: "Group L", date: "Tue, Jun 23, 2026", time: "7:00 PM PDT", teamA: "Panama", teamB: "Croatia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 47, stage: "Group K", date: "Tue, Jun 23, 2026", time: "1:00 PM PDT", teamA: "Portugal", teamB: "Uzbekistan", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 48, stage: "Group K", date: "Tue, Jun 23, 2026", time: "10:00 PM PDT", teamA: "Colombia", teamB: "DR Congo", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 49, stage: "Group A", date: "Wed, Jun 24, 2026", time: "12:00 PM PDT", teamA: "Mexico", teamB: "Czechia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 50, stage: "Group A", date: "Wed, Jun 24, 2026", time: "3:00 PM PDT", teamA: "South Africa", teamB: "South Korea", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 51, stage: "Group B", date: "Wed, Jun 24, 2026", time: "6:00 PM PDT", teamA: "Canada", teamB: "Switzerland", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 52, stage: "Group B", date: "Wed, Jun 24, 2026", time: "9:00 PM PDT", teamA: "Bosnia and Herzegovina", teamB: "Qatar", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 53, stage: "Group C", date: "Thu, Jun 25, 2026", time: "12:00 PM PDT", teamA: "Brazil", teamB: "Scotland", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 54, stage: "Group C", date: "Thu, Jun 25, 2026", time: "3:00 PM PDT", teamA: "Morocco", teamB: "Haiti", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 55, stage: "Group D", date: "Thu, Jun 25, 2026", time: "6:00 PM PDT", teamA: "United States", teamB: "Australia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 56, stage: "Group D", date: "Thu, Jun 25, 2026", time: "9:00 PM PDT", teamA: "Paraguay", teamB: "Türkiye", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 57, stage: "Group E", date: "Fri, Jun 26, 2026", time: "12:00 PM PDT", teamA: "Germany", teamB: "Ecuador", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 58, stage: "Group E", date: "Fri, Jun 26, 2026", time: "3:00 PM PDT", teamA: "Ivory Coast", teamB: "Curaçao", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 59, stage: "Group F", date: "Fri, Jun 26, 2026", time: "6:00 PM PDT", teamA: "Netherlands", teamB: "Tunisia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 60, stage: "Group F", date: "Fri, Jun 26, 2026", time: "9:00 PM PDT", teamA: "Japan", teamB: "Sweden", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 61, stage: "Group G", date: "Sat, Jun 27, 2026", time: "12:00 PM PDT", teamA: "Belgium", teamB: "New Zealand", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 62, stage: "Group G", date: "Sat, Jun 27, 2026", time: "3:00 PM PDT", teamA: "Egypt", teamB: "Iran", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 63, stage: "Group H", date: "Sat, Jun 27, 2026", time: "6:00 PM PDT", teamA: "Spain", teamB: "Uruguay", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 64, stage: "Group H", date: "Sat, Jun 27, 2026", time: "9:00 PM PDT", teamA: "Cape Verde", teamB: "Saudi Arabia", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 65, stage: "Group I", date: "Sat, Jun 27, 2026", time: "11:00 PM PDT", teamA: "France", teamB: "Norway", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 66, stage: "Group I", date: "Sat, Jun 27, 2026", time: "1:00 PM PDT", teamA: "Senegal", teamB: "Iraq", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 67, stage: "Group J", date: "Sat, Jun 27, 2026", time: "5:00 PM PDT", teamA: "Argentina", teamB: "Jordan", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 68, stage: "Group J", date: "Sat, Jun 27, 2026", time: "8:00 PM PDT", teamA: "Algeria", teamB: "Austria", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 69, stage: "Group K", date: "Sat, Jun 27, 2026", time: "10:00 PM PDT", teamA: "Portugal", teamB: "Colombia", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 70, stage: "Group K", date: "Sat, Jun 27, 2026", time: "2:00 PM PDT", teamA: "DR Congo", teamB: "Uzbekistan", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 71, stage: "Group L", date: "Sat, Jun 27, 2026", time: "4:00 PM PDT", teamA: "England", teamB: "Panama", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 72, stage: "Group L", date: "Sat, Jun 27, 2026", time: "7:00 PM PDT", teamA: "Croatia", teamB: "Ghana", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 73, stage: "Round of 32", date: "Sun, Jun 28, 2026", time: "3:00 PM PDT", teamA: "2A", teamB: "2B", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 74, stage: "Round of 32", date: "Sun, Jun 28, 2026", time: "4:30 PM PDT", teamA: "1E", teamB: "3ABCDF", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 75, stage: "Round of 32", date: "Sun, Jun 28, 2026", time: "9:00 PM PDT", teamA: "1F", teamB: "2C", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 76, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "1:00 PM PDT", teamA: "1C", teamB: "2F", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 77, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "5:00 PM PDT", teamA: "1I", teamB: "3CDFGH", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 78, stage: "Round of 32", date: "Mon, Jun 29, 2026", time: "1:00 PM PDT", teamA: "2E", teamB: "2I", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 79, stage: "Round of 32", date: "Tue, Jun 30, 2026", time: "9:00 PM PDT", teamA: "1A", teamB: "3CEFHI", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 80, stage: "Round of 32", date: "Tue, Jun 30, 2026", time: "12:00 PM PDT", teamA: "1L", teamB: "3EHIJK", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 81, stage: "Round of 32", date: "Wed, Jul 1, 2026", time: "8:00 PM PDT", teamA: "1D", teamB: "3BEFIJ", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 82, stage: "Round of 32", date: "Wed, Jul 1, 2026", time: "4:00 PM PDT", teamA: "1G", teamB: "3AEHIJ", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 83, stage: "Round of 32", date: "Thu, Jul 2, 2026", time: "7:00 PM PDT", teamA: "2K", teamB: "2L", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 84, stage: "Round of 32", date: "Thu, Jul 2, 2026", time: "3:00 PM PDT", teamA: "1H", teamB: "2J", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 85, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "11:00 PM PDT", teamA: "1B", teamB: "3EFGIJ", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 86, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "6:00 PM PDT", teamA: "1J", teamB: "2H", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 87, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "9:30 PM PDT", teamA: "1K", teamB: "3DEIJL", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 88, stage: "Round of 32", date: "Fri, Jul 3, 2026", time: "2:00 PM PDT", teamA: "2D", teamB: "2G", scoreA: "", scoreB: "", status: "Scheduled" },
+  
+  { id: 89, stage: "Round of 16", date: "Sat, Jul 4, 2026", time: "5:00 PM PDT", teamA: "W74", teamB: "W77", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 90, stage: "Round of 16", date: "Sat, Jul 4, 2026", time: "1:00 PM PDT", teamA: "W73", teamB: "W75", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 91, stage: "Round of 16", date: "Sun, Jul 5, 2026", time: "4:00 PM PDT", teamA: "W76", teamB: "W78", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 92, stage: "Round of 16", date: "Sun, Jul 5, 2026", time: "8:00 PM PDT", teamA: "W79", teamB: "W80", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 93, stage: "Round of 16", date: "Mon, Jul 6, 2026", time: "3:00 PM PDT", teamA: "W83", teamB: "W84", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 94, stage: "Round of 16", date: "Mon, Jul 6, 2026", time: "8:00 PM PDT", teamA: "W81", teamB: "W82", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 95, stage: "Round of 16", date: "Tue, Jul 7, 2026", time: "12:00 PM PDT", teamA: "W86", teamB: "W88", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 96, stage: "Round of 16", date: "Tue, Jul 7, 2026", time: "4:00 PM PDT", teamA: "W85", teamB: "W87", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 97, stage: "Quarter Final", date: "Thu, Jul 9, 2026", time: "4:00 PM PDT", teamA: "W89", teamB: "W90", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 98, stage: "Quarter Final", date: "Fri, Jul 10, 2026", time: "3:00 PM PDT", teamA: "W93", teamB: "W94", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 99, stage: "Quarter Final", date: "Sat, Jul 11, 2026", time: "5:00 PM PDT", teamA: "W91", teamB: "W92", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 100, stage: "Quarter Final", date: "Sat, Jul 11, 2026", time: "9:00 PM PDT", teamA: "W95", teamB: "W96", scoreA: "", scoreB: "", status: "Scheduled" },
+
+  { id: 101, stage: "Semi Final", date: "Tue, Jul 14, 2026", time: "3:00 PM PDT", teamA: "W97", teamB: "W98", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 102, stage: "Semi Final", date: "Wed, Jul 15, 2026", time: "3:00 PM PDT", teamA: "W99", teamB: "W100", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 103, stage: "Bronze Final", date: "Sat, Jul 18, 2026", time: "5:00 PM PDT", teamA: "L101", teamB: "L102", scoreA: "", scoreB: "", status: "Scheduled" },
+  { id: 104, stage: "Final", date: "Sun, Jul 19, 2026", time: "3:00 PM PDT", teamA: "W101", teamB: "W102", scoreA: "", scoreB: "", status: "Scheduled" },
+];
+
+const progressOptions: Team["status"][] = [
+  "Group Stage",
+  "Round of 32",
+  "Round of 16",
+  "Quarter Final",
+  "Semi Final",
+  "Final",
+  "Champion",
+  "Eliminated",
+];
+
 export default function Home() {
   const [participantName, setParticipantName] = useState("");
   const [team1, setTeam1] = useState("");
@@ -239,6 +356,16 @@ export default function Home() {
     return map;
   }, [participants, teamData]);
 
+  const groupedMatches = useMemo(() => {
+    return matches.reduce<Record<string, Match[]>>((groups, match) => {
+      if (!groups[match.date]) {
+        groups[match.date] = [];
+      }
+      groups[match.date].push(match);
+      return groups;
+    }, {});
+  }, [matches]);
+
   const filteredTeams = teamData.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -270,11 +397,17 @@ export default function Home() {
 
   function updateTeamStatus(teamName: string, status: Team["status"]) {
     setTeamData((current) =>
-      current.map((team) => (team.name === teamName ? { ...team, status } : team))
+      current.map((team) =>
+        team.name === teamName ? { ...team, status } : team
+      )
     );
   }
 
-  function updateMatchScore(matchId: number, field: "scoreA" | "scoreB", value: string) {
+  function updateMatchScore(
+    matchId: number,
+    field: "scoreA" | "scoreB",
+    value: string
+  ) {
     setMatches((current) =>
       current.map((match) =>
         match.id === matchId ? { ...match, [field]: value } : match
@@ -282,215 +415,221 @@ export default function Home() {
     );
   }
 
+  function TeamDisplay({ teamName }: { teamName: string }) {
+    const participantNames = selectedByTeam[teamName] || [];
+    const isKnownTeam = Boolean(shortCodeMap[teamName]);
+
+    return (
+      <div className="group relative flex w-fit items-center gap-2">
+        <span className="text-2xl">{flagMap[teamName] || "🏆"}</span>
+        <span className="font-semibold">
+          {teamName}
+        </span>
+
+        {isKnownTeam && (
+          <div className="absolute left-0 top-full z-30 mt-2 hidden min-w-56 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-300">
+              Picked by
+            </p>
+
+            {participantNames.length === 0 ? (
+              <p className="text-sm text-gray-400">No participants yet</p>
+            ) : (
+              <div className="space-y-1">
+                {participantNames.map((name, index) => (
+                  <p key={`${name}-${index}`} className="text-sm">
+                    {index + 1}. {name}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gray-100 p-6 text-gray-900">
       <section className="mx-auto max-w-7xl space-y-6">
         <header className="rounded-2xl bg-white p-6 shadow">
-          <section className="rounded-2xl bg-black text-white shadow overflow-hidden">
+          <section className="overflow-hidden rounded-2xl bg-black text-white shadow">
             <div className="flex">
-              <button
-                onClick={() => setActiveTab("matches")}
-                className={`flex-1 p-4 text-sm font-semibold transition ${activeTab === "matches"
-                    ? "border-b-4 border-white bg-gray-900"
-                    : "bg-black hover:bg-gray-800"
+              {(["matches", "bracket", "standings"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 p-4 text-sm font-semibold uppercase transition ${
+                    activeTab === tab
+                      ? "border-b-4 border-white bg-gray-900"
+                      : "bg-black hover:bg-gray-800"
                   }`}
-              >
-                MATCHES
-              </button>
-
-              <button
-                onClick={() => setActiveTab("bracket")}
-                className={`flex-1 p-4 text-sm font-semibold transition ${activeTab === "bracket"
-                    ? "border-b-4 border-white bg-gray-900"
-                    : "bg-black hover:bg-gray-800"
-                  }`}
-              >
-                BRACKET
-              </button>
-
-              <button
-                onClick={() => setActiveTab("standings")}
-                className={`flex-1 p-4 text-sm font-semibold transition ${activeTab === "standings"
-                    ? "border-b-4 border-white bg-gray-900"
-                    : "bg-black hover:bg-gray-800"
-                  }`}
-              >
-                STANDINGS
-              </button>
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
           </section>
-          <h1 className="text-3xl font-bold">World Cup 2026 Team Picker</h1>
+
+          <h1 className="mt-6 text-3xl font-bold">
+            World Cup 2026 Team Picker
+          </h1>
           <p className="mt-2 text-gray-600">
-            Participants choose two favorite teams. Hover over any team to see who picked it. Update scores and team progress from the admin sections below.
+            Participants choose two favorite teams. Hover over any team in the
+            match schedule to see who picked it.
           </p>
         </header>
 
         {activeTab === "matches" && (
-          <section className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold">Add Participant</h2>
-            <form onSubmit={addParticipant} className="grid gap-4 md:grid-cols-4">
-              <input
-                className="rounded-xl border p-3"
-                placeholder="Participant name"
-                value={participantName}
-                onChange={(e) => setParticipantName(e.target.value)}
-              />
-              <select className="rounded-xl border p-3" value={team1} onChange={(e) => setTeam1(e.target.value)}>
-                <option value="">Favorite Team 1</option>
-                {teamData.map((team) => <option key={team.code} value={team.name}>{team.name}</option>)}
-              </select>
-              <select className="rounded-xl border p-3" value={team2} onChange={(e) => setTeam2(e.target.value)}>
-                <option value="">Favorite Team 2</option>
-                {teamData.map((team) => <option key={team.code} value={team.name}>{team.name}</option>)}
-              </select>
-              <button className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800">
-                Submit Picks
-              </button>
-            </form>
-            {team1 && team2 && team1 === team2 && <p className="mt-3 text-red-600">Please choose two different teams.</p>}
-          </section>
-        )}
+          <>
+            <section className="rounded-2xl bg-white p-6 shadow">
+              <h2 className="mb-4 text-xl font-semibold">Add Participant</h2>
+              <form
+                onSubmit={addParticipant}
+                className="grid gap-4 md:grid-cols-4"
+              >
+                <input
+                  className="rounded-xl border p-3"
+                  placeholder="Participant name"
+                  value={participantName}
+                  onChange={(e) => setParticipantName(e.target.value)}
+                />
+                <select
+                  className="rounded-xl border p-3"
+                  value={team1}
+                  onChange={(e) => setTeam1(e.target.value)}
+                >
+                  <option value="">Favorite Team 1</option>
+                  {teamData.map((team) => (
+                    <option key={team.code} value={team.name}>
+                      {flagMap[team.name]} {team.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="rounded-xl border p-3"
+                  value={team2}
+                  onChange={(e) => setTeam2(e.target.value)}
+                >
+                  <option value="">Favorite Team 2</option>
+                  {teamData.map((team) => (
+                    <option key={team.code} value={team.name}>
+                      {flagMap[team.name]} {team.name}
+                    </option>
+                  ))}
+                </select>
+                <button className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800">
+                  Submit Picks
+                </button>
+              </form>
 
-        {activeTab === "standings" && (
-          <section className="rounded-2xl bg-white p-6 shadow">
-            <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
-              <h2 className="text-xl font-semibold">Team Chart</h2>
-              <input
-                className="rounded-xl border p-3"
-                placeholder="Search team"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+              {team1 && team2 && team1 === team2 && (
+                <p className="mt-3 text-red-600">
+                  Please choose two different teams.
+                </p>
+              )}
+            </section>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {filteredTeams.map((team) => {
-                const names = selectedByTeam[team.name] || [];
-                return (
-                  <div key={team.code} className="group relative rounded-2xl border bg-gray-50 p-4 shadow-sm hover:bg-white hover:shadow-md">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500">Group {team.group}</p>
-                        <h3 className="font-bold">{team.name}</h3>
-                      </div>
-                      <span className="rounded-full bg-gray-200 px-3 py-1 text-sm">{names.length}</span>
-                    </div>
-                    <p className="mt-3 rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-800">{team.status}</p>
+            <section className="space-y-6">
+              <div className="rounded-2xl bg-white p-6 shadow">
+                <h2 className="text-2xl font-bold">Matches</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  All times are Eastern Time. Hover over a team to see
+                  participants who selected that team.
+                </p>
+              </div>
 
-                    <div className="absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-black p-4 text-white shadow-xl group-hover:block">
-                      <p className="font-semibold">Participants</p>
-                      {names.length === 0 ? (
-                        <p className="mt-2 text-sm text-gray-300">No one picked this team yet.</p>
-                      ) : (
-                        <ul className="mt-2 space-y-1 text-sm">
-                          {names.map((name, index) => <li key={`${name}-${index}`}>{index + 1}. {name}</li>)}
-                        </ul>
-                      )}
-                    </div>
+              {Object.entries(groupedMatches).map(([date, dateMatches]) => (
+                <section key={date} className="overflow-hidden rounded-2xl bg-white shadow">
+                  <div className="border-b bg-gray-50 px-6 py-4">
+                    <h3 className="text-lg font-bold">{date}</h3>
                   </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
 
-        {activeTab === "matches" && (
-        <section className="rounded-2xl bg-white p-6 shadow">
-          <h2 className="mb-4 text-xl font-semibold">Match Schedule and Scores</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="p-3">Stage</th>
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Time</th>
-                  <th className="p-3">Team A</th>
-                  <th className="p-3">Score</th>
-                  <th className="p-3">Team B</th>
-                  <th className="p-3">Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matches.map((match) => (
-                  <tr key={match.id} className="border-b">
-                    <td className="p-3">{match.stage}</td>
-                    <td className="p-3">{match.date}</td>
-                    <td className="p-3">{match.time}</td>
-                    <td className="p-3 font-medium">
-                      <div className="group relative flex w-fit cursor-pointer items-center gap-2">
-                        <span className="text-2xl">{flagMap[match.teamA]}</span>
-                        <span className="font-semibold">
-                          {shortCodeMap[match.teamA]}
-                        </span>
-
-                        <div className="absolute left-0 top-full z-30 mt-2 hidden min-w-52 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
-                          <p className="mb-2 text-xs font-semibold text-gray-300">
-                            Picked by
+                  <div className="divide-y">
+                    {dateMatches.map((match) => (
+                      <div
+                        key={match.id}
+                        className="grid gap-4 p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
+                      >
+                        <div className="flex flex-col gap-2">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Match {match.id} • {match.stage}
                           </p>
+                          <TeamDisplay teamName={match.teamA} />
+                        </div>
 
-                          {(selectedByTeam[match.teamA] || []).length === 0 ? (
-                            <p className="text-sm text-gray-400">
-                              No participants yet
-                            </p>
-                          ) : (
-                            (selectedByTeam[match.teamA] || []).map((name, index) => (
-                              <p key={`${name}-${index}`} className="text-sm">
-                                {name}
-                              </p>
-                            ))
-                          )}
+                        <div className="rounded-2xl bg-gray-100 px-6 py-4 text-center">
+                          <p className="text-sm font-semibold text-gray-500">
+                            {match.status}
+                          </p>
+                          <p className="mt-1 text-lg font-bold">{match.time}</p>
+
+                          <div className="mt-3 flex items-center justify-center gap-3">
+                            <input
+                              className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                              value={match.scoreA}
+                              onChange={(e) =>
+                                updateMatchScore(
+                                  match.id,
+                                  "scoreA",
+                                  e.target.value
+                                )
+                              }
+                            />
+                            <span className="font-semibold text-gray-400">-</span>
+                            <input
+                              className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                              value={match.scoreB}
+                              onChange={(e) =>
+                                updateMatchScore(
+                                  match.id,
+                                  "scoreB",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-start gap-2 md:items-end">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {match.stage}
+                          </p>
+                          <TeamDisplay teamName={match.teamB} />
                         </div>
                       </div>
-                    </td>
-                    <td className="p-3">
-                      <input className="w-16 rounded-lg border p-2" value={match.scoreA} onChange={(e) => updateMatchScore(match.id, "scoreA", e.target.value)} />
-                    </td>
-                    <td className="p-3 font-medium">
-                      <div className="group relative flex w-fit cursor-pointer items-center gap-2">
-                        <span className="text-2xl">{flagMap[match.teamB]}</span>
-                        <span className="font-semibold">
-                          {shortCodeMap[match.teamB]}
-                        </span>
-
-                        <div className="absolute left-0 top-full z-30 mt-2 hidden min-w-52 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
-                          <p className="mb-2 text-xs font-semibold text-gray-300">
-                            Picked by
-                          </p>
-
-                          {(selectedByTeam[match.teamB] || []).length === 0 ? (
-                            <p className="text-sm text-gray-400">
-                              No participants yet
-                            </p>
-                          ) : (
-                            (selectedByTeam[match.teamB] || []).map((name, index) => (
-                              <p key={`${name}-${index}`} className="text-sm">
-                                {name}
-                              </p>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <input className="w-16 rounded-lg border p-2" value={match.scoreB} onChange={(e) => updateMatchScore(match.id, "scoreB", e.target.value)} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </section>
+          </>
         )}
-        
+
         {activeTab === "bracket" && (
           <section className="rounded-2xl bg-white p-6 shadow">
             <h2 className="mb-4 text-xl font-semibold">Update Team Progress</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {teamData.map((team) => (
-                <div key={team.code} className="flex items-center justify-between gap-3 rounded-xl border p-3">
-                  <span className="font-medium">{team.name}</span>
-                  <select className="rounded-lg border p-2" value={team.status} onChange={(e) => updateTeamStatus(team.name, e.target.value as Team["status"])}>
-                    {progressOptions.map((status) => <option key={status} value={status}>{status}</option>)}
+                <div
+                  key={team.code}
+                  className="flex items-center justify-between gap-3 rounded-xl border p-3"
+                >
+                  <span className="font-medium">
+                    {flagMap[team.name]} {team.name}
+                  </span>
+                  <select
+                    className="rounded-lg border p-2"
+                    value={team.status}
+                    onChange={(e) =>
+                      updateTeamStatus(team.name, e.target.value as Team["status"])
+                    }
+                  >
+                    {progressOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
                   </select>
                 </div>
               ))}
@@ -499,33 +638,97 @@ export default function Home() {
         )}
 
         {activeTab === "standings" && (
-          <section className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold">Participant Picks</h2>
-            {participants.length === 0 ? (
-              <p className="text-gray-500">No participants yet.</p>
-            ) : (
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="p-3">#</th>
-                    <th className="p-3">Name</th>
-                    <th className="p-3">Team 1</th>
-                    <th className="p-3">Team 2</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {participants.map((participant, index) => (
-                    <tr key={participant.id} className="border-b">
-                      <td className="p-3">{index + 1}</td>
-                      <td className="p-3">{participant.name}</td>
-                      <td className="p-3">{participant.team1}</td>
-                      <td className="p-3">{participant.team2}</td>
+          <>
+            <section className="rounded-2xl bg-white p-6 shadow">
+              <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                <h2 className="text-xl font-semibold">Team Chart</h2>
+                <input
+                  className="rounded-xl border p-3"
+                  placeholder="Search team"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {filteredTeams.map((team) => {
+                  const names = selectedByTeam[team.name] || [];
+                  return (
+                    <div
+                      key={team.code}
+                      className="group relative rounded-2xl border bg-gray-50 p-4 shadow-sm hover:bg-white hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-500">
+                            Group {team.group}
+                          </p>
+                          <h3 className="font-bold">
+                            {flagMap[team.name]} {team.name}
+                          </h3>
+                        </div>
+                        <span className="rounded-full bg-gray-200 px-3 py-1 text-sm">
+                          {names.length}
+                        </span>
+                      </div>
+                      <p className="mt-3 rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-800">
+                        {team.status}
+                      </p>
+
+                      <div className="absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-black p-4 text-white shadow-xl group-hover:block">
+                        <p className="font-semibold">Participants</p>
+                        {names.length === 0 ? (
+                          <p className="mt-2 text-sm text-gray-300">
+                            No one picked this team yet.
+                          </p>
+                        ) : (
+                          <ul className="mt-2 space-y-1 text-sm">
+                            {names.map((name, index) => (
+                              <li key={`${name}-${index}`}>
+                                {index + 1}. {name}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="rounded-2xl bg-white p-6 shadow">
+              <h2 className="mb-4 text-xl font-semibold">Participant Picks</h2>
+              {participants.length === 0 ? (
+                <p className="text-gray-500">No participants yet.</p>
+              ) : (
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="p-3">#</th>
+                      <th className="p-3">Name</th>
+                      <th className="p-3">Team 1</th>
+                      <th className="p-3">Team 2</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
+                  </thead>
+                  <tbody>
+                    {participants.map((participant, index) => (
+                      <tr key={participant.id} className="border-b">
+                        <td className="p-3">{index + 1}</td>
+                        <td className="p-3">{participant.name}</td>
+                        <td className="p-3">
+                          {flagMap[participant.team1]} {participant.team1}
+                        </td>
+                        <td className="p-3">
+                          {flagMap[participant.team2]} {participant.team2}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          </>
         )}
       </section>
     </main>
