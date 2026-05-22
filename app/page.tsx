@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import React, { useMemo, useState } from "react";
+import Select from "react-select";
 
 type Team = {
   code: string;
@@ -328,10 +329,7 @@ const progressOptions: Team["status"][] = [
 const PICK_CUTOFF = new Date("2026-06-10T23:59:59-07:00");
 
 function flagText(teamName: string) {
-  if (teamName === "England") return "🏴 England";
-  if (teamName === "Scotland") return "🏴 Scotland";
-
-  return `${flagMap[teamName] || "🏆"} ${teamName}`;
+  return teamName;
 }
 
 
@@ -723,36 +721,73 @@ export default function Home() {
                   onChange={(e) => setParticipantName(e.target.value)}
                   disabled={!user || picksLocked}
                 />
-                <select
-                  className="rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-gray-100"
-                  value={team1}
-                  onChange={(e) => setTeam1(e.target.value)}
-                  disabled={!user || picksLocked}
-                >
-                  <option value="">Favorite Team 1</option>
-                  {[...teamData]
+                
+                <Select
+                  isDisabled={!user || picksLocked}
+                  placeholder="Favorite Team 1"
+                  value={
+                    team1
+                      ? {
+                        value: team1,
+                        label: team1,
+                        image: flagMap[team1],
+                      }
+                      : null
+                  }
+                  onChange={(selected) => setTeam1(selected?.value || "")}
+                  options={[...teamData]
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((team) => (
-                    <option key={team.code} value={team.name}>
-                      {flagText(team.name)}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-gray-100"
-                  value={team2}
-                  onChange={(e) => setTeam2(e.target.value)}
-                  disabled={!user || picksLocked}
-                >
-                  <option value="">Favorite Team 2</option>
-                  {[...teamData]
+                    .map((team) => ({
+                      value: team.name,
+                      label: team.name,
+                      image: flagMap[team.name],
+                    }))}
+
+                  formatOptionLabel={(option: any) => (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={option.image}
+                        alt={option.label}
+                        className="h-5 w-7 rounded-sm object-cover"
+                      />
+                      <span>{option.label}</span>
+                    </div>
+                  )}
+                />
+                
+                <Select
+                  isDisabled={!user || picksLocked}
+                  placeholder="Favorite Team 2"
+                  value={
+                    team1
+                      ? {
+                        value: team1,
+                        label: team1,
+                        image: flagMap[team1],
+                      }
+                      : null
+                  }
+                  onChange={(selected) => setTeam1(selected?.value || "")}
+                  options={[...teamData]
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((team) => (
-                    <option key={team.code} value={team.name}>
-                      {flagText(team.name)}
-                    </option>
-                  ))}
-                </select>
+                    .map((team) => ({
+                      value: team.name,
+                      label: team.name,
+                      image: flagMap[team.name],
+                    }))}
+
+                  formatOptionLabel={(option: any) => (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={option.image}
+                        alt={option.label}
+                        className="h-5 w-7 rounded-sm object-cover"
+                      />
+                      <span>{option.label}</span>
+                    </div>
+                  )}
+                />
+
                 <button
                   disabled={!user || picksLocked}
                   className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
