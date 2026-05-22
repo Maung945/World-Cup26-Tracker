@@ -1,5 +1,5 @@
 "use client";
-
+import { supabase } from "@/lib/supabase";
 import React, { useMemo, useState } from "react";
 
 type Team = {
@@ -102,10 +102,25 @@ export default function Home() {
   const [participantName, setParticipantName] = useState("");
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [participants, setParticipants] = useState<any[]>([]);
   const [teamData, setTeamData] = useState<Team[]>(teams);
   const [matches, setMatches] = useState<Match[]>(starterMatches);
   const [search, setSearch] = useState("");
+  
+  React.useEffect(() => {
+    fetchParticipants();
+  }, []);
+
+  async function fetchParticipants() {
+    const { data, error } = await supabase
+      .from("participants")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setParticipants(data);
+    }
+  }
 
   const selectedByTeam = useMemo(() => {
     const map: Record<string, string[]> = {};
@@ -123,24 +138,29 @@ export default function Home() {
     team.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  function addParticipant(e: React.FormEvent) {
+  async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!participantName.trim() || !team1 || !team2 || team1 === team2) return;
 
-    setParticipants((current) => [
-      ...current,
+    const { error } = await supabase.from("participants").insert([
       {
-        id: Date.now(),
         name: participantName.trim(),
         team1,
         team2,
       },
     ]);
 
+    if (error) {
+      console.error("Supabase insert error:", error.message);
+      alert(error.message);
+      return;
+    }
+
     setParticipantName("");
     setTeam1("");
     setTeam2("");
+    fetchParticipants();
   }
 
   function updateTeamStatus(teamName: string, status: Team["status"]) {
