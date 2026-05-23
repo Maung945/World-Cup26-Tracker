@@ -333,6 +333,8 @@ export default function Home() {
   >("participants");
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMode, setAuthMode] = useState<"signIn" | "signUp">("signIn");
   const [authMessage, setAuthMessage] = useState("");
   const [myPick, setMyPick] = useState<Participant | null>(null);
   const [scoreSaveMessage, setScoreSaveMessage] = useState("");
@@ -429,25 +431,55 @@ export default function Home() {
     }
   }
 
-  async function loginWithEmail(e: React.FormEvent<HTMLFormElement>) {
+  async function handlePasswordAuth(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setAuthMessage("");
 
-    if (!email.trim()) {
-      setAuthMessage("Please enter your email address.");
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !password) {
+      setAuthMessage("Please enter both email and password.");
       return;
     }
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
+    if (password.length < 6) {
+      setAuthMessage("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (authMode === "signUp") {
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+      });
+
+      if (error) {
+        setAuthMessage(error.message);
+        return;
+      }
+
+      if (data.user && !data.session) {
+        setAuthMessage(
+          "Account created. If email confirmation is enabled, confirm your email before signing in."
+        );
+      } else {
+        setAuthMessage("Account created and signed in successfully.");
+        setPassword("");
+      }
+
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: cleanEmail,
+      password,
     });
 
     if (error) {
       setAuthMessage(error.message);
     } else {
-      setAuthMessage("Check your email for the login link.");
+      setAuthMessage("Signed in successfully.");
+      setPassword("");
     }
   }
 
@@ -458,6 +490,7 @@ export default function Home() {
     setParticipantName("");
     setTeam1("");
     setTeam2("");
+    setPassword("");
   }
 
   const selectedByTeam = useMemo(() => {
@@ -867,7 +900,7 @@ export default function Home() {
             <section className="rounded-2xl bg-white p-6 shadow">
               <h2 className="text-xl font-semibold">Login Required</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
-                <li>Each participant must log in with email.</li>
+                <li>Each participant must create or sign in with an email and password.</li>
                 <li>You can submit only one set of picks per account.</li>
                 <li>
                   You may update your name or teams until{" "}
@@ -896,19 +929,64 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <form
-                  onSubmit={loginWithEmail}
-                  className="mt-4 flex flex-col gap-3 md:flex-row"
-                >
-                  <input
-                    className="flex-1 rounded-xl border p-3"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <button className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800">
-                    Send Login Link
-                  </button>
+                <form onSubmit={handlePasswordAuth} className="mt-4 space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("signIn");
+                        setAuthMessage("");
+                      }}
+                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                        authMode === "signIn"
+                          ? "bg-black text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Sign In
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("signUp");
+                        setAuthMessage("");
+                      }}
+                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                        authMode === "signUp"
+                          ? "bg-black text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Create Account
+                    </button>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                    <input
+                      className="rounded-xl border p-3"
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+
+                    <input
+                      className="rounded-xl border p-3"
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                    <button className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800">
+                      {authMode === "signIn" ? "Sign In" : "Create Account"}
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-500">
+                    Use the same email and password each time. No magic-link email is needed.
+                  </p>
                 </form>
               )}
 
