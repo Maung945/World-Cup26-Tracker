@@ -1732,6 +1732,16 @@ export default function Home() {
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
   }, [participants, matches]);
 
+  const topThreeScores = Array.from(
+    new Set(
+      scoredParticipants
+        .map((participant) => participant.score)
+        .filter((score) => score > 0),
+    ),
+  )
+    .sort((a, b) => b - a)
+    .slice(0, 3);
+
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -2121,7 +2131,7 @@ export default function Home() {
           <img
             src={flagSrc}
             alt={resolvedTeam.resolved ? `${resolvedTeam.name} flag` : "TBD"}
-            className="h-10 w-14 flex-shrink-0 rounded-md object-cover shadow-sm"
+            className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
           />
         )}
 
@@ -2133,7 +2143,7 @@ export default function Home() {
           <img
             src={flagSrc}
             alt={resolvedTeam.resolved ? `${resolvedTeam.name} flag` : "TBD"}
-            className="h-10 w-14 flex-shrink-0 rounded-md object-cover shadow-sm"
+            className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
           />
         )}
       </div>
@@ -2152,7 +2162,7 @@ export default function Home() {
     if (isAdmin) {
       return (
         <input
-          className="h-16 w-[5.5rem] flex-shrink-0 rounded-2xl border border-gray-400 bg-white text-center text-3xl font-extrabold text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          className="h-9 w-11 flex-shrink-0 rounded-xl border border-gray-400 bg-white text-center text-lg font-extrabold text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           value={value}
           onChange={(e) => updateMatchScore(matchId, field, e.target.value)}
         />
@@ -2160,7 +2170,7 @@ export default function Home() {
     }
 
     return (
-      <span className="flex h-16 w-[5.5rem] flex-shrink-0 items-center justify-center rounded-2xl border border-gray-300 bg-white text-3xl font-extrabold text-gray-900 shadow-sm">
+      <span className="flex h-9 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white text-lg font-extrabold text-gray-900 shadow-sm">
         {value.trim() === "" ? "-" : value}
       </span>
     );
@@ -2185,33 +2195,33 @@ export default function Home() {
       : "/flags/world-cup.png";
 
     return (
-      <div className="w-[520px] overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl transition hover:shadow-2xl">
-        <div className="border-b border-gray-200 bg-gray-50 px-5 py-4 text-center">
-          <p className="text-sm font-extrabold uppercase tracking-wide text-gray-700">
+      <div className="w-full overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl transition hover:shadow-2xl">
+        <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-center">
+          <p className="text-[11px] font-extrabold uppercase tracking-wide text-gray-700">
             Match {match.id} • {match.stage}
           </p>
 
-          <p className="mt-1 text-sm font-medium text-gray-500">
+          <p className="mt-0.5 truncate text-[11px] font-medium text-gray-500">
             {match.date} • {match.time}
           </p>
 
           {match.venue && (
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="hidden">
               {match.venue}
             </p>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-4 px-5 py-5">
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5">
           {/* LEFT TEAM */}
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <img
               src={flagA}
               alt={teamAName}
-              className="h-10 w-14 flex-shrink-0 rounded-md object-cover shadow-sm"
+              className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
             />
 
-            <span className="truncate text-lg font-bold text-gray-900">
+            <span className="truncate text-sm font-bold text-gray-900">
               {teamAName}
             </span>
           </div>
@@ -2228,15 +2238,15 @@ export default function Home() {
                     e.target.value,
                   )
                 }
-                className="h-14 w-16 rounded-xl border border-gray-300 bg-white text-center text-2xl font-extrabold text-gray-900 outline-none focus:border-blue-500"
+                className="h-9 w-11 rounded-xl border border-gray-300 bg-white text-center text-lg font-extrabold text-gray-900 outline-none focus:border-blue-500"
               />
             ) : (
-              <div className="flex h-14 w-16 items-center justify-center rounded-xl bg-gray-100 text-2xl font-extrabold text-gray-900">
+              <div className="flex h-9 w-11 items-center justify-center rounded-xl bg-gray-100 text-lg font-extrabold text-gray-900">
                 {hasScore ? match.scoreA : "-"}
               </div>
             )}
 
-            <span className="text-2xl font-extrabold text-gray-400">
+            <span className="text-base font-extrabold text-gray-400">
               -
             </span>
 
@@ -2250,25 +2260,25 @@ export default function Home() {
                     e.target.value,
                   )
                 }
-                className="h-14 w-16 rounded-xl border border-gray-300 bg-white text-center text-2xl font-extrabold text-gray-900 outline-none focus:border-blue-500"
+                className="h-9 w-11 rounded-xl border border-gray-300 bg-white text-center text-lg font-extrabold text-gray-900 outline-none focus:border-blue-500"
               />
             ) : (
-              <div className="flex h-14 w-16 items-center justify-center rounded-xl bg-gray-100 text-2xl font-extrabold text-gray-900">
+              <div className="flex h-9 w-11 items-center justify-center rounded-xl bg-gray-100 text-lg font-extrabold text-gray-900">
                 {hasScore ? match.scoreB : "-"}
               </div>
             )}
           </div>
 
           {/* RIGHT TEAM */}
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
-            <span className="truncate text-right text-lg font-bold text-gray-900">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+            <span className="truncate text-right text-sm font-bold text-gray-900">
               {teamBName}
             </span>
 
             <img
               src={flagB}
               alt={teamBName}
-              className="h-10 w-14 flex-shrink-0 rounded-md object-cover shadow-sm"
+              className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
             />
           </div>
         </div>
@@ -2717,10 +2727,12 @@ export default function Home() {
                           <td className="p-3 font-semibold">{index + 1}</td>
                           <td
                             className={`p-3 font-bold ${
-                              index < 3 ? "text-yellow-600" : "text-gray-900"
+                              topThreeScores.includes(participant.score)
+                                ? "text-yellow-600"
+                                : "text-gray-900"
                             }`}
                           >
-                            {index < 3
+                            {topThreeScores.includes(participant.score)
                               ? `🏆 ${participant.name}`
                               : participant.name}
                           </td>
@@ -2912,12 +2924,12 @@ export default function Home() {
 
         {activeTab === "bracket" &&
           (() => {
-            const cardWidth = 560;
-            const cardHeight = 230;
-            const rowGap = 36;
+            const cardWidth = 192;
+            const cardHeight = 126;
+            const rowGap = 14;
             const step = cardHeight + rowGap;
-            const colGap = 120;
-            const headerOffset = 68;
+            const colGap = 22;
+            const headerOffset = 54;
 
             const rounds = [
               { title: "Round of 32", stage: "Round of 32" },
@@ -2982,8 +2994,8 @@ export default function Home() {
             const bracketHeight = headerOffset + 16 * step + 120;
 
             return (
-              <section className="rounded-3xl border border-gray-200 bg-white p-8 shadow-xl">
-                <div className="mb-8 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+              <section className="max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-xl md:p-8">
+                <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
                   <div>
                     <h2 className="text-3xl font-extrabold text-gray-900">
                       Knockout Bracket
@@ -2994,7 +3006,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-3xl border border-gray-200 bg-gray-50 p-6 shadow-inner">
+                <div className="w-full max-w-full overflow-x-auto rounded-3xl border border-gray-200 bg-gray-50 p-3 shadow-inner md:p-5">
                   <div
                     className="relative"
                     style={{ width: bracketWidth, height: bracketHeight }}
@@ -3057,7 +3069,7 @@ export default function Home() {
                     {bracketRounds.map((round, roundIndex) => (
                       <div key={round.stage}>
                         <h3
-                          className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-4 py-2 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
+                          className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
                           style={{
                             left: leftFor(roundIndex),
                             width: cardWidth,
