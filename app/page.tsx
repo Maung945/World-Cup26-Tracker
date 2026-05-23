@@ -1504,7 +1504,11 @@ export default function Home() {
     user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()),
   );
 
-  const picksLocked = new Date() > PICK_CUTOFF;
+  const [picksLocked, setPicksLocked] = useState(false);
+
+  React.useEffect(() => {
+    setPicksLocked(new Date() > PICK_CUTOFF);
+  }, []);
 
   React.useEffect(() => {
     fetchParticipants();
@@ -2176,6 +2180,91 @@ export default function Home() {
     );
   }
 
+  function BracketTeamWithHover({
+    teamName,
+    flagSrc,
+    align,
+  }: {
+    teamName: string;
+    flagSrc: string;
+    align: "left" | "right";
+  }) {
+    const participantNames = selectedByTeam[teamName] || [];
+    const isKnownTeam = Boolean(shortCodeMap[teamName]);
+
+    return (
+      <div
+        className={`flex min-w-0 flex-1 items-center gap-2 ${
+          align === "right" ? "justify-end text-right" : "justify-start text-left"
+        }`}
+      >
+        {align === "left" && (
+          <div className="group relative flex-shrink-0">
+            <img
+              src={flagSrc}
+              alt={teamName}
+              className="h-6 w-9 rounded-md object-cover shadow-sm"
+            />
+
+            {isKnownTeam && (
+              <div className="absolute bottom-full left-0 z-50 mb-2 hidden min-w-48 rounded-xl bg-black p-3 text-left text-white shadow-xl group-hover:block">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-300">
+                  Picked by
+                </p>
+
+                {participantNames.length === 0 ? (
+                  <p className="text-xs text-gray-400">No participants yet</p>
+                ) : (
+                  <div className="space-y-1">
+                    {participantNames.map((name, index) => (
+                      <p key={`${teamName}-${name}-${index}`} className="text-xs">
+                        {index + 1}. {name}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <span className="min-w-0 truncate text-sm font-bold text-gray-900">
+          {teamName}
+        </span>
+
+        {align === "right" && (
+          <div className="group relative flex-shrink-0">
+            <img
+              src={flagSrc}
+              alt={teamName}
+              className="h-6 w-9 rounded-md object-cover shadow-sm"
+            />
+
+            {isKnownTeam && (
+              <div className="absolute bottom-full right-0 z-50 mb-2 hidden min-w-48 rounded-xl bg-black p-3 text-left text-white shadow-xl group-hover:block">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-300">
+                  Picked by
+                </p>
+
+                {participantNames.length === 0 ? (
+                  <p className="text-xs text-gray-400">No participants yet</p>
+                ) : (
+                  <div className="space-y-1">
+                    {participantNames.map((name, index) => (
+                      <p key={`${teamName}-${name}-${index}`} className="text-xs">
+                        {index + 1}. {name}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   function BracketMatchCard({ match }: { match: Match }) {
     const resolvedA = resolveBracketTeam(match.teamA);
     const resolvedB = resolveBracketTeam(match.teamB);
@@ -2195,7 +2284,7 @@ export default function Home() {
       : "/flags/world-cup.png";
 
     return (
-      <div className="w-full overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl transition hover:shadow-2xl">
+      <div className="w-full overflow-visible rounded-3xl border border-gray-200 bg-white shadow-xl transition hover:shadow-2xl">
         <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-center">
           <p className="text-[11px] font-extrabold uppercase tracking-wide text-gray-700">
             Match {match.id} • {match.stage}
@@ -2214,17 +2303,11 @@ export default function Home() {
 
         <div className="flex items-center justify-between gap-2 px-3 py-2.5">
           {/* LEFT TEAM */}
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <img
-              src={flagA}
-              alt={teamAName}
-              className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
-            />
-
-            <span className="truncate text-sm font-bold text-gray-900">
-              {teamAName}
-            </span>
-          </div>
+          <BracketTeamWithHover
+            teamName={teamAName}
+            flagSrc={flagA}
+            align="left"
+          />
 
           {/* SCORES */}
           <div className="flex flex-shrink-0 items-center gap-2">
@@ -2270,17 +2353,11 @@ export default function Home() {
           </div>
 
           {/* RIGHT TEAM */}
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-            <span className="truncate text-right text-sm font-bold text-gray-900">
-              {teamBName}
-            </span>
-
-            <img
-              src={flagB}
-              alt={teamBName}
-              className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
-            />
-          </div>
+          <BracketTeamWithHover
+            teamName={teamBName}
+            flagSrc={flagB}
+            align="right"
+          />
         </div>
       </div>
     );
