@@ -2115,13 +2115,13 @@ export default function Home() {
     const isKnownTeam = Boolean(shortCodeMap[teamName]);
 
     return (
-      <div className="group relative flex w-fit items-center gap-2">
+      <div className="group relative flex min-w-0 max-w-full items-center gap-2">
         <img
           src={flagMap[teamName] || "/flags/world-cup.png"}
           alt={`${teamName} flag`}
-          className="h-8 w-11 rounded-md object-cover shadow-sm"
+          className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm sm:h-8 sm:w-11"
         />
-        <span className="font-semibold">{teamName}</span>
+        <span className="truncate font-semibold">{teamName}</span>
 
         {isKnownTeam && (
           <div className="absolute bottom-full left-0 z-30 mb-2 hidden min-w-56 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
@@ -2320,7 +2320,7 @@ export default function Home() {
           />
         )}
 
-        <span className="min-w-0 truncate text-xl font-extrabold leading-tight text-gray-900">
+        <span className="min-w-0 truncate text-base font-extrabold leading-tight text-gray-900 sm:text-xl">
           {teamLabel}
         </span>
 
@@ -2508,10 +2508,10 @@ export default function Home() {
                 onChange={(e) =>
                   updateMatchScore(match.id, "scoreA", e.target.value)
                 }
-                className="h-9 w-11 rounded-xl border border-gray-300 bg-white text-center text-lg font-extrabold text-gray-900 outline-none focus:border-blue-500"
+                className="h-9 w-10 rounded-xl border border-gray-300 bg-white text-center text-base font-extrabold text-gray-900 outline-none focus:border-blue-500 sm:w-11 sm:text-lg"
               />
             ) : (
-              <div className="flex h-9 w-11 items-center justify-center rounded-xl bg-gray-100 text-lg font-extrabold text-gray-900">
+              <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-gray-100 text-base font-extrabold text-gray-900 sm:w-11 sm:text-lg">
                 {hasScore ? match.scoreA : "-"}
               </div>
             )}
@@ -2524,10 +2524,10 @@ export default function Home() {
                 onChange={(e) =>
                   updateMatchScore(match.id, "scoreB", e.target.value)
                 }
-                className="h-9 w-11 rounded-xl border border-gray-300 bg-white text-center text-lg font-extrabold text-gray-900 outline-none focus:border-blue-500"
+                className="h-9 w-10 rounded-xl border border-gray-300 bg-white text-center text-base font-extrabold text-gray-900 outline-none focus:border-blue-500 sm:w-11 sm:text-lg"
               />
             ) : (
-              <div className="flex h-9 w-11 items-center justify-center rounded-xl bg-gray-100 text-lg font-extrabold text-gray-900">
+              <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-gray-100 text-base font-extrabold text-gray-900 sm:w-11 sm:text-lg">
                 {hasScore ? match.scoreB : "-"}
               </div>
             )}
@@ -2630,22 +2630,22 @@ export default function Home() {
     standings: GroupStanding[];
   }) {
     return (
-      <section className="overflow-visible rounded-3xl border border-gray-200 bg-white p-6 text-gray-900 shadow-xl">
-        <h2 className="mb-5 text-3xl font-extrabold">Group {group}</h2>
+      <section className="overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 text-gray-900 shadow-xl sm:p-6">
+        <h2 className="mb-4 text-2xl font-extrabold sm:mb-5 sm:text-3xl">Group {group}</h2>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left">
+          <table className="w-full min-w-[640px] border-collapse text-left sm:min-w-[760px]">
             <thead>
               <tr className="border-b border-gray-200 text-gray-600">
-                <th className="pb-3 text-lg font-medium">Team</th>
-                <th className="pb-3 text-center text-lg font-medium">MP</th>
-                <th className="pb-3 text-center text-lg font-medium">W</th>
-                <th className="pb-3 text-center text-lg font-medium">D</th>
-                <th className="pb-3 text-center text-lg font-medium">L</th>
-                <th className="pb-3 text-center text-lg font-medium">GF</th>
-                <th className="pb-3 text-center text-lg font-medium">GA</th>
-                <th className="pb-3 text-center text-lg font-medium">GD</th>
-                <th className="pb-3 text-center text-lg font-extrabold text-gray-900">
+                <th className="pb-3 text-sm font-medium sm:text-lg">Team</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">MP</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">W</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">D</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">L</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">GF</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">GA</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">GD</th>
+                <th className="pb-3 text-center text-sm font-extrabold text-gray-900 sm:text-lg">
                   Pts
                 </th>
               </tr>
@@ -2659,7 +2659,7 @@ export default function Home() {
                 >
                   <td className="py-4">
                     <div className="flex items-center gap-4">
-                      <span className="w-6 text-center text-3xl font-bold text-gray-500">
+                      <span className="w-6 text-center text-xl font-bold text-gray-500 sm:text-3xl">
                         {index + 1}
                       </span>
 
@@ -2667,14 +2667,14 @@ export default function Home() {
                     </div>
                   </td>
 
-                  <td className="text-center text-2xl">{standing.mp}</td>
-                  <td className="text-center text-2xl">{standing.w}</td>
-                  <td className="text-center text-2xl">{standing.d}</td>
-                  <td className="text-center text-2xl">{standing.l}</td>
-                  <td className="text-center text-2xl">{standing.gf}</td>
-                  <td className="text-center text-2xl">{standing.ga}</td>
-                  <td className="text-center text-2xl">{standing.gd}</td>
-                  <td className="text-center text-2xl font-extrabold">
+                  <td className="text-center text-lg sm:text-2xl">{standing.mp}</td>
+                  <td className="text-center text-lg sm:text-2xl">{standing.w}</td>
+                  <td className="text-center text-lg sm:text-2xl">{standing.d}</td>
+                  <td className="text-center text-lg sm:text-2xl">{standing.l}</td>
+                  <td className="text-center text-lg sm:text-2xl">{standing.gf}</td>
+                  <td className="text-center text-lg sm:text-2xl">{standing.ga}</td>
+                  <td className="text-center text-lg sm:text-2xl">{standing.gd}</td>
+                  <td className="text-center text-lg font-extrabold sm:text-2xl">
                     {standing.pts}
                   </td>
                 </tr>
@@ -2687,9 +2687,9 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-6 text-gray-900">
-      <section className="mx-auto max-w-7xl space-y-6">
-        <header className="rounded-2xl bg-white p-6 shadow">
+    <main className="min-h-screen bg-gray-100 p-3 text-gray-900 sm:p-6">
+      <section className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
+        <header className="rounded-2xl bg-white p-4 shadow sm:p-6">
           <section className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow">
             <div className="flex">
               {(["participants", "matches", "bracket", "groups"] as const).map(
@@ -2697,7 +2697,7 @@ export default function Home() {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 p-4 text-sm font-bold uppercase transition ${
+                    className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
                       activeTab === tab
                         ? "border-b-4 border-black bg-white text-black"
                         : "bg-white text-gray-600 hover:bg-gray-100"
@@ -2710,20 +2710,20 @@ export default function Home() {
             </div>
           </section>
 
-          <header className="mt-6 rounded-3xl bg-white px-8 py-8 shadow-2xl">
-            <div className="flex items-center justify-between">
+          <header className="mt-4 rounded-3xl bg-white px-4 py-5 shadow-2xl sm:mt-6 sm:px-8 sm:py-8">
+            <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-between">
               <img
                 src="/logos/nutanix.png"
                 alt="Nutanix"
-                className="h-40 w-auto object-contain drop-shadow-2xl"
+                className="h-16 w-auto object-contain drop-shadow-2xl sm:h-24 md:h-40"
               />
 
-              <div className="px-6 text-center">
-                <h1 className="text-5xl font-extrabold tracking-tight">
+              <div className="px-1 text-center sm:px-6">
+                <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
                   World Cup 2026 Team Picker
                 </h1>
 
-                <p className="mt-4 text-lg text-gray-600">
+                <p className="mt-3 text-sm text-gray-600 sm:mt-4 sm:text-lg">
                   Participants choose two favorite teams and compete throughout
                   the FIFA World Cup 2026.
                 </p>
@@ -2732,7 +2732,7 @@ export default function Home() {
               <img
                 src="/logos/fifa.png"
                 alt="FIFA"
-                className="h-44 w-auto object-contain drop-shadow-2xl"
+                className="h-16 w-auto object-contain drop-shadow-2xl sm:h-24 md:h-44"
               />
             </div>
           </header>
@@ -2740,7 +2740,7 @@ export default function Home() {
 
         {activeTab === "participants" && (
           <>
-            <section className="rounded-2xl bg-white p-6 shadow">
+            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
               <h2 className="text-xl font-semibold">Login Required</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
                 <li>
@@ -2844,13 +2844,13 @@ export default function Home() {
               )}
             </section>
 
-            <section className="rounded-2xl bg-white p-6 shadow">
+            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
               <h2 className="mb-4 text-xl font-semibold">
                 {myPick ? "Update Your Picks" : "Add Participant"}
               </h2>
               <form
                 onSubmit={addParticipant}
-                className="grid gap-4 md:grid-cols-4"
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
               >
                 <input
                   className="rounded-xl border p-3"
@@ -2949,7 +2949,7 @@ export default function Home() {
               )}
             </section>
 
-            <section className="rounded-2xl bg-white p-6 shadow">
+            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
               <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
                 <div>
                   <h2 className="text-xl font-semibold">
@@ -3027,7 +3027,7 @@ export default function Home() {
         {activeTab === "matches" && (
           <>
             <section className="space-y-6">
-              <div className="rounded-2xl bg-white p-6 shadow">
+              <div className="rounded-2xl bg-white p-4 shadow sm:p-6">
                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                   <div>
                     <h2 className="text-2xl font-bold">Matches</h2>
@@ -3085,7 +3085,7 @@ export default function Home() {
                     {dateMatches.map((match) => (
                       <div
                         key={match.id}
-                        className="grid gap-4 p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
+                        className="grid gap-4 p-4 sm:p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
                       >
                         <div className="flex flex-col gap-2">
                           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -3094,7 +3094,7 @@ export default function Home() {
                           <TeamDisplay teamName={match.teamA} />
                         </div>
 
-                        <div className="rounded-2xl bg-gray-100 px-6 py-4 text-center">
+                        <div className="rounded-2xl bg-gray-100 px-4 py-4 text-center sm:px-6">
                           {isAdmin ? (
                             <select
                               className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
@@ -3255,11 +3255,14 @@ export default function Home() {
               <section className="max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-xl md:p-8">
                 <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
                   <div>
-                    <h2 className="text-3xl font-extrabold text-gray-900">
+                    <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
                       Knockout Bracket
                     </h2>
                     <p className="mt-2 text-sm text-gray-600">
                       Winners advance from each match into the next round.
+                    </p>
+                    <p className="mt-2 text-xs font-medium text-blue-700 sm:hidden">
+                      Swipe sideways to view the full bracket.
                     </p>
                   </div>
                 </div>
@@ -3374,7 +3377,7 @@ export default function Home() {
 
         {activeTab === "groups" && (
           <section className="space-y-6">
-            <section className="rounded-2xl bg-white p-6 shadow">
+            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
               <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
                 <div>
                   <h2 className="text-2xl font-bold">Groups / Teams</h2>
