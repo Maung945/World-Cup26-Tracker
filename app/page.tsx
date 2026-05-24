@@ -1705,19 +1705,200 @@ export default function Home() {
   );
 
   const scoredParticipants = useMemo(() => {
-    const getTeamPoints = (teamName: string) => {
-      return matches.reduce((points, match) => {
-        const isTeamA = match.teamA === teamName;
-        const isTeamB = match.teamB === teamName;
+    const hasValidScore = (match: Match) => {
+      if (match.scoreA.trim() === "" || match.scoreB.trim() === "")
+        return false;
 
-        if (!isTeamA && !isTeamB) return points;
-        if (match.scoreA.trim() === "" || match.scoreB.trim() === "")
-          return points;
+      const scoreA = Number(match.scoreA);
+      const scoreB = Number(match.scoreB);
+
+      return !Number.isNaN(scoreA) && !Number.isNaN(scoreB);
+    };
+
+    const localGroupStandings = (() => {
+      const standings: GroupStanding[] = teamData.map((team) => ({
+        team: team.name,
+        group: team.group,
+        mp: 0,
+        w: 0,
+        d: 0,
+        l: 0,
+        gf: 0,
+        ga: 0,
+        gd: 0,
+        pts: 0,
+      }));
+
+      const findStanding = (teamName: string) =>
+        standings.find((standing) => standing.team === teamName);
+
+      matches.forEach((match) => {
+        if (!match.stage.startsWith("Group")) return;
+        if (!hasValidScore(match)) return;
 
         const scoreA = Number(match.scoreA);
         const scoreB = Number(match.scoreB);
 
-        if (Number.isNaN(scoreA) || Number.isNaN(scoreB)) return points;
+        const standingA = findStanding(match.teamA);
+        const standingB = findStanding(match.teamB);
+
+        if (!standingA || !standingB) return;
+
+        standingA.mp += 1;
+        standingB.mp += 1;
+
+        standingA.gf += scoreA;
+        standingA.ga += scoreB;
+        standingB.gf += scoreB;
+        standingB.ga += scoreA;
+
+        standingA.gd = standingA.gf - standingA.ga;
+        standingB.gd = standingB.gf - standingB.ga;
+
+        if (scoreA > scoreB) {
+          standingA.w += 1;
+          standingA.pts += 3;
+          standingB.l += 1;
+        } else if (scoreB > scoreA) {
+          standingB.w += 1;
+          standingB.pts += 3;
+          standingA.l += 1;
+        } else {
+          standingA.d += 1;
+          standingB.d += 1;
+          standingA.pts += 1;
+          standingB.pts += 1;
+        }
+      });
+
+      const groups: Record<string, GroupStanding[]> = {};
+
+      standings.forEach((standing) => {
+        if (!groups[standing.group]) groups[standing.group] = [];
+        groups[standing.group].push(standing);
+      });
+
+      Object.keys(groups).forEach((group) => {
+        groups[group].sort(
+          (a, b) =>
+            b.pts - a.pts ||
+            b.gd - a.gd ||
+            b.gf - a.gf ||
+            a.team.localeCompare(b.team),
+        );
+      });
+
+      return groups;
+    })();
+
+    const isGroupCompleteLocal = (group: string) => {
+      const groupMatches = matches.filter(
+        (match) => match.stage === `Group ${group}`,
+      );
+
+      return (
+        groupMatches.length > 0 &&
+        groupMatches.every((match) => hasValidScore(match))
+      );
+    };
+
+    const getGroupRankTeamLocal = (group: string, rank: number) => {
+      if (!isGroupCompleteLocal(group)) return null;
+      return localGroupStandings[group]?.[rank - 1]?.team ?? null;
+    };
+
+    const getBestThirdPlaceTeamLocal = (candidateGroups: string) => {
+      const groups = candidateGroups.split("");
+
+      if (!groups.every((group) => isGroupCompleteLocal(group))) return null;
+
+      const thirdPlaceTeams = groups
+        .map((group) => localGroupStandings[group]?.[2])
+        .filter(Boolean) as GroupStanding[];
+
+      return (
+        [...thirdPlaceTeams].sort(
+          (a, b) =>
+            b.pts - a.pts ||
+            b.gd - a.gd ||
+            b.gf - a.gf ||
+            a.team.localeCompare(b.team),
+        )[0]?.team ?? null
+      );
+    };
+
+    function resolveScoringSlot(slot: string): string | null {
+      if (shortCodeMap[slot]) return slot;
+
+      const groupPlacement = slot.match(/^([123])([A-L])$/);
+      if (groupPlacement) {
+        const rank = Number(groupPlacement[1]);
+        const group = groupPlacement[2];
+        return getGroupRankTeamLocal(group, rank);
+      }
+
+      const thirdPlacePlacement = slot.match(/^3([A-L]+)$/);
+      if (thirdPlacePlacement) {
+        return getBestThirdPlaceTeamLocal(thirdPlacePlacement[1]);
+      }
+
+      const winnerPlacement = slot.match(/^W(\d+)$/);
+      if (winnerPlacement) {
+        return getScoringMatchWinner(Number(winnerPlacement[1]));
+      }
+
+      const loserPlacement = slot.match(/^L(\d+)$/);
+      if (loserPlacement) {
+        return getScoringMatchLoser(Number(loserPlacement[1]));
+      }
+
+      return null;
+    }
+
+    function getScoringMatchWinner(matchId: number): string | null {
+      const match = matches.find((item) => item.id === matchId);
+
+      if (!match || !hasValidScore(match)) return null;
+
+      const scoreA = Number(match.scoreA);
+      const scoreB = Number(match.scoreB);
+
+      if (scoreA === scoreB) return null;
+
+      return scoreA > scoreB
+        ? resolveScoringSlot(match.teamA)
+        : resolveScoringSlot(match.teamB);
+    }
+
+    function getScoringMatchLoser(matchId: number): string | null {
+      const match = matches.find((item) => item.id === matchId);
+
+      if (!match || !hasValidScore(match)) return null;
+
+      const scoreA = Number(match.scoreA);
+      const scoreB = Number(match.scoreB);
+
+      if (scoreA === scoreB) return null;
+
+      return scoreA < scoreB
+        ? resolveScoringSlot(match.teamA)
+        : resolveScoringSlot(match.teamB);
+    }
+
+    const getTeamPoints = (teamName: string) => {
+      return matches.reduce((points, match) => {
+        if (!hasValidScore(match)) return points;
+
+        const resolvedTeamA = resolveScoringSlot(match.teamA);
+        const resolvedTeamB = resolveScoringSlot(match.teamB);
+
+        const isTeamA = resolvedTeamA === teamName;
+        const isTeamB = resolvedTeamB === teamName;
+
+        if (!isTeamA && !isTeamB) return points;
+
+        const scoreA = Number(match.scoreA);
+        const scoreB = Number(match.scoreB);
 
         if (scoreA === scoreB) return points + 1;
         if (isTeamA && scoreA > scoreB) return points + 3;
@@ -1734,7 +1915,7 @@ export default function Home() {
           getTeamPoints(participant.team1) + getTeamPoints(participant.team2),
       }))
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
-  }, [participants, matches]);
+  }, [participants, matches, teamData]);
 
   const topThreeScores = Array.from(
     new Set(
@@ -2195,7 +2376,9 @@ export default function Home() {
     return (
       <div
         className={`flex min-w-0 flex-1 items-center gap-2 ${
-          align === "right" ? "justify-end text-right" : "justify-start text-left"
+          align === "right"
+            ? "justify-end text-right"
+            : "justify-start text-left"
         }`}
       >
         {align === "left" && (
@@ -2217,7 +2400,10 @@ export default function Home() {
                 ) : (
                   <div className="space-y-1">
                     {participantNames.map((name, index) => (
-                      <p key={`${teamName}-${name}-${index}`} className="text-xs">
+                      <p
+                        key={`${teamName}-${name}-${index}`}
+                        className="text-xs"
+                      >
                         {index + 1}. {name}
                       </p>
                     ))}
@@ -2251,7 +2437,10 @@ export default function Home() {
                 ) : (
                   <div className="space-y-1">
                     {participantNames.map((name, index) => (
-                      <p key={`${teamName}-${name}-${index}`} className="text-xs">
+                      <p
+                        key={`${teamName}-${name}-${index}`}
+                        className="text-xs"
+                      >
                         {index + 1}. {name}
                       </p>
                     ))}
@@ -2269,8 +2458,7 @@ export default function Home() {
     const resolvedA = resolveBracketTeam(match.teamA);
     const resolvedB = resolveBracketTeam(match.teamB);
 
-    const hasScore =
-      match.scoreA.trim() !== "" && match.scoreB.trim() !== "";
+    const hasScore = match.scoreA.trim() !== "" && match.scoreB.trim() !== "";
 
     const teamAName = resolvedA.resolved ? resolvedA.name : "TBD";
     const teamBName = resolvedB.resolved ? resolvedB.name : "TBD";
@@ -2295,13 +2483,16 @@ export default function Home() {
           </p>
 
           {match.venue && (
-            <p className="hidden">
-              {match.venue}
+            <p
+              className="mx-auto mt-1 max-w-[230px] break-words text-[11px] font-semibold leading-snug text-blue-700"
+              title={match.venue}
+            >
+              📍 {match.venue}
             </p>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2 px-3 py-3">
           {/* LEFT TEAM */}
           <BracketTeamWithHover
             teamName={teamAName}
@@ -2315,11 +2506,7 @@ export default function Home() {
               <input
                 value={match.scoreA}
                 onChange={(e) =>
-                  updateMatchScore(
-                    match.id,
-                    "scoreA",
-                    e.target.value,
-                  )
+                  updateMatchScore(match.id, "scoreA", e.target.value)
                 }
                 className="h-9 w-11 rounded-xl border border-gray-300 bg-white text-center text-lg font-extrabold text-gray-900 outline-none focus:border-blue-500"
               />
@@ -2329,19 +2516,13 @@ export default function Home() {
               </div>
             )}
 
-            <span className="text-base font-extrabold text-gray-400">
-              -
-            </span>
+            <span className="text-base font-extrabold text-gray-400">-</span>
 
             {isAdmin ? (
               <input
                 value={match.scoreB}
                 onChange={(e) =>
-                  updateMatchScore(
-                    match.id,
-                    "scoreB",
-                    e.target.value,
-                  )
+                  updateMatchScore(match.id, "scoreB", e.target.value)
                 }
                 className="h-9 w-11 rounded-xl border border-gray-300 bg-white text-center text-lg font-extrabold text-gray-900 outline-none focus:border-blue-500"
               />
@@ -3001,11 +3182,11 @@ export default function Home() {
 
         {activeTab === "bracket" &&
           (() => {
-            const cardWidth = 192;
-            const cardHeight = 126;
-            const rowGap = 14;
+            const cardWidth = 270;
+            const cardHeight = 166;
+            const rowGap = 24;
             const step = cardHeight + rowGap;
-            const colGap = 22;
+            const colGap = 34;
             const headerOffset = 54;
 
             const rounds = [
@@ -3022,16 +3203,10 @@ export default function Home() {
                 .filter((match) => match.stage === round.stage)
                 .sort((a, b) => {
                   const roundOf32Order = [
-                    73, 75,
-                    74, 77,
-                    76, 78,
-                    79, 80,
-                    83, 84,
-                    81, 82,
-                    86, 88,
-                    85, 87,
+                    73, 75, 74, 77, 76, 78, 79, 80, 83, 84, 81, 82, 86, 88, 85,
+                    87,
                   ];
-                  
+
                   const quarterFinalOrder = [97, 98, 99, 100];
                   const semiFinalOrder = [101, 102];
 
@@ -3041,14 +3216,20 @@ export default function Home() {
                       roundOf32Order.indexOf(b.id)
                     );
                   }
-                  
+
                   if (round.stage === "Quarter Final") {
-                    return quarterFinalOrder.indexOf(a.id) - quarterFinalOrder.indexOf(b.id);
+                    return (
+                      quarterFinalOrder.indexOf(a.id) -
+                      quarterFinalOrder.indexOf(b.id)
+                    );
                   }
 
                   if (round.stage === "Semi Final") {
-                    return semiFinalOrder.indexOf(a.id) - semiFinalOrder.indexOf(b.id);
-}
+                    return (
+                      semiFinalOrder.indexOf(a.id) -
+                      semiFinalOrder.indexOf(b.id)
+                    );
+                  }
                   return a.id - b.id;
                 }),
             }));
@@ -3178,7 +3359,7 @@ export default function Home() {
                       Bronze Final
                     </h3>
 
-                    <div className="max-w-sm">
+                    <div className="max-w-[270px]">
                       {matches
                         .filter((match) => match.stage === "Bronze Final")
                         .map((match) => (
