@@ -1685,19 +1685,21 @@ export default function Home() {
       return hours * 60 + minutes;
     };
 
-    return matches.reduce<Record<string, Match[]>>((groups, match) => {
-      if (!groups[match.date]) {
-        groups[match.date] = [];
-      }
+    return matches
+      .filter((match) => match.id <= 72)
+      .reduce<Record<string, Match[]>>((groups, match) => {
+        if (!groups[match.date]) {
+          groups[match.date] = [];
+        }
 
-      groups[match.date].push(match);
+        groups[match.date].push(match);
 
-      groups[match.date].sort(
-        (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time),
-      );
+        groups[match.date].sort(
+          (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time),
+        );
 
-      return groups;
-    }, {});
+        return groups;
+      }, {});
   }, [matches]);
 
   const filteredTeams = teamData.filter((team) =>
@@ -1909,11 +1911,17 @@ export default function Home() {
     };
 
     return participants
-      .map((participant) => ({
-        ...participant,
-        score:
-          getTeamPoints(participant.team1) + getTeamPoints(participant.team2),
-      }))
+      .map((participant) => {
+        const team1Score = getTeamPoints(participant.team1);
+        const team2Score = getTeamPoints(participant.team2);
+
+        return {
+          ...participant,
+          team1Score,
+          team2Score,
+          score: team1Score + team2Score,
+        };
+      })
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
   }, [participants, matches, teamData]);
 
@@ -2689,7 +2697,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-100 p-3 text-gray-900 sm:p-6">
       <section className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
-        <header className="rounded-2xl bg-white p-4 shadow sm:p-6">
+        <header className="sticky top-0 z-50 rounded-2xl bg-white/95 p-3 shadow-xl backdrop-blur sm:p-4">
           <section className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow">
             <div className="flex">
               {(["participants", "matches", "bracket", "groups"] as const).map(
@@ -2710,20 +2718,20 @@ export default function Home() {
             </div>
           </section>
 
-          <header className="mt-4 rounded-3xl bg-white px-4 py-5 shadow-2xl sm:mt-6 sm:px-8 sm:py-8">
+          <header className="mt-3 rounded-3xl bg-white px-4 py-4 shadow-2xl sm:mt-4 sm:px-6 sm:py-5">
             <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-between">
               <img
                 src="/logos/nutanix.png"
                 alt="Nutanix"
-                className="h-16 w-auto object-contain drop-shadow-2xl sm:h-24 md:h-40"
+                className="h-10 w-auto object-contain drop-shadow-2xl sm:h-14 md:h-20"
               />
 
               <div className="px-1 text-center sm:px-6">
-                <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
+                <h1 className="text-xl font-extrabold tracking-tight sm:text-3xl md:text-4xl">
                   World Cup 2026 Team Picker
                 </h1>
 
-                <p className="mt-3 text-sm text-gray-600 sm:mt-4 sm:text-lg">
+                <p className="mt-2 text-xs text-gray-600 sm:text-sm md:text-base">
                   Participants choose two favorite teams and compete throughout
                   the FIFA World Cup 2026.
                 </p>
@@ -2732,7 +2740,7 @@ export default function Home() {
               <img
                 src="/logos/fifa.png"
                 alt="FIFA"
-                className="h-16 w-auto object-contain drop-shadow-2xl sm:h-24 md:h-44"
+                className="h-10 w-auto object-contain drop-shadow-2xl sm:h-14 md:h-20"
               />
             </div>
           </header>
@@ -2995,13 +3003,25 @@ export default function Home() {
                               : participant.name}
                           </td>
                           <td className="p-3">
-                            <TeamDisplay teamName={participant.team1} />
+                            <div className="flex items-center justify-between gap-3">
+                              <TeamDisplay teamName={participant.team1} />
+                              <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                                {participant.team1Score} pts
+                              </span>
+                            </div>
                           </td>
                           <td className="p-3">
-                            <TeamDisplay teamName={participant.team2} />
+                            <div className="flex items-center justify-between gap-3">
+                              <TeamDisplay teamName={participant.team2} />
+                              <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
+                                {participant.team2Score} pts
+                              </span>
+                            </div>
                           </td>
                           <td className="p-3 text-right text-lg font-bold">
-                            {participant.score}
+                            <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
+                              {participant.score} pts
+                            </span>
                           </td>
                           {isAdmin && (
                             <td className="p-3 text-right">
@@ -3032,8 +3052,8 @@ export default function Home() {
                   <div>
                     <h2 className="text-2xl font-bold">Matches</h2>
                     <p className="mt-1 text-sm text-gray-500">
-                      All times are Pacific Time. Hover over a team to see
-                      participants who selected that team.
+                      All times are Pacific Time. Group-stage matches are shown here;
+                      knockout matches are available in the Bracket tab.
                     </p>
                     <p className="mt-1 text-sm font-medium text-gray-700">
                       {isAdmin
