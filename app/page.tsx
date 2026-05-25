@@ -2697,28 +2697,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-100 p-3 text-gray-900 sm:p-6">
       <section className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
-        <header className="sticky top-0 z-50 rounded-2xl bg-white/95 p-3 shadow-xl backdrop-blur sm:p-4">
-          <section className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow">
-            <div className="flex">
-              {(["participants", "matches", "bracket", "groups"] as const).map(
-                (tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
-                      activeTab === tab
-                        ? "border-b-4 border-black bg-white text-black"
-                        : "bg-white text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {tab === "groups" ? "GROUPS/TEAMS" : tab}
-                  </button>
-                ),
-              )}
-            </div>
-          </section>
-
-          <header className="mt-3 rounded-3xl bg-white px-4 py-4 shadow-2xl sm:mt-4 sm:px-6 sm:py-5">
+        <header className="space-y-3 sm:space-y-4">
+          <header className="rounded-3xl bg-white px-4 py-4 shadow-2xl sm:px-6 sm:py-5">
             <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-between">
               <img
                 src="/logos/nutanix.png"
@@ -2744,6 +2724,26 @@ export default function Home() {
               />
             </div>
           </header>
+
+          <section className="sticky top-0 z-50 overflow-hidden rounded-2xl border border-gray-300 bg-white/95 shadow backdrop-blur">
+            <div className="flex">
+              {(["participants", "matches", "bracket", "groups"] as const).map(
+                (tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
+                      activeTab === tab
+                        ? "border-b-4 border-black bg-white text-black"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {tab === "groups" ? "GROUPS/TEAMS" : tab}
+                  </button>
+                ),
+              )}
+            </div>
+          </section>
         </header>
 
         {activeTab === "participants" && (
