@@ -2737,7 +2737,7 @@ export default function Home() {
                 </h1>
 
                 <p className="mt-2 text-xs text-gray-600 sm:text-sm md:text-base">
-                  Participants choose two favorite teams and compete throughout
+                  Participants choose three favorite teams and compete throughout
                   the FIFA World Cup 2026.
                 </p>
               </div>
