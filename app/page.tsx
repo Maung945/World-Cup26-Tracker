@@ -37,6 +37,7 @@ type Participant = {
   name: string;
   team1: string;
   team2: string;
+  team3: string;
   user_id?: string;
 };
 
@@ -1485,6 +1486,7 @@ export default function Home() {
   const [participantName, setParticipantName] = useState("");
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
+  const [team3, setTeam3] = useState("");
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [teamData, setTeamData] = useState<Team[]>(teams);
   const [matches, setMatches] = useState<Match[]>(starterMatches);
@@ -1533,6 +1535,7 @@ export default function Home() {
           setParticipantName("");
           setTeam1("");
           setTeam2("");
+          setTeam3("");
         }
       },
     );
@@ -1549,7 +1552,10 @@ export default function Home() {
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setParticipants(data);
+      setParticipants(data.map((participant) => ({
+        ...participant,
+        team3: participant.team3 ?? "",
+      })));
     }
   }
 
@@ -1591,8 +1597,13 @@ export default function Home() {
       setParticipantName(data.name);
       setTeam1(data.team1);
       setTeam2(data.team2);
+      setTeam3(data.team3 ?? "");
     } else {
       setMyPick(null);
+      setParticipantName("");
+      setTeam1("");
+      setTeam2("");
+      setTeam3("");
     }
   }
 
@@ -1655,6 +1666,7 @@ export default function Home() {
     setParticipantName("");
     setTeam1("");
     setTeam2("");
+    setTeam3("");
     setPassword("");
   }
 
@@ -1665,6 +1677,7 @@ export default function Home() {
     participants.forEach((participant) => {
       map[participant.team1]?.push(participant.name);
       map[participant.team2]?.push(participant.name);
+      map[participant.team3]?.push(participant.name);
     });
 
     return map;
@@ -1914,12 +1927,14 @@ export default function Home() {
       .map((participant) => {
         const team1Score = getTeamPoints(participant.team1);
         const team2Score = getTeamPoints(participant.team2);
+        const team3Score = getTeamPoints(participant.team3);
 
         return {
           ...participant,
           team1Score,
           team2Score,
-          score: team1Score + team2Score,
+          team3Score,
+          score: team1Score + team2Score + team3Score,
         };
       })
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
@@ -1948,7 +1963,15 @@ export default function Home() {
       return;
     }
 
-    if (!participantName.trim() || !team1 || !team2 || team1 === team2) return;
+    const selectedTeams = [team1, team2, team3];
+
+    if (
+      !participantName.trim() ||
+      selectedTeams.some((team) => !team) ||
+      new Set(selectedTeams).size !== selectedTeams.length
+    ) {
+      return;
+    }
 
     if (myPick) {
       const { error } = await supabase
@@ -1957,6 +1980,7 @@ export default function Home() {
           name: participantName.trim(),
           team1,
           team2,
+          team3,
         })
         .eq("user_id", user.id);
 
@@ -1970,6 +1994,7 @@ export default function Home() {
           name: participantName.trim(),
           team1,
           team2,
+          team3,
           user_id: user.id,
         },
       ]);
@@ -2113,6 +2138,7 @@ export default function Home() {
       setParticipantName("");
       setTeam1("");
       setTeam2("");
+      setTeam3("");
     }
 
     await fetchParticipants();
@@ -2856,7 +2882,7 @@ export default function Home() {
               </h2>
               <form
                 onSubmit={addParticipant}
-                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
               >
                 <input
                   className="rounded-xl border p-3"
@@ -2934,6 +2960,40 @@ export default function Home() {
                   )}
                 />
 
+                <Select
+                  instanceId="favorite-team-3"
+                  inputId="favorite-team-3"
+                  isDisabled={!user || picksLocked}
+                  placeholder="Favorite Team 3"
+                  value={
+                    team3
+                      ? {
+                          value: team3,
+                          label: team3,
+                          image: flagMap[team3],
+                        }
+                      : null
+                  }
+                  onChange={(selected) => setTeam3(selected?.value || "")}
+                  options={[...teamData]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((team) => ({
+                      value: team.name,
+                      label: team.name,
+                      image: flagMap[team.name],
+                    }))}
+                  formatOptionLabel={(option: any) => (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={option.image}
+                        alt={option.label}
+                        className="h-5 w-7 rounded-sm object-cover"
+                      />
+                      <span>{option.label}</span>
+                    </div>
+                  )}
+                />
+
                 <button
                   disabled={!user || picksLocked}
                   className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
@@ -2948,11 +3008,12 @@ export default function Home() {
                 </p>
               )}
 
-              {team1 && team2 && team1 === team2 && (
-                <p className="mt-3 text-red-600">
-                  Please choose two different teams.
-                </p>
-              )}
+              {[team1, team2, team3].every(Boolean) &&
+                new Set([team1, team2, team3]).size !== 3 && (
+                  <p className="mt-3 text-red-600">
+                    Please choose three different teams.
+                  </p>
+                )}
             </section>
 
             <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
@@ -2981,6 +3042,7 @@ export default function Home() {
                         <th className="p-3">Name</th>
                         <th className="p-3">Team 1</th>
                         <th className="p-3">Team 2</th>
+                        <th className="p-3">Team 3</th>
                         <th className="p-3 text-right">Score</th>
                         {isAdmin && <th className="p-3 text-right">Admin</th>}
                       </tr>
@@ -3013,6 +3075,14 @@ export default function Home() {
                               <TeamDisplay teamName={participant.team2} />
                               <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
                                 {participant.team2Score} pts
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <TeamDisplay teamName={participant.team3} />
+                              <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
+                                {participant.team3Score} pts
                               </span>
                             </div>
                           </td>
