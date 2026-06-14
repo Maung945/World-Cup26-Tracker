@@ -1474,7 +1474,7 @@ const progressOptions: Team["status"][] = [
   "Eliminated",
 ];
 
-const PICK_CUTOFF = new Date("2026-06-10T23:59:59-07:00");
+const PICK_CUTOFF = new Date("2026-06-28T00:00:00-07:00");
 
 const ADMIN_EMAILS = ["ma_945@outlook.com"];
 
@@ -2782,7 +2782,7 @@ export default function Home() {
                 <li>You can submit only one set of picks per account.</li>
                 <li>
                   You may update your name or teams until{" "}
-                  <strong>June 10, 2026 at 11:59 PM PDT</strong>. After that,
+                  <strong>June 27, 2026 at 11:59 PM PDT</strong>. After that,
                   all picks are locked.
                 </li>
               </ul>
@@ -2882,10 +2882,10 @@ export default function Home() {
               </h2>
               <form
                 onSubmit={addParticipant}
-                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto]"
               >
                 <input
-                  className="rounded-xl border p-3"
+                  className="min-w-0 rounded-xl border p-3 sm:col-span-2 lg:col-span-1"
                   placeholder="Participant name"
                   value={participantName}
                   onChange={(e) => setParticipantName(e.target.value)}
@@ -2895,6 +2895,7 @@ export default function Home() {
                 <Select
                   instanceId="favorite-team-1"
                   inputId="favorite-team-1"
+                  className="min-w-0"
                   isDisabled={!user || picksLocked}
                   placeholder="Favorite Team 1"
                   value={
@@ -2929,6 +2930,7 @@ export default function Home() {
                 <Select
                   instanceId="favorite-team-2"
                   inputId="favorite-team-2"
+                  className="min-w-0"
                   isDisabled={!user || picksLocked}
                   placeholder="Favorite Team 2"
                   value={
@@ -2963,6 +2965,7 @@ export default function Home() {
                 <Select
                   instanceId="favorite-team-3"
                   inputId="favorite-team-3"
+                  className="min-w-0"
                   isDisabled={!user || picksLocked}
                   placeholder="Favorite Team 3"
                   value={
@@ -2996,7 +2999,7 @@ export default function Home() {
 
                 <button
                   disabled={!user || picksLocked}
-                  className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                  className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400 sm:col-span-2 lg:col-span-1"
                 >
                   {myPick ? "Update Picks" : "Submit Picks"}
                 </button>
@@ -3034,79 +3037,146 @@ export default function Home() {
               {participants.length === 0 ? (
                 <p className="text-gray-500">No participants yet.</p>
               ) : (
-                <div className="overflow-visible">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b bg-gray-50">
-                        <th className="p-3">Rank</th>
-                        <th className="p-3">Name</th>
-                        <th className="p-3">Team 1</th>
-                        <th className="p-3">Team 2</th>
-                        <th className="p-3">Team 3</th>
-                        <th className="p-3 text-right">Score</th>
-                        {isAdmin && <th className="p-3 text-right">Admin</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {scoredParticipants.map((participant, index) => (
-                        <tr key={participant.id} className="border-b">
-                          <td className="p-3 font-semibold">{index + 1}</td>
-                          <td
-                            className={`p-3 font-bold ${
-                              topThreeScores.includes(participant.score)
-                                ? "text-yellow-600"
-                                : "text-gray-900"
-                            }`}
-                          >
-                            {topThreeScores.includes(participant.score)
-                              ? `🏆 ${participant.name}`
-                              : participant.name}
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <TeamDisplay teamName={participant.team1} />
-                              <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
-                                {participant.team1Score} pts
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <TeamDisplay teamName={participant.team2} />
-                              <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
-                                {participant.team2Score} pts
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <TeamDisplay teamName={participant.team3} />
-                              <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
-                                {participant.team3Score} pts
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-3 text-right text-lg font-bold">
-                            <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
-                              {participant.score} pts
+                <>
+                  <div className="space-y-3 md:hidden">
+                    {scoredParticipants.map((participant, index) => (
+                      <div
+                        key={participant.id}
+                        className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                      >
+                        <div className="mb-3 flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                              Rank #{index + 1}
+                            </p>
+                            <h3
+                              className={`truncate text-lg font-extrabold ${
+                                topThreeScores.includes(participant.score)
+                                  ? "text-yellow-600"
+                                  : "text-gray-900"
+                              }`}
+                            >
+                              {topThreeScores.includes(participant.score)
+                                ? `🏆 ${participant.name}`
+                                : participant.name}
+                            </h3>
+                          </div>
+
+                          <span className="flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
+                            {participant.score} pts
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                            <TeamDisplay teamName={participant.team1} />
+                            <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                              {participant.team1Score} pts
                             </span>
-                          </td>
-                          {isAdmin && (
-                            <td className="p-3 text-right">
-                              <button
-                                type="button"
-                                onClick={() => deleteParticipant(participant)}
-                                className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          )}
+                          </div>
+
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                            <TeamDisplay teamName={participant.team2} />
+                            <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
+                              {participant.team2Score} pts
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                            <TeamDisplay teamName={participant.team3} />
+                            <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
+                              {participant.team3Score} pts
+                            </span>
+                          </div>
+                        </div>
+
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => deleteParticipant(participant)}
+                            className="mt-3 w-full rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="hidden overflow-visible md:block">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b bg-gray-50">
+                          <th className="p-3">Rank</th>
+                          <th className="p-3">Name</th>
+                          <th className="p-3">Team 1</th>
+                          <th className="p-3">Team 2</th>
+                          <th className="p-3">Team 3</th>
+                          <th className="p-3 text-right">Score</th>
+                          {isAdmin && <th className="p-3 text-right">Admin</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {scoredParticipants.map((participant, index) => (
+                          <tr key={participant.id} className="border-b">
+                            <td className="p-3 font-semibold">{index + 1}</td>
+                            <td
+                              className={`p-3 font-bold ${
+                                topThreeScores.includes(participant.score)
+                                  ? "text-yellow-600"
+                                  : "text-gray-900"
+                              }`}
+                            >
+                              {topThreeScores.includes(participant.score)
+                                ? `🏆 ${participant.name}`
+                                : participant.name}
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <TeamDisplay teamName={participant.team1} />
+                                <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                                  {participant.team1Score} pts
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <TeamDisplay teamName={participant.team2} />
+                                <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
+                                  {participant.team2Score} pts
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <TeamDisplay teamName={participant.team3} />
+                                <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
+                                  {participant.team3Score} pts
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-right text-lg font-bold">
+                              <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
+                                {participant.score} pts
+                              </span>
+                            </td>
+                            {isAdmin && (
+                              <td className="p-3 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => deleteParticipant(participant)}
+                                  className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </section>
           </>
