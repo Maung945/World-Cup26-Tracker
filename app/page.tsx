@@ -1940,15 +1940,10 @@ export default function Home() {
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
   }, [participants, matches, teamData]);
 
-  const topThreeScores = Array.from(
-    new Set(
-      scoredParticipants
-        .map((participant) => participant.score)
-        .filter((score) => score > 0),
-    ),
-  )
-    .sort((a, b) => b - a)
-    .slice(0, 3);
+  const highestParticipantScore = scoredParticipants[0]?.score ?? null;
+
+  const isWinnerScore = (score: number) =>
+    highestParticipantScore !== null && score === highestParticipantScore;
 
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -3051,12 +3046,12 @@ export default function Home() {
                             </p>
                             <h3
                               className={`truncate text-lg font-extrabold ${
-                                topThreeScores.includes(participant.score)
+                                isWinnerScore(participant.score)
                                   ? "text-yellow-600"
                                   : "text-gray-900"
                               }`}
                             >
-                              {topThreeScores.includes(participant.score)
+                              {isWinnerScore(participant.score)
                                 ? `🏆 ${participant.name}`
                                 : participant.name}
                             </h3>
@@ -3122,12 +3117,12 @@ export default function Home() {
                             <td className="p-3 font-semibold">{index + 1}</td>
                             <td
                               className={`p-3 font-bold ${
-                                topThreeScores.includes(participant.score)
+                                isWinnerScore(participant.score)
                                   ? "text-yellow-600"
                                   : "text-gray-900"
                               }`}
                             >
-                              {topThreeScores.includes(participant.score)
+                              {isWinnerScore(participant.score)
                                 ? `🏆 ${participant.name}`
                                 : participant.name}
                             </td>
