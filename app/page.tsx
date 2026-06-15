@@ -39,6 +39,7 @@ type Participant = {
   team2: string;
   team3: string;
   user_id?: string;
+  paid?: boolean;
 };
 
 type GroupStanding = {
@@ -1477,6 +1478,7 @@ const progressOptions: Team["status"][] = [
 const PICK_CUTOFF = new Date("2026-06-28T00:00:00-07:00");
 
 const ADMIN_EMAILS = ["ma_945@outlook.com"];
+const CONTRIBUTION_AMOUNT = 30;
 
 function flagText(teamName: string) {
   return teamName;
@@ -1564,6 +1566,7 @@ export default function Home() {
         data.map((participant) => ({
           ...participant,
           team3: participant.team3 ?? "",
+          paid: Boolean(participant.paid),
         })),
       );
     }
@@ -1603,7 +1606,7 @@ export default function Home() {
       .maybeSingle();
 
     if (!error && data) {
-      setMyPick(data);
+      setMyPick({ ...data, team3: data.team3 ?? "", paid: Boolean(data.paid) });
       setParticipantName(data.name);
       setTeam1(data.team1);
       setTeam2(data.team2);
@@ -1956,6 +1959,13 @@ export default function Home() {
   const isWinnerScore = (score: number) =>
     highestParticipantScore !== null && score === highestParticipantScore;
 
+  const paidParticipantCount = useMemo(
+    () => participants.filter((participant) => participant.paid).length,
+    [participants],
+  );
+
+  const potMoney = paidParticipantCount * CONTRIBUTION_AMOUNT;
+
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -2149,6 +2159,42 @@ export default function Home() {
       setTeam1("");
       setTeam2("");
       setTeam3("");
+    }
+  }
+
+  async function toggleParticipantPaid(participant: Participant) {
+    if (!isAdmin) {
+      alert("Only admins can update payment status.");
+      return;
+    }
+
+    const nextPaidStatus = !participant.paid;
+
+    const { error } = await supabase
+      .from("participants")
+      .update({ paid: nextPaidStatus })
+      .eq("id", participant.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setParticipants((current) =>
+      current.map((item) =>
+        item.id === participant.id ? { ...item, paid: nextPaidStatus } : item,
+      ),
+    );
+
+    if (myPick?.id === participant.id) {
+      setMyPick({ ...myPick, paid: nextPaidStatus });
+    }
+
+    if (adminEditingParticipant?.id === participant.id) {
+      setAdminEditingParticipant({
+        ...adminEditingParticipant,
+        paid: nextPaidStatus,
+      });
     }
   }
 
@@ -2825,6 +2871,25 @@ export default function Home() {
           </div>
         </header>
 
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow sm:p-5">
+          <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
+                Pot Money
+              </p>
+              <h2 className="mt-1 text-2xl font-extrabold text-emerald-900 sm:text-3xl">
+                ${potMoney.toLocaleString()}
+              </h2>
+            </div>
+
+            <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-emerald-800 shadow-sm">
+              {paidParticipantCount} participant
+              {paidParticipantCount === 1 ? "" : "s"} paid × $
+              {CONTRIBUTION_AMOUNT}
+            </div>
+          </div>
+        </section>
+
         <section className="sticky top-0 z-50 overflow-hidden rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/90">
           <div className="flex">
             {(["participants", "matches", "bracket", "groups"] as const).map(
@@ -2856,9 +2921,9 @@ export default function Home() {
                 </li>
                 <li>You can submit only one set of picks per account.</li>
                 <li>
-                  Participation is open until{" "}
+                  You may update your name or teams until{" "}
                   <strong>June 27, 2026 at 11:59 PM PDT</strong>. After that,
-                  all picks are locked. Teams can only be picked once.
+                  all picks are locked.
                 </li>
               </ul>
 
@@ -3154,9 +3219,15 @@ export default function Home() {
                                   : "text-gray-900"
                               }`}
                             >
-                              {isWinnerScore(participant.score)
-                                ? `🏆 ${participant.name}`
-                                : participant.name}
+                              <span>
+                                {isWinnerScore(participant.score) ? "🏆 " : ""}
+                                {participant.name}
+                              </span>
+                              {participant.paid && (
+                                <span className="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-700">
+                                  $
+                                </span>
+                              )}
                             </h3>
                           </div>
 
@@ -3189,7 +3260,7 @@ export default function Home() {
                         </div>
 
                         {isAdmin && (
-                          <div className="mt-3 grid grid-cols-2 gap-2">
+                          <div className="mt-3 grid grid-cols-3 gap-2">
                             <button
                               type="button"
                               onClick={() =>
@@ -3198,6 +3269,17 @@ export default function Home() {
                               className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
                             >
                               Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleParticipantPaid(participant)}
+                              className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${
+                                participant.paid
+                                  ? "bg-emerald-700 hover:bg-emerald-800"
+                                  : "bg-emerald-600 hover:bg-emerald-700"
+                              }`}
+                            >
+                              {participant.paid ? "Remove $" : "Add $"}
                             </button>
                             <button
                               type="button"
@@ -3236,9 +3318,15 @@ export default function Home() {
                                   : "text-gray-900"
                               }`}
                             >
-                              {isWinnerScore(participant.score)
-                                ? `🏆 ${participant.name}`
-                                : participant.name}
+                              <span>
+                                {isWinnerScore(participant.score) ? "🏆 " : ""}
+                                {participant.name}
+                              </span>
+                              {participant.paid && (
+                                <span className="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-700">
+                                  $
+                                </span>
+                              )}
                             </td>
                             <td className="p-3">
                               <div className="flex items-center justify-between gap-3">
@@ -3280,6 +3368,19 @@ export default function Home() {
                                     className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
                                   >
                                     Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      toggleParticipantPaid(participant)
+                                    }
+                                    className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${
+                                      participant.paid
+                                        ? "bg-emerald-700 hover:bg-emerald-800"
+                                        : "bg-emerald-600 hover:bg-emerald-700"
+                                    }`}
+                                  >
+                                    {participant.paid ? "Remove $" : "Add $"}
                                   </button>
                                   <button
                                     type="button"
