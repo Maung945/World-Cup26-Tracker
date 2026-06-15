@@ -1503,6 +1503,9 @@ export default function Home() {
   const [authMessage, setAuthMessage] = useState("");
   const [myPick, setMyPick] = useState<Participant | null>(null);
   const [scoreSaveMessage, setScoreSaveMessage] = useState("");
+  const [paymentSaveMessage, setPaymentSaveMessage] = useState("");
+  const [pendingPaidById, setPendingPaidById] = useState<Record<number, boolean>>({});
+  const [isSavingPaymentChanges, setIsSavingPaymentChanges] = useState(false);
   const [adminEditingParticipant, setAdminEditingParticipant] =
     useState<Participant | null>(null);
 
@@ -1965,6 +1968,7 @@ export default function Home() {
   );
 
   const potMoney = paidParticipantCount * CONTRIBUTION_AMOUNT;
+  const hasUnsavedPaymentChanges = Object.keys(pendingPaidById).length > 0;
 
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -2162,23 +2166,13 @@ export default function Home() {
     }
   }
 
-  async function toggleParticipantPaid(participant: Participant) {
+  function toggleParticipantPaid(participant: Participant) {
     if (!isAdmin) {
       alert("Only admins can update payment status.");
       return;
     }
 
     const nextPaidStatus = !participant.paid;
-
-    const { error } = await supabase
-      .from("participants")
-      .update({ paid: nextPaidStatus })
-      .eq("id", participant.id);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
 
     setParticipants((current) =>
       current.map((item) =>
@@ -2196,6 +2190,61 @@ export default function Home() {
         paid: nextPaidStatus,
       });
     }
+
+    setPendingPaidById((current) => ({
+      ...current,
+      [participant.id]: nextPaidStatus,
+    }));
+    setPaymentSaveMessage("Payment changes are not saved yet. Click Save changes.");
+  }
+
+  async function savePaymentChanges() {
+    if (!isAdmin) {
+      alert("Only admins can save payment changes.");
+      return;
+    }
+
+    const changedEntries = Object.entries(pendingPaidById);
+
+    if (changedEntries.length === 0) {
+      setPaymentSaveMessage("No payment changes to save.");
+      return;
+    }
+
+    setIsSavingPaymentChanges(true);
+    setPaymentSaveMessage("Saving payment changes...");
+
+    for (const [participantId, paid] of changedEntries) {
+      const { data, error } = await supabase
+        .from("participants")
+        .update({ paid })
+        .eq("id", Number(participantId))
+        .select("id, paid");
+
+      if (error) {
+        setIsSavingPaymentChanges(false);
+        setPaymentSaveMessage(error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        setIsSavingPaymentChanges(false);
+        setPaymentSaveMessage(
+          "Supabase did not save the payment change. Run the admin UPDATE policy SQL below, then try Save changes again.",
+        );
+        return;
+      }
+    }
+
+    await fetchParticipants();
+
+    if (user?.id) {
+      await fetchMyPick(user.id);
+    }
+
+    setPendingPaidById({});
+    setIsSavingPaymentChanges(false);
+    setPaymentSaveMessage("Payment changes saved successfully.");
   }
 
   async function deleteParticipant(participant: Participant) {
@@ -2882,10 +2931,35 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-emerald-800 shadow-sm">
-              {paidParticipantCount} participant
-              {paidParticipantCount === 1 ? "" : "s"} paid × $
-              {CONTRIBUTION_AMOUNT}
+            <div className="flex flex-col items-center gap-2 sm:items-end">
+              <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-emerald-800 shadow-sm">
+                {paidParticipantCount} participant
+                {paidParticipantCount === 1 ? "" : "s"} paid × $
+                {CONTRIBUTION_AMOUNT}
+              </div>
+
+              {isAdmin && (
+                <div className="flex flex-col items-center gap-2 sm:items-end">
+                  <button
+                    type="button"
+                    onClick={savePaymentChanges}
+                    disabled={!hasUnsavedPaymentChanges || isSavingPaymentChanges}
+                    className={`rounded-xl px-4 py-2 text-sm font-bold text-white shadow ${
+                      !hasUnsavedPaymentChanges || isSavingPaymentChanges
+                        ? "cursor-not-allowed bg-gray-400"
+                        : "bg-emerald-700 hover:bg-emerald-800"
+                    }`}
+                  >
+                    {isSavingPaymentChanges ? "Saving..." : "Save changes"}
+                  </button>
+
+                  {paymentSaveMessage && (
+                    <p className="max-w-xs text-center text-xs font-semibold text-emerald-800 sm:text-right">
+                      {paymentSaveMessage}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </section>
