@@ -1501,12 +1501,19 @@ export default function Home() {
   const [authMessage, setAuthMessage] = useState("");
   const [myPick, setMyPick] = useState<Participant | null>(null);
   const [scoreSaveMessage, setScoreSaveMessage] = useState("");
+  const [adminEditingParticipant, setAdminEditingParticipant] =
+    useState<Participant | null>(null);
 
   const isAdmin = Boolean(
     user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()),
   );
 
   const [picksLocked, setPicksLocked] = useState(false);
+
+  const hasSubmittedPick = Boolean(myPick);
+  const isAdminEditingParticipant = Boolean(isAdmin && adminEditingParticipant);
+  const shouldLockPickForm =
+    !user || (!isAdminEditingParticipant && (picksLocked || hasSubmittedPick));
 
   React.useEffect(() => {
     setPicksLocked(new Date() > PICK_CUTOFF);
@@ -1536,6 +1543,7 @@ export default function Home() {
           setTeam1("");
           setTeam2("");
           setTeam3("");
+          setAdminEditingParticipant(null);
         }
       },
     );
@@ -1552,10 +1560,12 @@ export default function Home() {
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setParticipants(data.map((participant) => ({
-        ...participant,
-        team3: participant.team3 ?? "",
-      })));
+      setParticipants(
+        data.map((participant) => ({
+          ...participant,
+          team3: participant.team3 ?? "",
+        })),
+      );
     }
   }
 
@@ -1668,6 +1678,7 @@ export default function Home() {
     setTeam2("");
     setTeam3("");
     setPassword("");
+    setAdminEditingParticipant(null);
   }
 
   const selectedByTeam = useMemo(() => {
@@ -1953,8 +1964,15 @@ export default function Home() {
       return;
     }
 
-    if (picksLocked) {
-      alert("Picks are locked. You can no longer change your teams.");
+    if (picksLocked && !isAdminEditingParticipant) {
+      alert("Picks are locked. Only the admin can edit submitted teams.");
+      return;
+    }
+
+    if (myPick && !isAdminEditingParticipant) {
+      alert(
+        "Your teams are already submitted and cannot be changed. Please contact the admin if a correction is needed.",
+      );
       return;
     }
 
@@ -1968,7 +1986,7 @@ export default function Home() {
       return;
     }
 
-    if (myPick) {
+    if (isAdminEditingParticipant && adminEditingParticipant) {
       const { error } = await supabase
         .from("participants")
         .update({
@@ -1977,12 +1995,14 @@ export default function Home() {
           team2,
           team3,
         })
-        .eq("user_id", user.id);
+        .eq("id", adminEditingParticipant.id);
 
       if (error) {
         alert(error.message);
         return;
       }
+
+      setAdminEditingParticipant(null);
     } else {
       const { error } = await supabase.from("participants").insert([
         {
@@ -2106,6 +2126,32 @@ export default function Home() {
     await fetchMatchScores();
   }
 
+  function startAdminEditParticipant(participant: Participant) {
+    if (!isAdmin) return;
+
+    setAdminEditingParticipant(participant);
+    setParticipantName(participant.name);
+    setTeam1(participant.team1);
+    setTeam2(participant.team2);
+    setTeam3(participant.team3 ?? "");
+  }
+
+  function cancelAdminEditParticipant() {
+    setAdminEditingParticipant(null);
+
+    if (myPick) {
+      setParticipantName(myPick.name);
+      setTeam1(myPick.team1);
+      setTeam2(myPick.team2);
+      setTeam3(myPick.team3 ?? "");
+    } else {
+      setParticipantName("");
+      setTeam1("");
+      setTeam2("");
+      setTeam3("");
+    }
+  }
+
   async function deleteParticipant(participant: Participant) {
     if (!isAdmin) {
       alert("Only admins can delete participants.");
@@ -2126,6 +2172,10 @@ export default function Home() {
     if (error) {
       alert(error.message);
       return;
+    }
+
+    if (adminEditingParticipant?.id === participant.id) {
+      setAdminEditingParticipant(null);
     }
 
     if (myPick?.id === participant.id) {
@@ -2660,20 +2710,36 @@ export default function Home() {
   }) {
     return (
       <section className="overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 text-gray-900 shadow-xl sm:p-6">
-        <h2 className="mb-4 text-2xl font-extrabold sm:mb-5 sm:text-3xl">Group {group}</h2>
+        <h2 className="mb-4 text-2xl font-extrabold sm:mb-5 sm:text-3xl">
+          Group {group}
+        </h2>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-left sm:min-w-[760px]">
             <thead>
               <tr className="border-b border-gray-200 text-gray-600">
                 <th className="pb-3 text-sm font-medium sm:text-lg">Team</th>
-                <th className="pb-3 text-center text-sm font-medium sm:text-lg">MP</th>
-                <th className="pb-3 text-center text-sm font-medium sm:text-lg">W</th>
-                <th className="pb-3 text-center text-sm font-medium sm:text-lg">D</th>
-                <th className="pb-3 text-center text-sm font-medium sm:text-lg">L</th>
-                <th className="pb-3 text-center text-sm font-medium sm:text-lg">GF</th>
-                <th className="pb-3 text-center text-sm font-medium sm:text-lg">GA</th>
-                <th className="pb-3 text-center text-sm font-medium sm:text-lg">GD</th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">
+                  MP
+                </th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">
+                  W
+                </th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">
+                  D
+                </th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">
+                  L
+                </th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">
+                  GF
+                </th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">
+                  GA
+                </th>
+                <th className="pb-3 text-center text-sm font-medium sm:text-lg">
+                  GD
+                </th>
                 <th className="pb-3 text-center text-sm font-extrabold text-gray-900 sm:text-lg">
                   Pts
                 </th>
@@ -2696,13 +2762,27 @@ export default function Home() {
                     </div>
                   </td>
 
-                  <td className="text-center text-lg sm:text-2xl">{standing.mp}</td>
-                  <td className="text-center text-lg sm:text-2xl">{standing.w}</td>
-                  <td className="text-center text-lg sm:text-2xl">{standing.d}</td>
-                  <td className="text-center text-lg sm:text-2xl">{standing.l}</td>
-                  <td className="text-center text-lg sm:text-2xl">{standing.gf}</td>
-                  <td className="text-center text-lg sm:text-2xl">{standing.ga}</td>
-                  <td className="text-center text-lg sm:text-2xl">{standing.gd}</td>
+                  <td className="text-center text-lg sm:text-2xl">
+                    {standing.mp}
+                  </td>
+                  <td className="text-center text-lg sm:text-2xl">
+                    {standing.w}
+                  </td>
+                  <td className="text-center text-lg sm:text-2xl">
+                    {standing.d}
+                  </td>
+                  <td className="text-center text-lg sm:text-2xl">
+                    {standing.l}
+                  </td>
+                  <td className="text-center text-lg sm:text-2xl">
+                    {standing.gf}
+                  </td>
+                  <td className="text-center text-lg sm:text-2xl">
+                    {standing.ga}
+                  </td>
+                  <td className="text-center text-lg sm:text-2xl">
+                    {standing.gd}
+                  </td>
                   <td className="text-center text-lg font-extrabold sm:text-2xl">
                     {standing.pts}
                   </td>
@@ -2719,50 +2799,50 @@ export default function Home() {
     <main className="min-h-screen bg-gray-100 p-3 text-gray-900 sm:p-6">
       <section className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
         <header className="rounded-3xl bg-white px-4 py-4 shadow-2xl sm:px-6 sm:py-5">
-            <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-between">
-              <img
-                src="/logos/nutanix.png"
-                alt="Nutanix"
-                className="h-10 w-auto object-contain drop-shadow-2xl sm:h-14 md:h-20"
-              />
+          <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-between">
+            <img
+              src="/logos/nutanix.png"
+              alt="Nutanix"
+              className="h-10 w-auto object-contain drop-shadow-2xl sm:h-14 md:h-20"
+            />
 
-              <div className="px-1 text-center sm:px-6">
-                <h1 className="text-xl font-extrabold tracking-tight sm:text-3xl md:text-4xl">
-                  World Cup 2026 Team Picker
-                </h1>
+            <div className="px-1 text-center sm:px-6">
+              <h1 className="text-xl font-extrabold tracking-tight sm:text-3xl md:text-4xl">
+                World Cup 2026 Team Picker
+              </h1>
 
-                <p className="mt-2 text-xs text-gray-600 sm:text-sm md:text-base">
-                  Participants choose three favorite teams and compete throughout
-                  the FIFA World Cup 2026.
-                </p>
-              </div>
-
-              <img
-                src="/logos/fifa.png"
-                alt="FIFA"
-                className="h-10 w-auto object-contain drop-shadow-2xl sm:h-14 md:h-20"
-              />
+              <p className="mt-2 text-xs text-gray-600 sm:text-sm md:text-base">
+                Participants choose three favorite teams and compete throughout
+                the FIFA World Cup 2026.
+              </p>
             </div>
+
+            <img
+              src="/logos/fifa.png"
+              alt="FIFA"
+              className="h-10 w-auto object-contain drop-shadow-2xl sm:h-14 md:h-20"
+            />
+          </div>
         </header>
 
         <section className="sticky top-0 z-50 overflow-hidden rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/90">
-            <div className="flex">
-              {(["participants", "matches", "bracket", "groups"] as const).map(
-                (tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
-                      activeTab === tab
-                        ? "border-b-4 border-black bg-white text-black"
-                        : "bg-white text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {tab === "groups" ? "GROUPS/TEAMS" : tab}
-                  </button>
-                ),
-              )}
-            </div>
+          <div className="flex">
+            {(["participants", "matches", "bracket", "groups"] as const).map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
+                    activeTab === tab
+                      ? "border-b-4 border-black bg-white text-black"
+                      : "bg-white text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {tab === "groups" ? "GROUPS/TEAMS" : tab}
+                </button>
+              ),
+            )}
+          </div>
         </section>
 
         {activeTab === "participants" && (
@@ -2776,9 +2856,9 @@ export default function Home() {
                 </li>
                 <li>You can submit only one set of picks per account.</li>
                 <li>
-                  You may update your name or teams until{" "}
+                  Participation is open until{" "}
                   <strong>June 27, 2026 at 11:59 PM PDT</strong>. After that,
-                  all picks are locked.
+                  all picks are locked. Teams can only be picked once.
                 </li>
               </ul>
 
@@ -2873,7 +2953,11 @@ export default function Home() {
 
             <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
               <h2 className="mb-4 text-xl font-semibold">
-                {myPick ? "Update Your Picks" : "Add Participant"}
+                {isAdminEditingParticipant
+                  ? `Admin Edit: ${adminEditingParticipant?.name}`
+                  : myPick
+                    ? "Your Picks Are Locked"
+                    : "Add Participant"}
               </h2>
               <form
                 onSubmit={addParticipant}
@@ -2884,14 +2968,14 @@ export default function Home() {
                   placeholder="Participant name"
                   value={participantName}
                   onChange={(e) => setParticipantName(e.target.value)}
-                  disabled={!user || picksLocked}
+                  disabled={shouldLockPickForm}
                 />
 
                 <Select
                   instanceId="favorite-team-1"
                   inputId="favorite-team-1"
                   className="min-w-0"
-                  isDisabled={!user || picksLocked}
+                  isDisabled={shouldLockPickForm}
                   placeholder="Favorite Team 1"
                   value={
                     team1
@@ -2926,7 +3010,7 @@ export default function Home() {
                   instanceId="favorite-team-2"
                   inputId="favorite-team-2"
                   className="min-w-0"
-                  isDisabled={!user || picksLocked}
+                  isDisabled={shouldLockPickForm}
                   placeholder="Favorite Team 2"
                   value={
                     team2
@@ -2961,7 +3045,7 @@ export default function Home() {
                   instanceId="favorite-team-3"
                   inputId="favorite-team-3"
                   className="min-w-0"
-                  isDisabled={!user || picksLocked}
+                  isDisabled={shouldLockPickForm}
                   placeholder="Favorite Team 3"
                   value={
                     team3
@@ -2993,16 +3077,35 @@ export default function Home() {
                 />
 
                 <button
-                  disabled={!user || picksLocked}
+                  disabled={shouldLockPickForm}
                   className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400 sm:col-span-2 lg:col-span-1"
                 >
-                  {myPick ? "Update Picks" : "Submit Picks"}
+                  {isAdminEditingParticipant
+                    ? "Save Admin Edit"
+                    : "Submit Picks"}
                 </button>
+
+                {isAdminEditingParticipant && (
+                  <button
+                    type="button"
+                    onClick={cancelAdminEditParticipant}
+                    className="rounded-xl border border-gray-300 p-3 font-semibold text-gray-700 hover:bg-gray-100 sm:col-span-2 lg:col-span-1"
+                  >
+                    Cancel
+                  </button>
+                )}
               </form>
 
               {!user && (
                 <p className="mt-3 text-sm text-gray-500">
                   Log in first to enable the pick form.
+                </p>
+              )}
+
+              {user && myPick && !isAdminEditingParticipant && (
+                <p className="mt-3 text-sm font-medium text-orange-700">
+                  Your teams are submitted and locked. Only the admin can edit
+                  submitted teams.
                 </p>
               )}
 
@@ -3086,13 +3189,24 @@ export default function Home() {
                         </div>
 
                         {isAdmin && (
-                          <button
-                            type="button"
-                            onClick={() => deleteParticipant(participant)}
-                            className="mt-3 w-full rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                          >
-                            Delete
-                          </button>
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                startAdminEditParticipant(participant)
+                              }
+                              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteParticipant(participant)}
+                              className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         )}
                       </div>
                     ))}
@@ -3157,13 +3271,26 @@ export default function Home() {
                             </td>
                             {isAdmin && (
                               <td className="p-3 text-right">
-                                <button
-                                  type="button"
-                                  onClick={() => deleteParticipant(participant)}
-                                  className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                                >
-                                  Delete
-                                </button>
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      startAdminEditParticipant(participant)
+                                    }
+                                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      deleteParticipant(participant)
+                                    }
+                                    className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
                               </td>
                             )}
                           </tr>
@@ -3185,8 +3312,8 @@ export default function Home() {
                   <div>
                     <h2 className="text-2xl font-bold">Matches</h2>
                     <p className="mt-1 text-sm text-gray-500">
-                      All times are Pacific Time. Group-stage matches are shown here;
-                      knockout matches are available in the Bracket tab.
+                      All times are Pacific Time. Group-stage matches are shown
+                      here; knockout matches are available in the Bracket tab.
                     </p>
                     <p className="mt-1 text-sm font-medium text-gray-700">
                       {isAdmin
