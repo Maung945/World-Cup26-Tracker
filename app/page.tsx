@@ -1508,6 +1508,7 @@ export default function Home() {
   const [isSavingPaymentChanges, setIsSavingPaymentChanges] = useState(false);
   const [adminEditingParticipant, setAdminEditingParticipant] =
     useState<Participant | null>(null);
+  const matchDateRefs = React.useRef<Record<string, HTMLElement | null>>({});
 
   const isAdmin = Boolean(
     user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()),
@@ -1731,6 +1732,78 @@ export default function Home() {
         return groups;
       }, {});
   }, [matches]);
+
+  function getMatchDateValue(dateString: string) {
+    const cleanDate = dateString.replace(/^\w{3},\s*/, "");
+    const [monthText, dayText, yearText] = cleanDate.split(/[ ,]+/);
+
+    const monthMap: Record<string, number> = {
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
+    };
+
+    const month = monthMap[monthText];
+    const day = Number(dayText);
+    const year = Number(yearText);
+
+    if (month === undefined || Number.isNaN(day) || Number.isNaN(year)) {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    return new Date(year, month, day).getTime();
+  }
+
+  function scrollToCurrentMatchDay() {
+    const dateKeys = Object.keys(groupedMatches);
+
+    if (dateKeys.length === 0) return;
+
+    const today = new Date();
+    const todayValue = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    ).getTime();
+
+    const targetDate =
+      dateKeys.find((date) => getMatchDateValue(date) >= todayValue) ??
+      dateKeys[dateKeys.length - 1];
+
+    const targetElement = matchDateRefs.current[targetDate];
+
+    if (!targetElement) return;
+
+    const stickyTabOffset = 90;
+    const targetTop =
+      targetElement.getBoundingClientRect().top +
+      window.scrollY -
+      stickyTabOffset;
+
+    window.scrollTo({
+      top: targetTop,
+      behavior: "smooth",
+    });
+  }
+
+  function handleTabClick(tab: "participants" | "matches" | "bracket" | "groups") {
+    setActiveTab(tab);
+
+    if (tab === "matches") {
+      window.setTimeout(() => {
+        scrollToCurrentMatchDay();
+      }, 150);
+    }
+  }
 
   const filteredTeams = teamData.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase()),
@@ -2970,7 +3043,7 @@ export default function Home() {
               (tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => handleTabClick(tab)}
                   className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
                     activeTab === tab
                       ? "border-b-4 border-black bg-white text-black"
@@ -3530,6 +3603,9 @@ export default function Home() {
               {Object.entries(groupedMatches).map(([date, dateMatches]) => (
                 <section
                   key={date}
+                  ref={(element) => {
+                    matchDateRefs.current[date] = element;
+                  }}
                   className="overflow-hidden rounded-2xl bg-white shadow"
                 >
                   <div className="border-b bg-gray-50 px-6 py-4">
