@@ -1547,6 +1547,7 @@ export default function Home() {
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        setAuthLoaded(true);
         setUser(session?.user ?? null);
 
         if (session?.user) {
@@ -1559,8 +1560,6 @@ export default function Home() {
           setTeam3("");
           setAdminEditingParticipant(null);
         }
-
-        setAuthLoaded(true);
       },
     );
 
@@ -2459,7 +2458,7 @@ export default function Home() {
     return (
       <div className="group relative flex min-w-0 max-w-full items-center gap-2">
         <img
-          src={flagMap[teamName] || "/flags/world-cup.png"}
+          src={flagMap[teamName] || "/logos/fifa.png"}
           alt={`${teamName} flag`}
           className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm sm:h-8 sm:w-11"
         />
@@ -2643,7 +2642,7 @@ export default function Home() {
     const teamLabel = resolvedTeam.resolved ? resolvedTeam.name : "TBD";
     const flagSrc = resolvedTeam.resolved
       ? flagMap[resolvedTeam.name]
-      : "/flags/world-cup.png";
+      : "/logos/fifa.png";
 
     return (
       <div
@@ -2807,11 +2806,11 @@ export default function Home() {
 
     const flagA = resolvedA.resolved
       ? flagMap[resolvedA.name]
-      : "/flags/world-cup.png";
+      : "/logos/fifa.png";
 
     const flagB = resolvedB.resolved
       ? flagMap[resolvedB.name]
-      : "/flags/world-cup.png";
+      : "/logos/fifa.png";
 
     const isLive = match.status === "Live";
 
@@ -3310,7 +3309,7 @@ export default function Home() {
                 </li>
                 <li>You can submit only one set of picks per account.</li>
                 <li>
-                  You may update your name or teams until{" "}
+                  You may update your name or <strong>ONE</strong> team until{" "}
                   <strong>June 27, 2026 at 11:59 PM PDT</strong>. After that,
                   all picks are locked.
                 </li>
@@ -3590,19 +3589,19 @@ export default function Home() {
                 <p className="text-gray-500">No participants yet.</p>
               ) : (
                 <>
-                  <div className="space-y-3 lg:hidden">
+                  <div className="space-y-3 md:hidden">
                     {scoredParticipants.map((participant, index) => (
                       <div
                         key={participant.id}
-                        className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4"
+                        className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
                       >
-                        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                        <div className="mb-3 flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
                               Rank #{index + 1}
                             </p>
                             <h3
-                              className={`break-words text-base font-extrabold sm:text-lg ${
+                              className={`truncate text-lg font-extrabold ${
                                 isWinnerScore(participant.score)
                                   ? "text-yellow-600"
                                   : "text-gray-900"
@@ -3620,27 +3619,27 @@ export default function Home() {
                             </h3>
                           </div>
 
-                          <span className="w-fit flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
+                          <span className="flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
                             {participant.score} pts
                           </span>
                         </div>
 
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-2.5 sm:p-3">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
                             <TeamDisplay teamName={participant.team1} />
                             <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
                               {participant.team1Score} pts
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-2.5 sm:p-3">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
                             <TeamDisplay teamName={participant.team2} />
                             <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
                               {participant.team2Score} pts
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-2.5 sm:p-3">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
                             <TeamDisplay teamName={participant.team3} />
                             <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
                               {participant.team3Score} pts
@@ -3649,7 +3648,7 @@ export default function Home() {
                         </div>
 
                         {isAdmin && (
-                          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                          <div className="mt-3 grid grid-cols-3 gap-2">
                             <button
                               type="button"
                               onClick={() =>
@@ -3683,36 +3682,25 @@ export default function Home() {
                     ))}
                   </div>
 
-                  <div className="hidden overflow-x-auto rounded-2xl border border-gray-200 lg:block">
-                    <table className="min-w-[980px] w-full border-collapse text-left text-sm">
+                  <div className="hidden overflow-visible md:block">
+                    <table className="w-full text-left text-sm">
                       <thead>
-                        <tr className="bg-gray-50">
-                          <th className="whitespace-nowrap border border-gray-200 p-3">Rank</th>
-                          <th className="whitespace-nowrap border border-gray-200 p-3">Name</th>
-                          <th className="whitespace-nowrap border border-gray-200 p-3">Team 1</th>
-                          <th className="whitespace-nowrap border border-gray-200 p-3">Team 2</th>
-                          <th className="whitespace-nowrap border border-gray-200 p-3">Team 3</th>
-                          <th className="whitespace-nowrap border border-gray-200 p-3 text-right">
-                            Score
-                          </th>
-                          {isAdmin && (
-                            <th className="whitespace-nowrap border border-gray-200 p-3 text-right">
-                              Admin
-                            </th>
-                          )}
+                        <tr className="border-b bg-gray-50">
+                          <th className="p-3">Rank</th>
+                          <th className="p-3">Name</th>
+                          <th className="p-3">Team 1</th>
+                          <th className="p-3">Team 2</th>
+                          <th className="p-3">Team 3</th>
+                          <th className="p-3 text-right">Score</th>
+                          {isAdmin && <th className="p-3 text-right">Admin</th>}
                         </tr>
                       </thead>
                       <tbody>
                         {scoredParticipants.map((participant, index) => (
-                          <tr
-                            key={participant.id}
-                            className="bg-white hover:bg-gray-50"
-                          >
-                            <td className="whitespace-nowrap border border-gray-200 p-3 font-semibold">
-                              {index + 1}
-                            </td>
+                          <tr key={participant.id} className="border-b">
+                            <td className="p-3 font-semibold">{index + 1}</td>
                             <td
-                              className={`max-w-[180px] border border-gray-200 p-3 font-bold ${
+                              className={`p-3 font-bold ${
                                 isWinnerScore(participant.score)
                                   ? "text-yellow-600"
                                   : "text-gray-900"
@@ -3728,7 +3716,7 @@ export default function Home() {
                                 </span>
                               )}
                             </td>
-                            <td className="border border-gray-200 p-3">
+                            <td className="p-3">
                               <div className="flex items-center justify-between gap-3">
                                 <TeamDisplay teamName={participant.team1} />
                                 <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
@@ -3736,7 +3724,7 @@ export default function Home() {
                                 </span>
                               </div>
                             </td>
-                            <td className="border border-gray-200 p-3">
+                            <td className="p-3">
                               <div className="flex items-center justify-between gap-3">
                                 <TeamDisplay teamName={participant.team2} />
                                 <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
@@ -3744,7 +3732,7 @@ export default function Home() {
                                 </span>
                               </div>
                             </td>
-                            <td className="border border-gray-200 p-3">
+                            <td className="p-3">
                               <div className="flex items-center justify-between gap-3">
                                 <TeamDisplay teamName={participant.team3} />
                                 <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
@@ -3752,14 +3740,14 @@ export default function Home() {
                                 </span>
                               </div>
                             </td>
-                            <td className="whitespace-nowrap border border-gray-200 p-3 text-right text-lg font-bold">
+                            <td className="p-3 text-right text-lg font-bold">
                               <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
                                 {participant.score} pts
                               </span>
                             </td>
                             {isAdmin && (
-                              <td className="whitespace-nowrap border border-gray-200 p-3 text-right">
-                                <div className="flex flex-wrap justify-end gap-2">
+                              <td className="p-3 text-right">
+                                <div className="flex justify-end gap-2">
                                   <button
                                     type="button"
                                     onClick={() =>
