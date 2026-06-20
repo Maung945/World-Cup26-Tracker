@@ -1740,6 +1740,23 @@ export default function Home() {
     [matches],
   );
 
+  const liveBracketMatches = useMemo(
+    () =>
+      matches.filter(
+        (match) =>
+          match.status === "Live" &&
+          [
+            "Round of 32",
+            "Round of 16",
+            "Quarter Final",
+            "Semi Final",
+            "Bronze Final",
+            "Final",
+          ].includes(match.stage),
+      ),
+    [matches],
+  );
+
   function getMatchDateValue(dateString: string) {
     const cleanDate = dateString.replace(/^\w{3},\s*/, "");
     const [monthText, dayText, yearText] = cleanDate.split(/[ ,]+/);
@@ -2368,9 +2385,15 @@ export default function Home() {
     await fetchParticipants();
   }
 
-  function LivePulse() {
+  function LivePulse({ compact = false }: { compact?: boolean }) {
     return (
-      <div className="mt-2 flex items-center justify-center gap-2 text-sm font-bold text-green-700">
+      <div
+        className={
+          compact
+            ? "flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-green-800 ring-1 ring-green-300"
+            : "mt-2 flex items-center justify-center gap-2 rounded-full bg-green-100 px-3 py-1.5 text-sm font-black uppercase tracking-wide text-green-800 ring-1 ring-green-300"
+        }
+      >
         <span className="relative flex h-3 w-3">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
           <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
@@ -2741,9 +2764,29 @@ export default function Home() {
       ? flagMap[resolvedB.name]
       : "/flags/world-cup.png";
 
+    const isLive = match.status === "Live";
+
     return (
-      <div className="w-full overflow-visible rounded-3xl border border-gray-200 bg-white shadow-xl transition hover:shadow-2xl">
-        <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-center">
+      <div
+        className={`relative w-full overflow-visible rounded-3xl border bg-white shadow-xl transition hover:shadow-2xl ${
+          isLive
+            ? "border-green-400 ring-2 ring-green-300"
+            : "border-gray-200"
+        }`}
+      >
+        {isLive && (
+          <div className="absolute right-2 top-2 z-20">
+            <LivePulse compact />
+          </div>
+        )}
+
+        <div
+          className={`border-b px-3 py-2 text-center ${
+            isLive
+              ? "border-green-200 bg-green-50"
+              : "border-gray-200 bg-gray-50"
+          }`}
+        >
           <p className="text-[11px] font-extrabold uppercase tracking-wide text-gray-700">
             Match {match.id} • {match.stage}
           </p>
@@ -2751,6 +2794,8 @@ export default function Home() {
           <p className="mt-0.5 truncate text-[11px] font-medium text-gray-500">
             {match.date} • {match.time}
           </p>
+
+          {isLive && <LivePulse />}
 
           {match.venue && (
             <p
@@ -2809,6 +2854,37 @@ export default function Home() {
             flagSrc={flagB}
             align="right"
           />
+        </div>
+
+        <div className="border-t border-gray-100 px-3 pb-3 pt-2">
+          {isAdmin ? (
+            <select
+              value={match.status}
+              onChange={(e) =>
+                updateMatchStatus(match.id, e.target.value as Match["status"])
+              }
+              className={`w-full rounded-xl border px-2 py-2 text-xs font-bold outline-none ${
+                isLive
+                  ? "border-green-300 bg-green-50 text-green-800"
+                  : "border-gray-200 bg-gray-50 text-gray-700"
+              }`}
+            >
+              <option value="Scheduled">Scheduled</option>
+              <option value="Live">Live</option>
+              <option value="Half Time">Half Time</option>
+              <option value="Full Time">Full Time</option>
+            </select>
+          ) : (
+            <div
+              className={`rounded-xl px-2 py-2 text-center text-xs font-black uppercase tracking-wide ${
+                isLive
+                  ? "bg-green-100 text-green-800"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {match.status}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -3114,7 +3190,18 @@ export default function Home() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  {liveMatches.map((match) => (
+                  {liveMatches.map((match) => {
+                    const isKnockoutMatch = !match.stage.startsWith("Group");
+                    const resolvedA = isKnockoutMatch
+                      ? resolveBracketTeam(match.teamA)
+                      : { name: match.teamA, resolved: true };
+                    const resolvedB = isKnockoutMatch
+                      ? resolveBracketTeam(match.teamB)
+                      : { name: match.teamB, resolved: true };
+                    const liveTeamA = resolvedA.resolved ? resolvedA.name : "TBD";
+                    const liveTeamB = resolvedB.resolved ? resolvedB.name : "TBD";
+
+                    return (
                     <div
                       key={match.id}
                       className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm"
@@ -3134,7 +3221,7 @@ export default function Home() {
 
                       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                         <div className="min-w-0">
-                          <TeamDisplay teamName={match.teamA} />
+                          <TeamDisplay teamName={liveTeamA} />
                         </div>
 
                         <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
@@ -3147,7 +3234,7 @@ export default function Home() {
                         </div>
 
                         <div className="min-w-0">
-                          <TeamDisplay teamName={match.teamB} />
+                          <TeamDisplay teamName={liveTeamB} />
                         </div>
                       </div>
 
@@ -3157,7 +3244,8 @@ export default function Home() {
                         </p>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -3902,6 +3990,77 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
+
+                {liveBracketMatches.length > 0 && (
+                  <section className="mb-6 rounded-2xl border-2 border-green-200 bg-green-50 p-4 shadow sm:p-5">
+                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="relative flex h-3 w-3">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                          </span>
+                          <h3 className="text-xl font-bold text-green-900">
+                            Live Knockout Games
+                          </h3>
+                        </div>
+                        <p className="mt-1 text-sm font-medium text-green-800">
+                          {liveBracketMatches.length === 1
+                            ? "1 bracket game is currently live."
+                            : `${liveBracketMatches.length} bracket games are currently live.`}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {liveBracketMatches.map((match) => {
+                        const resolvedA = resolveBracketTeam(match.teamA);
+                        const resolvedB = resolveBracketTeam(match.teamB);
+                        const teamAName = resolvedA.resolved ? resolvedA.name : "TBD";
+                        const teamBName = resolvedB.resolved ? resolvedB.name : "TBD";
+
+                        return (
+                          <div
+                            key={match.id}
+                            className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm"
+                          >
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                                Match {match.id} • {match.stage}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs font-bold text-green-700">
+                                <span className="relative flex h-3 w-3">
+                                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                                  <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                                </span>
+                                LIVE
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                              <div className="min-w-0">
+                                <TeamDisplay teamName={teamAName} />
+                              </div>
+
+                              <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
+                                <p className="text-2xl font-black text-gray-900">
+                                  {match.scoreA || "-"} - {match.scoreB || "-"}
+                                </p>
+                                <p className="mt-1 text-xs font-bold text-gray-500">
+                                  {match.time}
+                                </p>
+                              </div>
+
+                              <div className="min-w-0">
+                                <TeamDisplay teamName={teamBName} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
 
                 <div className="w-full max-w-full overflow-x-auto rounded-3xl border border-gray-200 bg-gray-50 p-3 shadow-inner md:p-5">
                   <div
