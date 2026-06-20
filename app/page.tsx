@@ -1493,6 +1493,7 @@ export default function Home() {
   const [teamData, setTeamData] = useState<Team[]>(teams);
   const [matches, setMatches] = useState<Match[]>(starterMatches);
   const [search, setSearch] = useState("");
+  const [matchSearch, setMatchSearch] = useState("");
   const [activeTab, setActiveTab] = useState<
     "participants" | "matches" | "bracket" | "groups"
   >("participants");
@@ -1734,6 +1735,47 @@ export default function Home() {
         return groups;
       }, {});
   }, [matches]);
+
+  const filteredGroupedMatches = useMemo(() => {
+    const query = matchSearch.trim().toLowerCase();
+
+    if (!query) return groupedMatches;
+
+    const teamMatchesSearch = (teamName: string) => {
+      const teamCode = shortCodeMap[teamName]?.toLowerCase() ?? "";
+      const normalizedTeamName = teamName.toLowerCase();
+
+      return normalizedTeamName.includes(query) || teamCode.includes(query);
+    };
+
+    return Object.entries(groupedMatches).reduce<Record<string, Match[]>>(
+      (groups, [date, dateMatches]) => {
+        const matchesForSearch = dateMatches.filter(
+          (match) =>
+            teamMatchesSearch(match.teamA) ||
+            teamMatchesSearch(match.teamB) ||
+            match.stage.toLowerCase().includes(query) ||
+            String(match.id).includes(query),
+        );
+
+        if (matchesForSearch.length > 0) {
+          groups[date] = matchesForSearch;
+        }
+
+        return groups;
+      },
+      {},
+    );
+  }, [groupedMatches, matchSearch]);
+
+  const totalFilteredMatchCount = useMemo(
+    () =>
+      Object.values(filteredGroupedMatches).reduce(
+        (total, dateMatches) => total + dateMatches.length,
+        0,
+      ),
+    [filteredGroupedMatches],
+  );
 
   const liveMatches = useMemo(
     () => matches.filter((match) => match.status === "Live"),
@@ -2769,9 +2811,7 @@ export default function Home() {
     return (
       <div
         className={`relative w-full overflow-visible rounded-3xl border bg-white shadow-xl transition hover:shadow-2xl ${
-          isLive
-            ? "border-green-400 ring-2 ring-green-300"
-            : "border-gray-200"
+          isLive ? "border-green-400 ring-2 ring-green-300" : "border-gray-200"
         }`}
       >
         {isLive && (
@@ -3198,52 +3238,56 @@ export default function Home() {
                     const resolvedB = isKnockoutMatch
                       ? resolveBracketTeam(match.teamB)
                       : { name: match.teamB, resolved: true };
-                    const liveTeamA = resolvedA.resolved ? resolvedA.name : "TBD";
-                    const liveTeamB = resolvedB.resolved ? resolvedB.name : "TBD";
+                    const liveTeamA = resolvedA.resolved
+                      ? resolvedA.name
+                      : "TBD";
+                    const liveTeamB = resolvedB.resolved
+                      ? resolvedB.name
+                      : "TBD";
 
                     return (
-                    <div
-                      key={match.id}
-                      className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm"
-                    >
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                          Match {match.id} • {match.stage}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs font-bold text-green-700">
-                          <span className="relative flex h-3 w-3">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                            <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
-                          </span>
-                          LIVE
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                        <div className="min-w-0">
-                          <TeamDisplay teamName={liveTeamA} />
-                        </div>
-
-                        <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
-                          <p className="text-2xl font-black text-gray-900">
-                            {match.scoreA || "-"} - {match.scoreB || "-"}
+                      <div
+                        key={match.id}
+                        className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm"
+                      >
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                            Match {match.id} • {match.stage}
                           </p>
-                          <p className="mt-1 text-xs font-bold text-gray-500">
-                            {match.time}
+                          <div className="flex items-center gap-2 text-xs font-bold text-green-700">
+                            <span className="relative flex h-3 w-3">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                              <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                            </span>
+                            LIVE
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                          <div className="min-w-0">
+                            <TeamDisplay teamName={liveTeamA} />
+                          </div>
+
+                          <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
+                            <p className="text-2xl font-black text-gray-900">
+                              {match.scoreA || "-"} - {match.scoreB || "-"}
+                            </p>
+                            <p className="mt-1 text-xs font-bold text-gray-500">
+                              {match.time}
+                            </p>
+                          </div>
+
+                          <div className="min-w-0">
+                            <TeamDisplay teamName={liveTeamB} />
+                          </div>
+                        </div>
+
+                        {match.venue && (
+                          <p className="mt-3 text-center text-xs font-medium text-gray-500">
+                            {match.venue}
                           </p>
-                        </div>
-
-                        <div className="min-w-0">
-                          <TeamDisplay teamName={liveTeamB} />
-                        </div>
+                        )}
                       </div>
-
-                      {match.venue && (
-                        <p className="mt-3 text-center text-xs font-medium text-gray-500">
-                          {match.venue}
-                        </p>
-                      )}
-                    </div>
                     );
                   })}
                 </div>
@@ -3789,117 +3833,169 @@ export default function Home() {
                     </div>
                   )}
                 </div>
+
+                <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                  <label
+                    htmlFor="match-search"
+                    className="text-sm font-bold text-gray-700"
+                  >
+                    Search matches by team
+                  </label>
+                  <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                    <input
+                      id="match-search"
+                      value={matchSearch}
+                      onChange={(e) => setMatchSearch(e.target.value)}
+                      placeholder="Type USA, United States, Mexico, Brazil..."
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-medium outline-none ring-blue-500 focus:ring-2"
+                    />
+
+                    {matchSearch.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setMatchSearch("")}
+                        className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-100"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-sm font-medium text-gray-600">
+                    {matchSearch.trim()
+                      ? `${totalFilteredMatchCount} match${
+                          totalFilteredMatchCount === 1 ? "" : "es"
+                        } found for "${matchSearch.trim()}".`
+                      : "Search by team name or short code to show that team’s past, live, and future games."}
+                  </p>
+                </div>
               </div>
 
-              {Object.entries(groupedMatches).map(([date, dateMatches]) => (
-                <section
-                  key={date}
-                  ref={(element) => {
-                    matchDateRefs.current[date] = element;
-                  }}
-                  className="overflow-hidden rounded-2xl bg-white shadow"
-                >
-                  <div className="border-b bg-gray-50 px-6 py-4">
-                    <h3 className="text-lg font-bold">{date}</h3>
-                  </div>
+              {matchSearch.trim() && totalFilteredMatchCount === 0 && (
+                <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow">
+                  <p className="text-lg font-bold text-gray-800">
+                    No matches found
+                  </p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Try searching by full team name or short code, such as USA,
+                    United States, MEX, Brazil, or England.
+                  </p>
+                </div>
+              )}
 
-                  <div className="divide-y">
-                    {dateMatches.map((match) => (
-                      <div
-                        key={match.id}
-                        className="grid gap-4 p-4 sm:p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
-                      >
-                        <div className="flex flex-col gap-2">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            Match {match.id} • {match.stage}
-                          </p>
-                          <TeamDisplay teamName={match.teamA} />
-                        </div>
+              {Object.entries(filteredGroupedMatches).map(
+                ([date, dateMatches]) => (
+                  <section
+                    key={date}
+                    ref={(element) => {
+                      matchDateRefs.current[date] = element;
+                    }}
+                    className="overflow-hidden rounded-2xl bg-white shadow"
+                  >
+                    <div className="border-b bg-gray-50 px-6 py-4">
+                      <h3 className="text-lg font-bold">{date}</h3>
+                    </div>
 
-                        <div className="rounded-2xl bg-gray-100 px-4 py-4 text-center sm:px-6">
-                          {isAdmin ? (
-                            <select
-                              className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
-                              value={match.status}
-                              onChange={(e) =>
-                                updateMatchStatus(
-                                  match.id,
-                                  e.target.value as Match["status"],
-                                )
-                              }
-                            >
-                              <option value="Scheduled">Scheduled</option>
-                              <option value="Live">Live</option>
-                              <option value="Half Time">Half Time</option>
-                              <option value="Full Time">Full Time</option>
-                            </select>
-                          ) : (
-                            <p className="text-sm font-semibold text-gray-500">
-                              {match.status}
+                    <div className="divide-y">
+                      {dateMatches.map((match) => (
+                        <div
+                          key={match.id}
+                          className="grid gap-4 p-4 sm:p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
+                        >
+                          <div className="flex flex-col gap-2">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                              Match {match.id} • {match.stage}
                             </p>
-                          )}
+                            <TeamDisplay teamName={match.teamA} />
+                          </div>
 
-                          {match.status === "Live" && <LivePulse />}
-
-                          <p className="mt-1 text-lg font-bold">{match.time}</p>
-
-                          {match.venue && (
-                            <p className="mt-1 text-xs font-medium text-gray-500">
-                              {match.venue}
-                            </p>
-                          )}
-
-                          <div className="mt-3 flex items-center justify-center gap-3">
+                          <div className="rounded-2xl bg-gray-100 px-4 py-4 text-center sm:px-6">
                             {isAdmin ? (
-                              <>
-                                <input
-                                  className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
-                                  value={match.scoreA}
-                                  onChange={(e) =>
-                                    updateMatchScore(
-                                      match.id,
-                                      "scoreA",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                                <span className="font-semibold text-gray-400">
-                                  -
-                                </span>
-                                <input
-                                  className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
-                                  value={match.scoreB}
-                                  onChange={(e) =>
-                                    updateMatchScore(
-                                      match.id,
-                                      "scoreB",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </>
+                              <select
+                                className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
+                                value={match.status}
+                                onChange={(e) =>
+                                  updateMatchStatus(
+                                    match.id,
+                                    e.target.value as Match["status"],
+                                  )
+                                }
+                              >
+                                <option value="Scheduled">Scheduled</option>
+                                <option value="Live">Live</option>
+                                <option value="Half Time">Half Time</option>
+                                <option value="Full Time">Full Time</option>
+                              </select>
                             ) : (
-                              <div className="rounded-xl bg-white px-5 py-2 text-xl font-extrabold">
-                                {match.scoreA.trim() !== "" &&
-                                match.scoreB.trim() !== ""
-                                  ? `${match.scoreA} - ${match.scoreB}`
-                                  : "-"}
-                              </div>
+                              <p className="text-sm font-semibold text-gray-500">
+                                {match.status}
+                              </p>
                             )}
+
+                            {match.status === "Live" && <LivePulse />}
+
+                            <p className="mt-1 text-lg font-bold">
+                              {match.time}
+                            </p>
+
+                            {match.venue && (
+                              <p className="mt-1 text-xs font-medium text-gray-500">
+                                {match.venue}
+                              </p>
+                            )}
+
+                            <div className="mt-3 flex items-center justify-center gap-3">
+                              {isAdmin ? (
+                                <>
+                                  <input
+                                    className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                                    value={match.scoreA}
+                                    onChange={(e) =>
+                                      updateMatchScore(
+                                        match.id,
+                                        "scoreA",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                  <span className="font-semibold text-gray-400">
+                                    -
+                                  </span>
+                                  <input
+                                    className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                                    value={match.scoreB}
+                                    onChange={(e) =>
+                                      updateMatchScore(
+                                        match.id,
+                                        "scoreB",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                </>
+                              ) : (
+                                <div className="rounded-xl bg-white px-5 py-2 text-xl font-extrabold">
+                                  {match.scoreA.trim() !== "" &&
+                                  match.scoreB.trim() !== ""
+                                    ? `${match.scoreA} - ${match.scoreB}`
+                                    : "-"}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col items-start gap-2 md:items-end">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                              {match.stage}
+                            </p>
+                            <TeamDisplay teamName={match.teamB} />
                           </div>
                         </div>
-
-                        <div className="flex flex-col items-start gap-2 md:items-end">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            {match.stage}
-                          </p>
-                          <TeamDisplay teamName={match.teamB} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              ))}
+                      ))}
+                    </div>
+                  </section>
+                ),
+              )}
             </section>
           </>
         )}
@@ -4016,8 +4112,12 @@ export default function Home() {
                       {liveBracketMatches.map((match) => {
                         const resolvedA = resolveBracketTeam(match.teamA);
                         const resolvedB = resolveBracketTeam(match.teamB);
-                        const teamAName = resolvedA.resolved ? resolvedA.name : "TBD";
-                        const teamBName = resolvedB.resolved ? resolvedB.name : "TBD";
+                        const teamAName = resolvedA.resolved
+                          ? resolvedA.name
+                          : "TBD";
+                        const teamBName = resolvedB.resolved
+                          ? resolvedB.name
+                          : "TBD";
 
                         return (
                           <div
