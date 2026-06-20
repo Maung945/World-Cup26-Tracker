@@ -1504,7 +1504,9 @@ export default function Home() {
   const [myPick, setMyPick] = useState<Participant | null>(null);
   const [scoreSaveMessage, setScoreSaveMessage] = useState("");
   const [paymentSaveMessage, setPaymentSaveMessage] = useState("");
-  const [pendingPaidById, setPendingPaidById] = useState<Record<number, boolean>>({});
+  const [pendingPaidById, setPendingPaidById] = useState<
+    Record<number, boolean>
+  >({});
   const [isSavingPaymentChanges, setIsSavingPaymentChanges] = useState(false);
   const [adminEditingParticipant, setAdminEditingParticipant] =
     useState<Participant | null>(null);
@@ -1733,6 +1735,11 @@ export default function Home() {
       }, {});
   }, [matches]);
 
+  const liveMatches = useMemo(
+    () => matches.filter((match) => match.status === "Live"),
+    [matches],
+  );
+
   function getMatchDateValue(dateString: string) {
     const cleanDate = dateString.replace(/^\w{3},\s*/, "");
     const [monthText, dayText, yearText] = cleanDate.split(/[ ,]+/);
@@ -1795,7 +1802,9 @@ export default function Home() {
     });
   }
 
-  function handleTabClick(tab: "participants" | "matches" | "bracket" | "groups") {
+  function handleTabClick(
+    tab: "participants" | "matches" | "bracket" | "groups",
+  ) {
     setActiveTab(tab);
 
     if (tab === "matches") {
@@ -2268,7 +2277,9 @@ export default function Home() {
       ...current,
       [participant.id]: nextPaidStatus,
     }));
-    setPaymentSaveMessage("Payment changes are not saved yet. Click Save changes.");
+    setPaymentSaveMessage(
+      "Payment changes are not saved yet. Click Save changes.",
+    );
   }
 
   async function savePaymentChanges() {
@@ -2355,6 +2366,18 @@ export default function Home() {
     }
 
     await fetchParticipants();
+  }
+
+  function LivePulse() {
+    return (
+      <div className="mt-2 flex items-center justify-center gap-2 text-sm font-bold text-green-700">
+        <span className="relative flex h-3 w-3">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+        </span>
+        <span>LIVE</span>
+      </div>
+    );
   }
 
   function TeamDisplay({ teamName }: { teamName: string }) {
@@ -3016,7 +3039,9 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={savePaymentChanges}
-                    disabled={!hasUnsavedPaymentChanges || isSavingPaymentChanges}
+                    disabled={
+                      !hasUnsavedPaymentChanges || isSavingPaymentChanges
+                    }
                     className={`rounded-xl px-4 py-2 text-sm font-bold text-white shadow ${
                       !hasUnsavedPaymentChanges || isSavingPaymentChanges
                         ? "cursor-not-allowed bg-gray-400"
@@ -3059,6 +3084,84 @@ export default function Home() {
 
         {activeTab === "participants" && (
           <>
+            {liveMatches.length > 0 && (
+              <section className="rounded-2xl border-2 border-green-200 bg-green-50 p-4 shadow sm:p-6">
+                <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-3 w-3">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                        <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                      </span>
+                      <h2 className="text-xl font-bold text-green-900">
+                        Live Now
+                      </h2>
+                    </div>
+                    <p className="mt-1 text-sm font-medium text-green-800">
+                      {liveMatches.length === 1
+                        ? "1 game is currently live."
+                        : `${liveMatches.length} games are currently live.`}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabClick("matches")}
+                    className="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow hover:bg-green-800"
+                  >
+                    View in Matches
+                  </button>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  {liveMatches.map((match) => (
+                    <div
+                      key={match.id}
+                      className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm"
+                    >
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                          Match {match.id} • {match.stage}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs font-bold text-green-700">
+                          <span className="relative flex h-3 w-3">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                          </span>
+                          LIVE
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                        <div className="min-w-0">
+                          <TeamDisplay teamName={match.teamA} />
+                        </div>
+
+                        <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
+                          <p className="text-2xl font-black text-gray-900">
+                            {match.scoreA || "-"} - {match.scoreB || "-"}
+                          </p>
+                          <p className="mt-1 text-xs font-bold text-gray-500">
+                            {match.time}
+                          </p>
+                        </div>
+
+                        <div className="min-w-0">
+                          <TeamDisplay teamName={match.teamB} />
+                        </div>
+                      </div>
+
+                      {match.venue && (
+                        <p className="mt-3 text-center text-xs font-medium text-gray-500">
+                          {match.venue}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
               <h2 className="text-xl font-semibold">Login Required</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
@@ -3647,6 +3750,8 @@ export default function Home() {
                               {match.status}
                             </p>
                           )}
+
+                          {match.status === "Live" && <LivePulse />}
 
                           <p className="mt-1 text-lg font-bold">{match.time}</p>
 
