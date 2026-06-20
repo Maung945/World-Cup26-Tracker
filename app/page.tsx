@@ -3113,7 +3113,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
         {isAdmin && (activeTab === "matches" || activeTab === "bracket") && (
           <div className="fixed bottom-3 left-3 right-3 z-50 rounded-2xl border border-gray-200 bg-white/95 p-3 shadow-2xl backdrop-blur sm:bottom-6 sm:left-auto sm:right-6 sm:w-auto">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-1 sm:items-end">
               <button
                 type="button"
                 onClick={saveAllScores}
@@ -3122,13 +3122,9 @@ export default function Home() {
                 💾 Save Scores
               </button>
 
-              <button
-                type="button"
-                onClick={resetAllScores}
-                className="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-red-700 sm:text-base"
-              >
-                🔄 Reset Scores
-              </button>
+              <p className="text-center text-xs text-gray-500 sm:text-right">
+                Reset Scores stays in the admin controls above to prevent accidental resets.
+              </p>
             </div>
 
             {scoreSaveMessage && (
