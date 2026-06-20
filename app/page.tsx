@@ -1502,6 +1502,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [authMode, setAuthMode] = useState<"signIn" | "signUp">("signIn");
   const [authMessage, setAuthMessage] = useState("");
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [myPick, setMyPick] = useState<Participant | null>(null);
   const [scoreSaveMessage, setScoreSaveMessage] = useState("");
   const [paymentSaveMessage, setPaymentSaveMessage] = useState("");
@@ -1522,7 +1523,9 @@ export default function Home() {
   const hasSubmittedPick = Boolean(myPick);
   const isAdminEditingParticipant = Boolean(isAdmin && adminEditingParticipant);
   const shouldLockPickForm =
-    !user || (!isAdminEditingParticipant && (picksLocked || hasSubmittedPick));
+    !authLoaded ||
+    !user ||
+    (!isAdminEditingParticipant && (picksLocked || hasSubmittedPick));
 
   React.useEffect(() => {
     setPicksLocked(new Date() > PICK_CUTOFF);
@@ -1538,6 +1541,8 @@ export default function Home() {
       if (data.user) {
         fetchMyPick(data.user.id);
       }
+
+      setAuthLoaded(true);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
@@ -1554,6 +1559,8 @@ export default function Home() {
           setTeam3("");
           setAdminEditingParticipant(null);
         }
+
+        setAuthLoaded(true);
       },
     );
 
@@ -3415,14 +3422,14 @@ export default function Home() {
                   placeholder="Participant name"
                   value={participantName}
                   onChange={(e) => setParticipantName(e.target.value)}
-                  disabled={shouldLockPickForm}
+                  disabled={Boolean(shouldLockPickForm)}
                 />
 
                 <Select
                   instanceId="favorite-team-1"
                   inputId="favorite-team-1"
                   className="min-w-0"
-                  isDisabled={shouldLockPickForm}
+                  isDisabled={Boolean(shouldLockPickForm)}
                   placeholder="Favorite Team 1"
                   value={
                     team1
@@ -3457,7 +3464,7 @@ export default function Home() {
                   instanceId="favorite-team-2"
                   inputId="favorite-team-2"
                   className="min-w-0"
-                  isDisabled={shouldLockPickForm}
+                  isDisabled={Boolean(shouldLockPickForm)}
                   placeholder="Favorite Team 2"
                   value={
                     team2
@@ -3492,7 +3499,7 @@ export default function Home() {
                   instanceId="favorite-team-3"
                   inputId="favorite-team-3"
                   className="min-w-0"
-                  isDisabled={shouldLockPickForm}
+                  isDisabled={Boolean(shouldLockPickForm)}
                   placeholder="Favorite Team 3"
                   value={
                     team3
@@ -3524,7 +3531,7 @@ export default function Home() {
                 />
 
                 <button
-                  disabled={shouldLockPickForm}
+                  disabled={Boolean(shouldLockPickForm)}
                   className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400 sm:col-span-2 lg:col-span-1"
                 >
                   {isAdminEditingParticipant
@@ -3583,19 +3590,19 @@ export default function Home() {
                 <p className="text-gray-500">No participants yet.</p>
               ) : (
                 <>
-                  <div className="space-y-3 md:hidden">
+                  <div className="space-y-3 lg:hidden">
                     {scoredParticipants.map((participant, index) => (
                       <div
                         key={participant.id}
-                        className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                        className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4"
                       >
-                        <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                           <div className="min-w-0">
                             <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
                               Rank #{index + 1}
                             </p>
                             <h3
-                              className={`truncate text-lg font-extrabold ${
+                              className={`break-words text-base font-extrabold sm:text-lg ${
                                 isWinnerScore(participant.score)
                                   ? "text-yellow-600"
                                   : "text-gray-900"
@@ -3613,27 +3620,27 @@ export default function Home() {
                             </h3>
                           </div>
 
-                          <span className="flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
+                          <span className="w-fit flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
                             {participant.score} pts
                           </span>
                         </div>
 
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-2.5 sm:p-3">
                             <TeamDisplay teamName={participant.team1} />
                             <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
                               {participant.team1Score} pts
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-2.5 sm:p-3">
                             <TeamDisplay teamName={participant.team2} />
                             <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
                               {participant.team2Score} pts
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-2.5 sm:p-3">
                             <TeamDisplay teamName={participant.team3} />
                             <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
                               {participant.team3Score} pts
@@ -3642,7 +3649,7 @@ export default function Home() {
                         </div>
 
                         {isAdmin && (
-                          <div className="mt-3 grid grid-cols-3 gap-2">
+                          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                             <button
                               type="button"
                               onClick={() =>
@@ -3676,25 +3683,36 @@ export default function Home() {
                     ))}
                   </div>
 
-                  <div className="hidden overflow-visible md:block">
-                    <table className="w-full text-left text-sm">
+                  <div className="hidden overflow-x-auto rounded-2xl border border-gray-200 lg:block">
+                    <table className="min-w-[980px] w-full border-collapse text-left text-sm">
                       <thead>
-                        <tr className="border-b bg-gray-50">
-                          <th className="p-3">Rank</th>
-                          <th className="p-3">Name</th>
-                          <th className="p-3">Team 1</th>
-                          <th className="p-3">Team 2</th>
-                          <th className="p-3">Team 3</th>
-                          <th className="p-3 text-right">Score</th>
-                          {isAdmin && <th className="p-3 text-right">Admin</th>}
+                        <tr className="bg-gray-50">
+                          <th className="whitespace-nowrap border border-gray-200 p-3">Rank</th>
+                          <th className="whitespace-nowrap border border-gray-200 p-3">Name</th>
+                          <th className="whitespace-nowrap border border-gray-200 p-3">Team 1</th>
+                          <th className="whitespace-nowrap border border-gray-200 p-3">Team 2</th>
+                          <th className="whitespace-nowrap border border-gray-200 p-3">Team 3</th>
+                          <th className="whitespace-nowrap border border-gray-200 p-3 text-right">
+                            Score
+                          </th>
+                          {isAdmin && (
+                            <th className="whitespace-nowrap border border-gray-200 p-3 text-right">
+                              Admin
+                            </th>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
                         {scoredParticipants.map((participant, index) => (
-                          <tr key={participant.id} className="border-b">
-                            <td className="p-3 font-semibold">{index + 1}</td>
+                          <tr
+                            key={participant.id}
+                            className="bg-white hover:bg-gray-50"
+                          >
+                            <td className="whitespace-nowrap border border-gray-200 p-3 font-semibold">
+                              {index + 1}
+                            </td>
                             <td
-                              className={`p-3 font-bold ${
+                              className={`max-w-[180px] border border-gray-200 p-3 font-bold ${
                                 isWinnerScore(participant.score)
                                   ? "text-yellow-600"
                                   : "text-gray-900"
@@ -3710,7 +3728,7 @@ export default function Home() {
                                 </span>
                               )}
                             </td>
-                            <td className="p-3">
+                            <td className="border border-gray-200 p-3">
                               <div className="flex items-center justify-between gap-3">
                                 <TeamDisplay teamName={participant.team1} />
                                 <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
@@ -3718,7 +3736,7 @@ export default function Home() {
                                 </span>
                               </div>
                             </td>
-                            <td className="p-3">
+                            <td className="border border-gray-200 p-3">
                               <div className="flex items-center justify-between gap-3">
                                 <TeamDisplay teamName={participant.team2} />
                                 <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
@@ -3726,7 +3744,7 @@ export default function Home() {
                                 </span>
                               </div>
                             </td>
-                            <td className="p-3">
+                            <td className="border border-gray-200 p-3">
                               <div className="flex items-center justify-between gap-3">
                                 <TeamDisplay teamName={participant.team3} />
                                 <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
@@ -3734,14 +3752,14 @@ export default function Home() {
                                 </span>
                               </div>
                             </td>
-                            <td className="p-3 text-right text-lg font-bold">
+                            <td className="whitespace-nowrap border border-gray-200 p-3 text-right text-lg font-bold">
                               <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
                                 {participant.score} pts
                               </span>
                             </td>
                             {isAdmin && (
-                              <td className="p-3 text-right">
-                                <div className="flex justify-end gap-2">
+                              <td className="whitespace-nowrap border border-gray-200 p-3 text-right">
+                                <div className="flex flex-wrap justify-end gap-2">
                                   <button
                                     type="button"
                                     onClick={() =>
