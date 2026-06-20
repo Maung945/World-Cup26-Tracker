@@ -3109,8 +3109,35 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-3 text-gray-900 sm:p-6">
+    <main className="min-h-screen bg-gray-100 p-3 pb-28 text-gray-900 sm:p-6 sm:pb-28">
       <section className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
+        {isAdmin && (activeTab === "matches" || activeTab === "bracket") && (
+          <div className="fixed bottom-3 left-3 right-3 z-50 rounded-2xl border border-gray-200 bg-white/95 p-3 shadow-2xl backdrop-blur sm:bottom-6 sm:left-auto sm:right-6 sm:w-auto">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <button
+                type="button"
+                onClick={saveAllScores}
+                className="rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gray-800 sm:text-base"
+              >
+                💾 Save Scores
+              </button>
+
+              <button
+                type="button"
+                onClick={resetAllScores}
+                className="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-red-700 sm:text-base"
+              >
+                🔄 Reset Scores
+              </button>
+            </div>
+
+            {scoreSaveMessage && (
+              <p className="mt-2 text-center text-xs font-medium text-green-700 sm:text-right sm:text-sm">
+                {scoreSaveMessage}
+              </p>
+            )}
+          </div>
+        )}
         <header className="rounded-3xl bg-white px-4 py-4 shadow-2xl sm:px-6 sm:py-5">
           <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-between">
             <img
