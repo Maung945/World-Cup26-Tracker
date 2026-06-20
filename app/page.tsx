@@ -2789,6 +2789,88 @@ export default function Home() {
     );
   }
 
+  function getBracketStageStyle(stage: string) {
+    switch (stage) {
+      case "Round of 32":
+        return {
+          cardBorder: "border-blue-200",
+          cardBg: "bg-blue-50/50",
+          headerBorder: "border-blue-200",
+          headerBg: "bg-blue-100",
+          headerText: "text-blue-900",
+          sectionBg: "bg-blue-50",
+          statusBg: "bg-blue-100",
+          statusText: "text-blue-800",
+        };
+      case "Round of 16":
+        return {
+          cardBorder: "border-purple-200",
+          cardBg: "bg-purple-50/50",
+          headerBorder: "border-purple-200",
+          headerBg: "bg-purple-100",
+          headerText: "text-purple-900",
+          sectionBg: "bg-purple-50",
+          statusBg: "bg-purple-100",
+          statusText: "text-purple-800",
+        };
+      case "Quarter Final":
+        return {
+          cardBorder: "border-amber-200",
+          cardBg: "bg-amber-50/50",
+          headerBorder: "border-amber-200",
+          headerBg: "bg-amber-100",
+          headerText: "text-amber-900",
+          sectionBg: "bg-amber-50",
+          statusBg: "bg-amber-100",
+          statusText: "text-amber-800",
+        };
+      case "Semi Final":
+        return {
+          cardBorder: "border-rose-200",
+          cardBg: "bg-rose-50/50",
+          headerBorder: "border-rose-200",
+          headerBg: "bg-rose-100",
+          headerText: "text-rose-900",
+          sectionBg: "bg-rose-50",
+          statusBg: "bg-rose-100",
+          statusText: "text-rose-800",
+        };
+      case "Final":
+        return {
+          cardBorder: "border-emerald-300",
+          cardBg: "bg-emerald-50/70",
+          headerBorder: "border-emerald-300",
+          headerBg: "bg-emerald-100",
+          headerText: "text-emerald-900",
+          sectionBg: "bg-emerald-50",
+          statusBg: "bg-emerald-100",
+          statusText: "text-emerald-800",
+        };
+      case "Bronze Final":
+        return {
+          cardBorder: "border-orange-200",
+          cardBg: "bg-orange-50/60",
+          headerBorder: "border-orange-200",
+          headerBg: "bg-orange-100",
+          headerText: "text-orange-900",
+          sectionBg: "bg-orange-50",
+          statusBg: "bg-orange-100",
+          statusText: "text-orange-800",
+        };
+      default:
+        return {
+          cardBorder: "border-gray-200",
+          cardBg: "bg-white",
+          headerBorder: "border-gray-200",
+          headerBg: "bg-gray-50",
+          headerText: "text-gray-900",
+          sectionBg: "bg-gray-50",
+          statusBg: "bg-gray-100",
+          statusText: "text-gray-600",
+        };
+    }
+  }
+
   function BracketMatchCard({ match }: { match: Match }) {
     const resolvedA = resolveBracketTeam(match.teamA);
     const resolvedB = resolveBracketTeam(match.teamB);
@@ -2807,11 +2889,14 @@ export default function Home() {
       : "/flags/world-cup.png";
 
     const isLive = match.status === "Live";
+    const stageStyle = getBracketStageStyle(match.stage);
 
     return (
       <div
-        className={`relative w-full overflow-visible rounded-3xl border bg-white shadow-xl transition hover:shadow-2xl ${
-          isLive ? "border-green-400 ring-2 ring-green-300" : "border-gray-200"
+        className={`relative w-full overflow-visible rounded-3xl border shadow-xl transition hover:shadow-2xl ${
+          isLive
+            ? "border-green-400 bg-green-50/70 ring-2 ring-green-300"
+            : `${stageStyle.cardBorder} ${stageStyle.cardBg}`
         }`}
       >
         {isLive && (
@@ -2823,11 +2908,15 @@ export default function Home() {
         <div
           className={`border-b px-3 py-2 text-center ${
             isLive
-              ? "border-green-200 bg-green-50"
-              : "border-gray-200 bg-gray-50"
+              ? "border-green-200 bg-green-100"
+              : `${stageStyle.headerBorder} ${stageStyle.headerBg}`
           }`}
         >
-          <p className="text-[11px] font-extrabold uppercase tracking-wide text-gray-700">
+          <p
+            className={`text-[11px] font-extrabold uppercase tracking-wide ${
+              isLive ? "text-green-900" : stageStyle.headerText
+            }`}
+          >
             Match {match.id} • {match.stage}
           </p>
 
@@ -2896,7 +2985,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="border-t border-gray-100 px-3 pb-3 pt-2">
+        <div className="border-t border-white/80 px-3 pb-3 pt-2">
           {isAdmin ? (
             <select
               value={match.status}
@@ -2906,7 +2995,7 @@ export default function Home() {
               className={`w-full rounded-xl border px-2 py-2 text-xs font-bold outline-none ${
                 isLive
                   ? "border-green-300 bg-green-50 text-green-800"
-                  : "border-gray-200 bg-gray-50 text-gray-700"
+                  : `${stageStyle.headerBorder} ${stageStyle.sectionBg} ${stageStyle.statusText}`
               }`}
             >
               <option value="Scheduled">Scheduled</option>
@@ -2919,7 +3008,7 @@ export default function Home() {
               className={`rounded-xl px-2 py-2 text-center text-xs font-black uppercase tracking-wide ${
                 isLive
                   ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-600"
+                  : `${stageStyle.statusBg} ${stageStyle.statusText}`
               }`}
             >
               {match.status}
@@ -4054,17 +4143,17 @@ export default function Home() {
                 }),
             }));
 
-          const topFor = (roundIndex: number, index: number) => {
-            const spacing = Math.pow(2, roundIndex);
-            const offset = (spacing - 1) / 2;
+            const topFor = (roundIndex: number, index: number) => {
+              const spacing = Math.pow(2, roundIndex);
+              const offset = (spacing - 1) / 2;
 
-            const customStep =
-              roundIndex === 0
-                ? step * 1.6 // Round of 32 gets 60% more spacing
-                : step;
+              const customStep =
+                roundIndex === 0
+                  ? step * 1.6 // Round of 32 gets 60% more spacing
+                  : step;
 
-            return headerOffset + (index * spacing + offset) * customStep;
-          };
+              return headerOffset + (index * spacing + offset) * customStep;
+            };
 
             const centerY = (roundIndex: number, index: number) =>
               topFor(roundIndex, index) + cardHeight / 2;
@@ -4091,6 +4180,21 @@ export default function Home() {
                       Swipe sideways to view the full bracket.
                     </p>
                   </div>
+                </div>
+
+                <div className="mb-6 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-wide">
+                  {rounds.map((round) => {
+                    const roundStyle = getBracketStageStyle(round.stage);
+
+                    return (
+                      <span
+                        key={round.stage}
+                        className={`rounded-full border px-3 py-1 ${roundStyle.headerBorder} ${roundStyle.headerBg} ${roundStyle.headerText}`}
+                      >
+                        {round.title}
+                      </span>
+                    );
+                  })}
                 </div>
 
                 {liveBracketMatches.length > 0 && (
@@ -4228,38 +4332,42 @@ export default function Home() {
                         })}
                     </svg>
 
-                    {bracketRounds.map((round, roundIndex) => (
-                      <div key={round.stage}>
-                        <h3
-                          className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
-                          style={{
-                            left: leftFor(roundIndex),
-                            width: cardWidth,
-                          }}
-                        >
-                          {round.title}
-                        </h3>
+                    {bracketRounds.map((round, roundIndex) => {
+                      const roundStyle = getBracketStageStyle(round.stage);
 
-                        {round.matches.map((match, matchIndex) => (
-                          <div
-                            key={match.id}
-                            className="absolute z-10"
+                      return (
+                        <div key={round.stage}>
+                          <h3
+                            className={`absolute top-0 z-10 rounded-full border px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide shadow ${roundStyle.headerBorder} ${roundStyle.headerBg} ${roundStyle.headerText}`}
                             style={{
                               left: leftFor(roundIndex),
-                              top: topFor(roundIndex, matchIndex),
                               width: cardWidth,
-                              height: cardHeight,
                             }}
                           >
-                            <BracketMatchCard match={match} />
-                          </div>
-                        ))}
-                      </div>
-                    ))}
+                            {round.title}
+                          </h3>
+
+                          {round.matches.map((match, matchIndex) => (
+                            <div
+                              key={match.id}
+                              className="absolute z-10"
+                              style={{
+                                left: leftFor(roundIndex),
+                                top: topFor(roundIndex, matchIndex),
+                                width: cardWidth,
+                                height: cardHeight,
+                              }}
+                            >
+                              <BracketMatchCard match={match} />
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  <div className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-xl">
-                    <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-gray-700">
+                  <div className="mt-10 rounded-3xl border border-orange-200 bg-orange-50 p-5 shadow-xl">
+                    <h3 className="mb-4 inline-flex rounded-full border border-orange-200 bg-orange-100 px-3 py-1.5 text-sm font-bold uppercase tracking-wide text-orange-900">
                       Bronze Final
                     </h3>
 
