@@ -4054,11 +4054,17 @@ export default function Home() {
                 }),
             }));
 
-            const topFor = (roundIndex: number, index: number) => {
-              const spacing = Math.pow(2, roundIndex);
-              const offset = (spacing - 1) / 2;
-              return headerOffset + (index * spacing + offset) * step;
-            };
+          const topFor = (roundIndex: number, index: number) => {
+            const spacing = Math.pow(2, roundIndex);
+            const offset = (spacing - 1) / 2;
+
+            const customStep =
+              roundIndex === 0
+                ? step * 1.6 // Round of 32 gets 60% more spacing
+                : step;
+
+            return headerOffset + (index * spacing + offset) * customStep;
+          };
 
             const centerY = (roundIndex: number, index: number) =>
               topFor(roundIndex, index) + cardHeight / 2;
@@ -4069,7 +4075,7 @@ export default function Home() {
             const bracketWidth =
               rounds.length * cardWidth + (rounds.length - 1) * colGap;
 
-            const bracketHeight = headerOffset + 16 * step + 120;
+            const bracketHeight = headerOffset + 16 * (step * 1.6) + 120;
 
             return (
               <section className="max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-xl md:p-8">
