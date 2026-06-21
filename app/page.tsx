@@ -42,6 +42,25 @@ type Participant = {
   paid?: boolean;
 };
 
+type KnockoutPick = {
+  id: number;
+  name: string;
+  qf_team1: string;
+  qf_team2: string;
+  qf_team3: string;
+  qf_team4: string;
+  qf_team5: string;
+  qf_team6: string;
+  qf_team7: string;
+  qf_team8: string;
+  sf_team1: string;
+  sf_team2: string;
+  sf_team3: string;
+  sf_team4: string;
+  user_id?: string;
+  paid?: boolean;
+};
+
 type GroupStanding = {
   team: string;
   group: string;
@@ -1476,9 +1495,11 @@ const progressOptions: Team["status"][] = [
 ];
 
 const PICK_CUTOFF = new Date("2026-06-28T00:00:00-07:00");
+const KNOCKOUT_PICK_CUTOFF = new Date("2026-06-27T00:00:00-07:00");
 
 const ADMIN_EMAILS = ["ma_945@outlook.com"];
 const CONTRIBUTION_AMOUNT = 30;
+const KNOCKOUT_CONTRIBUTION_AMOUNT = 20;
 
 function flagText(teamName: string) {
   return teamName;
@@ -1489,13 +1510,21 @@ export default function Home() {
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
   const [team3, setTeam3] = useState("");
+  const [knockoutName, setKnockoutName] = useState("");
+  const [quarterTeams, setQuarterTeams] = useState<string[]>(Array(8).fill(""));
+  const [semiTeams, setSemiTeams] = useState<string[]>(Array(4).fill(""));
+  const [knockoutPicks, setKnockoutPicks] = useState<KnockoutPick[]>([]);
+  const [myKnockoutPick, setMyKnockoutPick] = useState<KnockoutPick | null>(null);
+  const [adminEditingKnockoutPick, setAdminEditingKnockoutPick] = useState<KnockoutPick | null>(null);
+  const [knockoutMessage, setKnockoutMessage] = useState("");
+  const [pendingKnockoutPaidById, setPendingKnockoutPaidById] = useState<Record<number, boolean>>({});
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [teamData, setTeamData] = useState<Team[]>(teams);
   const [matches, setMatches] = useState<Match[]>(starterMatches);
   const [search, setSearch] = useState("");
   const [matchSearch, setMatchSearch] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "participants" | "matches" | "bracket" | "groups"
+    "participants" | "knockout" | "matches" | "bracket" | "groups"
   >("participants");
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
@@ -1519,6 +1548,7 @@ export default function Home() {
   );
 
   const [picksLocked, setPicksLocked] = useState(false);
+  const [knockoutPicksOpen, setKnockoutPicksOpen] = useState(false);
 
   const hasSubmittedPick = Boolean(myPick);
   const isAdminEditingParticipant = Boolean(isAdmin && adminEditingParticipant);
@@ -1527,12 +1557,17 @@ export default function Home() {
     !user ||
     (!isAdminEditingParticipant && (picksLocked || hasSubmittedPick));
 
+  const isAdminEditingKnockoutPick = Boolean(isAdmin && adminEditingKnockoutPick);
+
   React.useEffect(() => {
-    setPicksLocked(new Date() > PICK_CUTOFF);
+    const now = new Date();
+    setPicksLocked(now > PICK_CUTOFF);
+    setKnockoutPicksOpen(now < KNOCKOUT_PICK_CUTOFF);
   }, []);
 
   React.useEffect(() => {
     fetchParticipants();
+    fetchKnockoutPicks();
     fetchMatchScores();
 
     supabase.auth.getUser().then(({ data }) => {
@@ -1540,6 +1575,7 @@ export default function Home() {
 
       if (data.user) {
         fetchMyPick(data.user.id);
+        fetchMyKnockoutPick(data.user.id);
       }
 
       setAuthLoaded(true);
@@ -1552,12 +1588,18 @@ export default function Home() {
 
         if (session?.user) {
           fetchMyPick(session.user.id);
+          fetchMyKnockoutPick(session.user.id);
         } else {
           setMyPick(null);
           setParticipantName("");
           setTeam1("");
           setTeam2("");
           setTeam3("");
+          setMyKnockoutPick(null);
+          setAdminEditingKnockoutPick(null);
+          setKnockoutName("");
+          setQuarterTeams(Array(8).fill(""));
+          setSemiTeams(Array(4).fill(""));
           setAdminEditingParticipant(null);
         }
       },
@@ -1582,6 +1624,58 @@ export default function Home() {
           paid: Boolean(participant.paid),
         })),
       );
+    }
+  }
+
+
+  async function fetchKnockoutPicks() {
+    const { data, error } = await supabase
+      .from("knockout_picks")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Knockout picks fetch error:", error.message);
+      return;
+    }
+
+    if (data) {
+      setKnockoutPicks(data.map((pick) => ({ ...pick, paid: Boolean(pick.paid) })));
+    }
+  }
+
+  async function fetchMyKnockoutPick(userId: string) {
+    const { data, error } = await supabase
+      .from("knockout_picks")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && data) {
+      const normalizedPick = { ...data, paid: Boolean(data.paid) };
+      setMyKnockoutPick(normalizedPick);
+      setKnockoutName(data.name);
+      setQuarterTeams([
+        data.qf_team1 ?? "",
+        data.qf_team2 ?? "",
+        data.qf_team3 ?? "",
+        data.qf_team4 ?? "",
+        data.qf_team5 ?? "",
+        data.qf_team6 ?? "",
+        data.qf_team7 ?? "",
+        data.qf_team8 ?? "",
+      ]);
+      setSemiTeams([
+        data.sf_team1 ?? "",
+        data.sf_team2 ?? "",
+        data.sf_team3 ?? "",
+        data.sf_team4 ?? "",
+      ]);
+    } else {
+      setMyKnockoutPick(null);
+      setKnockoutName("");
+      setQuarterTeams(Array(8).fill(""));
+      setSemiTeams(Array(4).fill(""));
     }
   }
 
@@ -1695,6 +1789,7 @@ export default function Home() {
     setTeam3("");
     setPassword("");
     setAdminEditingParticipant(null);
+    setAdminEditingKnockoutPick(null);
   }
 
   const selectedByTeam = useMemo(() => {
@@ -1868,7 +1963,7 @@ export default function Home() {
   }
 
   function handleTabClick(
-    tab: "participants" | "matches" | "bracket" | "groups",
+    tab: "participants" | "knockout" | "matches" | "bracket" | "groups",
   ) {
     setActiveTab(tab);
 
@@ -2115,7 +2210,376 @@ export default function Home() {
   );
 
   const potMoney = paidParticipantCount * CONTRIBUTION_AMOUNT;
+  const paidKnockoutCount = knockoutPicks.filter((pick) => pick.paid).length;
+  const knockoutPotMoney = paidKnockoutCount * KNOCKOUT_CONTRIBUTION_AMOUNT;
+  const hasUnsavedKnockoutPaymentChanges = Object.keys(pendingKnockoutPaidById).length > 0;
   const hasUnsavedPaymentChanges = Object.keys(pendingPaidById).length > 0;
+
+
+  const selectedQuarterTeamSet = useMemo(
+    () => new Set(quarterTeams.filter(Boolean)),
+    [quarterTeams],
+  );
+
+  const quarterTeamOptions = useMemo(
+    () =>
+      [...teamData]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((team) => ({
+          value: team.name,
+          label: team.name,
+          image: flagMap[team.name],
+        })),
+    [teamData],
+  );
+
+  const semiTeamOptions = useMemo(
+    () =>
+      quarterTeams
+        .filter(Boolean)
+        .filter((teamName, index, currentQuarterTeams) =>
+          currentQuarterTeams.indexOf(teamName) === index,
+        )
+        .map((teamName) => ({
+          value: teamName,
+          label: teamName,
+          image: flagMap[teamName],
+        })),
+    [quarterTeams],
+  );
+
+  function setQuarterTeam(index: number, value: string) {
+    setQuarterTeams((current) => {
+      const nextQuarterTeams = current.map((team, i) =>
+        i === index ? value : team,
+      );
+      const nextQuarterTeamSet = new Set(nextQuarterTeams.filter(Boolean));
+
+      setSemiTeams((currentSemiTeams) =>
+        currentSemiTeams.map((team) =>
+          team && nextQuarterTeamSet.has(team) ? team : "",
+        ),
+      );
+
+      return nextQuarterTeams;
+    });
+  }
+
+  function setSemiTeam(index: number, value: string) {
+    if (value && !selectedQuarterTeamSet.has(value)) {
+      setKnockoutMessage(
+        "Semi-final teams must be selected from your 8 quarter-final teams.",
+      );
+      return;
+    }
+
+    setSemiTeams((current) => current.map((team, i) => (i === index ? value : team)));
+  }
+
+  const actualQuarterFinalTeams = useMemo(
+    () =>
+      [89, 90, 91, 92, 93, 94, 95, 96]
+        .map((matchId) => getMatchWinner(matchId))
+        .filter(Boolean) as string[],
+    [matches],
+  );
+
+  const actualSemiFinalTeams = useMemo(
+    () =>
+      [97, 98, 99, 100]
+        .map((matchId) => getMatchWinner(matchId))
+        .filter(Boolean) as string[],
+    [matches],
+  );
+
+  function getKnockoutPickScore(pick: KnockoutPick) {
+    const pickedQuarterTeams = [
+      pick.qf_team1,
+      pick.qf_team2,
+      pick.qf_team3,
+      pick.qf_team4,
+      pick.qf_team5,
+      pick.qf_team6,
+      pick.qf_team7,
+      pick.qf_team8,
+    ].filter(Boolean);
+    const pickedSemiTeams = [
+      pick.sf_team1,
+      pick.sf_team2,
+      pick.sf_team3,
+      pick.sf_team4,
+    ].filter(Boolean);
+
+    const quarterScore = pickedQuarterTeams.filter((team) =>
+      actualQuarterFinalTeams.includes(team),
+    ).length;
+    const semiScore = pickedSemiTeams.filter((team) =>
+      actualSemiFinalTeams.includes(team),
+    ).length;
+
+    const matchedCount = quarterScore + semiScore;
+    const totalCompletedBracketSpots =
+      actualQuarterFinalTeams.length + actualSemiFinalTeams.length;
+    const totalPossibleBracketSpots = 12;
+    const matchPercentage =
+      totalCompletedBracketSpots > 0
+        ? Math.round((matchedCount / totalCompletedBracketSpots) * 1000) / 10
+        : 0;
+    const fullPoolPercentage =
+      Math.round((matchedCount / totalPossibleBracketSpots) * 1000) / 10;
+
+    return {
+      quarterScore,
+      semiScore,
+      matchedCount,
+      totalCompletedBracketSpots,
+      totalPossibleBracketSpots,
+      matchPercentage,
+      fullPoolPercentage,
+    };
+  }
+
+  const scoredKnockoutPicks = knockoutPicks
+    .map((pick) => ({ ...pick, ...getKnockoutPickScore(pick) }))
+    .sort(
+      (a, b) =>
+        b.matchPercentage - a.matchPercentage ||
+        b.matchedCount - a.matchedCount ||
+        b.semiScore - a.semiScore ||
+        b.quarterScore - a.quarterScore ||
+        a.name.localeCompare(b.name),
+    );
+
+  async function submitKnockoutPick(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setKnockoutMessage("");
+
+    if (!user) {
+      setKnockoutMessage("Please log in before submitting your knockout picks.");
+      return;
+    }
+
+    if (!knockoutPicksOpen && !isAdmin) {
+      setKnockoutMessage("Knockout picks are only open from June 27 through June 28, 2026.");
+      return;
+    }
+
+    if (myKnockoutPick && !isAdminEditingKnockoutPick && !isAdmin) {
+      setKnockoutMessage("Your knockout picks are already submitted and locked.");
+      return;
+    }
+
+    const allTeams = [...quarterTeams, ...semiTeams];
+
+    if (!knockoutName.trim() || allTeams.some((team) => !team)) {
+      setKnockoutMessage("Please enter your name and select all 8 quarter-final teams and all 4 semi-final teams.");
+      return;
+    }
+
+    if (new Set(quarterTeams).size !== 8) {
+      setKnockoutMessage("Please choose 8 different quarter-final teams.");
+      return;
+    }
+
+    if (new Set(semiTeams).size !== 4) {
+      setKnockoutMessage("Please choose 4 different semi-final teams.");
+      return;
+    }
+
+    const semiTeamsAreFromQuarterTeams = semiTeams.every((team) =>
+      selectedQuarterTeamSet.has(team),
+    );
+
+    if (!semiTeamsAreFromQuarterTeams) {
+      setKnockoutMessage(
+        "Semi-final teams must come from the 8 quarter-final teams you selected.",
+      );
+      return;
+    }
+
+    const row = {
+      name: knockoutName.trim(),
+      qf_team1: quarterTeams[0],
+      qf_team2: quarterTeams[1],
+      qf_team3: quarterTeams[2],
+      qf_team4: quarterTeams[3],
+      qf_team5: quarterTeams[4],
+      qf_team6: quarterTeams[5],
+      qf_team7: quarterTeams[6],
+      qf_team8: quarterTeams[7],
+      sf_team1: semiTeams[0],
+      sf_team2: semiTeams[1],
+      sf_team3: semiTeams[2],
+      sf_team4: semiTeams[3],
+      user_id: adminEditingKnockoutPick?.user_id ?? user.id,
+    };
+
+    const knockoutPickIdToUpdate = adminEditingKnockoutPick?.id ?? myKnockoutPick?.id;
+
+    const { data, error } = knockoutPickIdToUpdate
+      ? await supabase
+          .from("knockout_picks")
+          .update(row)
+          .eq("id", knockoutPickIdToUpdate)
+          .select("id")
+      : await supabase.from("knockout_picks").insert([row]).select("id");
+
+    if (error) {
+      setKnockoutMessage(error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setKnockoutMessage(
+        "Save was blocked by Supabase Row Level Security. Run the admin UPDATE/DELETE policy SQL, then try again.",
+      );
+      return;
+    }
+
+    setAdminEditingKnockoutPick(null);
+    await fetchKnockoutPicks();
+    await fetchMyKnockoutPick(user.id);
+    setKnockoutMessage("Knockout picks saved successfully.");
+  }
+
+  function startAdminEditKnockoutPick(pick: KnockoutPick) {
+    if (!isAdmin) return;
+
+    setAdminEditingKnockoutPick(pick);
+    setKnockoutName(pick.name);
+    setQuarterTeams([
+      pick.qf_team1 ?? "",
+      pick.qf_team2 ?? "",
+      pick.qf_team3 ?? "",
+      pick.qf_team4 ?? "",
+      pick.qf_team5 ?? "",
+      pick.qf_team6 ?? "",
+      pick.qf_team7 ?? "",
+      pick.qf_team8 ?? "",
+    ]);
+    setSemiTeams([
+      pick.sf_team1 ?? "",
+      pick.sf_team2 ?? "",
+      pick.sf_team3 ?? "",
+      pick.sf_team4 ?? "",
+    ]);
+    setKnockoutMessage(`Admin editing ${pick.name}. Make changes above, then click Save Admin Edit.`);
+  }
+
+  function cancelAdminEditKnockoutPick() {
+    setAdminEditingKnockoutPick(null);
+
+    if (myKnockoutPick) {
+      setKnockoutName(myKnockoutPick.name);
+      setQuarterTeams([
+        myKnockoutPick.qf_team1 ?? "",
+        myKnockoutPick.qf_team2 ?? "",
+        myKnockoutPick.qf_team3 ?? "",
+        myKnockoutPick.qf_team4 ?? "",
+        myKnockoutPick.qf_team5 ?? "",
+        myKnockoutPick.qf_team6 ?? "",
+        myKnockoutPick.qf_team7 ?? "",
+        myKnockoutPick.qf_team8 ?? "",
+      ]);
+      setSemiTeams([
+        myKnockoutPick.sf_team1 ?? "",
+        myKnockoutPick.sf_team2 ?? "",
+        myKnockoutPick.sf_team3 ?? "",
+        myKnockoutPick.sf_team4 ?? "",
+      ]);
+    } else {
+      setKnockoutName("");
+      setQuarterTeams(Array(8).fill(""));
+      setSemiTeams(Array(4).fill(""));
+    }
+
+    setKnockoutMessage("Admin edit cancelled.");
+  }
+
+  async function deleteKnockoutPick(pick: KnockoutPick) {
+    if (!isAdmin) {
+      alert("Only admins can delete knockout participants.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete ${pick.name} from the QF/Semi pool? This will remove their knockout picks from the leaderboard.`,
+    );
+
+    if (!confirmed) return;
+
+    const { data, error } = await supabase
+      .from("knockout_picks")
+      .delete()
+      .eq("id", pick.id)
+      .select("id");
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert(
+        "Delete was blocked by Supabase Row Level Security. Run the admin UPDATE/DELETE policy SQL, then try again.",
+      );
+      return;
+    }
+
+    if (adminEditingKnockoutPick?.id === pick.id) {
+      setAdminEditingKnockoutPick(null);
+    }
+
+    if (myKnockoutPick?.id === pick.id) {
+      setMyKnockoutPick(null);
+      setKnockoutName("");
+      setQuarterTeams(Array(8).fill(""));
+      setSemiTeams(Array(4).fill(""));
+    }
+
+    await fetchKnockoutPicks();
+  }
+
+  function toggleKnockoutPaid(pick: KnockoutPick) {
+    if (!isAdmin) return;
+
+    const nextPaidStatus = !pick.paid;
+
+    setKnockoutPicks((current) =>
+      current.map((item) => (item.id === pick.id ? { ...item, paid: nextPaidStatus } : item)),
+    );
+
+    setPendingKnockoutPaidById((current) => ({ ...current, [pick.id]: nextPaidStatus }));
+    setKnockoutMessage("Knockout payment changes are not saved yet. Click Save changes.");
+  }
+
+  async function saveKnockoutPaymentChanges() {
+    if (!isAdmin) return;
+
+    const changedEntries = Object.entries(pendingKnockoutPaidById);
+
+    if (changedEntries.length === 0) {
+      setKnockoutMessage("No knockout payment changes to save.");
+      return;
+    }
+
+    for (const [pickId, paid] of changedEntries) {
+      const { error } = await supabase
+        .from("knockout_picks")
+        .update({ paid })
+        .eq("id", Number(pickId));
+
+      if (error) {
+        setKnockoutMessage(error.message);
+        return;
+      }
+    }
+
+    await fetchKnockoutPicks();
+    if (user?.id) await fetchMyKnockoutPick(user.id);
+    setPendingKnockoutPaidById({});
+    setKnockoutMessage("Knockout payment changes saved successfully.");
+  }
 
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -2148,7 +2612,7 @@ export default function Home() {
     }
 
     if (isAdminEditingParticipant && adminEditingParticipant) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("participants")
         .update({
           name: participantName.trim(),
@@ -2156,10 +2620,18 @@ export default function Home() {
           team2,
           team3,
         })
-        .eq("id", adminEditingParticipant.id);
+        .eq("id", adminEditingParticipant.id)
+        .select("id");
 
       if (error) {
         alert(error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        alert(
+          "Edit was blocked by Supabase Row Level Security. Run the admin UPDATE/DELETE policy SQL, then try again.",
+        );
         return;
       }
 
@@ -2408,13 +2880,21 @@ export default function Home() {
 
     if (!confirmed) return;
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("participants")
       .delete()
-      .eq("id", participant.id);
+      .eq("id", participant.id)
+      .select("id");
 
     if (error) {
       alert(error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert(
+        "Delete was blocked by Supabase Row Level Security. Run the admin UPDATE/DELETE policy SQL, then try again.",
+      );
       return;
     }
 
@@ -2451,7 +2931,7 @@ export default function Home() {
     );
   }
 
-  function TeamDisplay({ teamName }: { teamName: string }) {
+  function TeamDisplay({ teamName, showPickedByHover = true }: { teamName: string; showPickedByHover?: boolean }) {
     const participantNames = selectedByTeam[teamName] || [];
     const isKnownTeam = Boolean(shortCodeMap[teamName]);
 
@@ -2464,7 +2944,7 @@ export default function Home() {
         />
         <span className="truncate font-semibold">{teamName}</span>
 
-        {isKnownTeam && (
+        {showPickedByHover && isKnownTeam && (
           <div className="absolute bottom-full left-0 z-30 mb-2 hidden min-w-56 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-300">
               Picked by
@@ -3209,7 +3689,7 @@ export default function Home() {
 
         <section className="sticky top-0 z-50 overflow-hidden rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/90">
           <div className="flex">
-            {(["participants", "matches", "bracket", "groups"] as const).map(
+            {(["participants", "knockout", "matches", "bracket", "groups"] as const).map(
               (tab) => (
                 <button
                   key={tab}
@@ -3220,7 +3700,7 @@ export default function Home() {
                       : "bg-white text-gray-600 hover:bg-gray-100"
                   }`}
                 >
-                  {tab === "groups" ? "GROUPS/TEAMS" : tab}
+                  {tab === "groups" ? "GROUPS/TEAMS" : tab === "knockout" ? "QF/SEMI PICKS" : tab}
                 </button>
               ),
             )}
@@ -3811,6 +4291,235 @@ export default function Home() {
                     </table>
                   </div>
                 </>
+              )}
+            </section>
+          </>
+        )}
+
+
+        {activeTab === "knockout" && (
+          <>
+            <section className="rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-blue-700">
+                    Separate $20 Pool
+                  </p>
+                  <h2 className="mt-1 text-2xl font-extrabold text-blue-950 sm:text-3xl">
+                    Quarter / Semi Pick Pot: ${knockoutPotMoney.toLocaleString()}
+                  </h2>
+                  <p className="mt-2 text-sm text-blue-800">
+                    Pick 8 quarter-final teams and 4 semi-final teams. Entry is separate from the original ${CONTRIBUTION_AMOUNT} pot.
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-blue-800 shadow-sm">
+                  {paidKnockoutCount} participant{paidKnockoutCount === 1 ? "" : "s"} paid × ${KNOCKOUT_CONTRIBUTION_AMOUNT}
+                </div>
+              </div>
+
+              {!knockoutPicksOpen && !isAdmin && (
+                <p className="mt-4 rounded-xl bg-orange-50 p-3 text-sm font-semibold text-orange-700">
+                  Picks open June 27, 2026 and close June 28, 2026 at 11:59 PM PDT.
+                </p>
+              )}
+            </section>
+
+            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">{isAdminEditingKnockoutPick ? `Admin Edit: ${adminEditingKnockoutPick?.name}` : "Submit Quarter / Semi Picks"}</h2>
+                  <p className="mt-1 text-sm text-gray-500">
+Leaderboard compares your picks against the actual teams shown in the Bracket tab. Ranking is based on highest match percentage, then total matched teams.
+                  </p>
+                </div>
+                {myKnockoutPick && (
+                  <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-700">
+                    Submitted
+                  </span>
+                )}
+              </div>
+
+              <form onSubmit={submitKnockoutPick} className="space-y-5">
+                <input
+                  className="w-full rounded-xl border p-3"
+                  placeholder="Participant name"
+                  value={knockoutName}
+                  onChange={(e) => setKnockoutName(e.target.value)}
+                  disabled={!user || (!knockoutPicksOpen && !isAdmin) || Boolean(myKnockoutPick && !isAdminEditingKnockoutPick && !isAdmin)}
+                />
+
+                <div>
+                  <h3 className="mb-3 font-bold text-gray-900">Pick 8 Quarter-Final Teams</h3>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {quarterTeams.map((selectedTeam, index) => (
+                      <Select
+                        key={`quarter-${index}`}
+                        instanceId={`quarter-team-${index}`}
+                        inputId={`quarter-team-${index}`}
+                        isDisabled={!user || (!knockoutPicksOpen && !isAdmin) || Boolean(myKnockoutPick && !isAdminEditingKnockoutPick && !isAdmin)}
+                        placeholder={`QF Team ${index + 1}`}
+                        value={selectedTeam ? { value: selectedTeam, label: selectedTeam, image: flagMap[selectedTeam] } : null}
+                        onChange={(selected) => setQuarterTeam(index, selected?.value || "")}
+                        options={quarterTeamOptions}
+                        formatOptionLabel={(option: any) => (
+                          <div className="flex items-center gap-3">
+                            <img src={option.image} alt={option.label} className="h-5 w-7 rounded-sm object-cover" />
+                            <span>{option.label}</span>
+                          </div>
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-1 font-bold text-gray-900">Pick 4 Semi-Final Teams</h3>
+                  <p className="mb-3 text-sm text-gray-500">
+                    Only the 8 teams you picked in Quarter-Final section will show here.
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {semiTeams.map((selectedTeam, index) => (
+                      <Select
+                        key={`semi-${index}`}
+                        instanceId={`semi-team-${index}`}
+                        inputId={`semi-team-${index}`}
+                        isDisabled={!user || semiTeamOptions.length < 8 || (!knockoutPicksOpen && !isAdmin) || Boolean(myKnockoutPick && !isAdminEditingKnockoutPick && !isAdmin)}
+                        placeholder={`Semi Team ${index + 1}`}
+                        value={selectedTeam ? { value: selectedTeam, label: selectedTeam, image: flagMap[selectedTeam] } : null}
+                        onChange={(selected) => setSemiTeam(index, selected?.value || "")}
+                        options={semiTeamOptions}
+                        formatOptionLabel={(option: any) => (
+                          <div className="flex items-center gap-3">
+                            <img src={option.image} alt={option.label} className="h-5 w-7 rounded-sm object-cover" />
+                            <span>{option.label}</span>
+                          </div>
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <button
+                    type="submit"
+                    disabled={!user || (!knockoutPicksOpen && !isAdmin) || Boolean(myKnockoutPick && !isAdminEditingKnockoutPick && !isAdmin)}
+                    className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                  >
+                    {isAdminEditingKnockoutPick ? "Save Admin Edit" : "Submit Knockout Picks"}
+                  </button>
+
+                  {isAdminEditingKnockoutPick && (
+                    <button
+                      type="button"
+                      onClick={cancelAdminEditKnockoutPick}
+                      className="rounded-xl border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={saveKnockoutPaymentChanges}
+                      disabled={!hasUnsavedKnockoutPaymentChanges}
+                      className="rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                    >
+                      Save $20 Payments
+                    </button>
+                  )}
+                </div>
+
+                {knockoutMessage && <p className="text-sm font-semibold text-blue-700">{knockoutMessage}</p>}
+              </form>
+            </section>
+
+            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Quarter / Semi Leaderboard</h2>
+                  <p className="mt-1 text-sm text-gray-500">Compares each entry against the actual Bracket Quarter-Final and Semi-Final teams, then ranks by highest match percentage.</p>
+                </div>
+                <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
+                  {knockoutPicks.length} entries
+                </span>
+              </div>
+
+              {knockoutPicks.length === 0 ? (
+                <p className="text-gray-500">No knockout picks yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-gray-500">Actual bracket teams used for scoring</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-700">
+                      Quarter-Final teams found: {actualQuarterFinalTeams.length}/8 • Semi-Final teams found: {actualSemiFinalTeams.length}/4
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">
+Match percentage is calculated from completed bracket spots only, so it updates as scores are entered.
+                    </p>
+                  </div>
+                  {scoredKnockoutPicks.map((pick, index) => (
+                    <div key={pick.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">Rank #{index + 1}</p>
+                          <h3 className="text-lg font-extrabold text-gray-900">
+                            {pick.name}
+                            {pick.paid && <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-extrabold text-blue-700">$20</span>}
+                          </h3>
+                          <p className="mt-1 text-sm font-semibold text-gray-600">
+                            QF {pick.quarterScore}/{pick.totalCompletedBracketSpots >= 8 ? 8 : actualQuarterFinalTeams.length} • Semi {pick.semiScore}/{actualSemiFinalTeams.length} • {pick.matchPercentage}% match
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">{pick.matchPercentage}%</span>
+                          <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">{pick.matchedCount}/{pick.totalCompletedBracketSpots || 12} matched</span>
+                          {isAdmin && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => startAdminEditKnockoutPick(pick)}
+                                className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                              >
+                                Edit
+                              </button>
+                              <button type="button" onClick={() => toggleKnockoutPaid(pick)} className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800">
+                                {pick.paid ? "Remove $20" : "Add $20"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteKnockoutPick(pick)}
+                                className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                        <div className="rounded-xl bg-gray-50 p-3">
+                          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">Quarter Picks</p>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            {[pick.qf_team1, pick.qf_team2, pick.qf_team3, pick.qf_team4, pick.qf_team5, pick.qf_team6, pick.qf_team7, pick.qf_team8].map((team, teamIndex) => (
+                              <TeamDisplay key={`${pick.id}-qf-${teamIndex}`} teamName={team} showPickedByHover={false} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-gray-50 p-3">
+                          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">Semi Picks</p>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            {[pick.sf_team1, pick.sf_team2, pick.sf_team3, pick.sf_team4].map((team, teamIndex) => (
+                              <TeamDisplay key={`${pick.id}-sf-${teamIndex}`} teamName={team} showPickedByHover={false} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </section>
           </>
