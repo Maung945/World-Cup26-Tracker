@@ -3617,7 +3617,7 @@ export default function Home() {
         <header className="rounded-3xl bg-white px-4 py-4 shadow-2xl sm:px-6 sm:py-5">
           <div className="flex flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-between">
             <img
-              src="/logos/nutanix.png"
+              src="/logos/fifa-world-cup-2026-logo.png"
               alt="Nutanix"
               className="h-10 w-auto object-contain drop-shadow-2xl sm:h-14 md:h-20"
             />
