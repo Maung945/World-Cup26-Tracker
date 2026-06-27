@@ -1495,7 +1495,7 @@ const progressOptions: Team["status"][] = [
 ];
 
 const PICK_CUTOFF = new Date("2026-06-28T00:00:00-07:00");
-const KNOCKOUT_PICK_CUTOFF = new Date("2026-06-27T00:00:00-07:00");
+const KNOCKOUT_PICK_CUTOFF = new Date("2026-06-28T00:00:00-07:00");
 
 const ADMIN_EMAILS = ["ma_945@outlook.com"];
 const CONTRIBUTION_AMOUNT = 30;
@@ -2374,14 +2374,7 @@ export default function Home() {
 
     if (!knockoutPicksOpen && !isAdmin) {
       setKnockoutMessage(
-        "Knockout picks are only open from June 27 through June 28, 2026.",
-      );
-      return;
-    }
-
-    if (myKnockoutPick && !isAdminEditingKnockoutPick && !isAdmin) {
-      setKnockoutMessage(
-        "Your knockout picks are already submitted and locked.",
+        "Quarter / Semi picks are locked after June 27, 2026 at 11:59 PM PDT.",
       );
       return;
     }
@@ -4414,8 +4407,8 @@ export default function Home() {
 
               {!knockoutPicksOpen && !isAdmin && (
                 <p className="mt-4 rounded-xl bg-orange-50 p-3 text-sm font-semibold text-orange-700">
-                  Picks open June 27, 2026 and close June 28, 2026 at 11:59 PM
-                  PDT.
+                  Quarter / Semi picks are locked after June 27, 2026 at
+                  11:59 PM PDT.
                 </p>
               )}
             </section>
@@ -4449,10 +4442,7 @@ export default function Home() {
                   onChange={(e) => setKnockoutName(e.target.value)}
                   disabled={
                     !user ||
-                    (!knockoutPicksOpen && !isAdmin) ||
-                    Boolean(
-                      myKnockoutPick && !isAdminEditingKnockoutPick && !isAdmin,
-                    )
+                    (!knockoutPicksOpen && !isAdmin)
                   }
                 />
 
@@ -4468,12 +4458,7 @@ export default function Home() {
                         inputId={`quarter-team-${index}`}
                         isDisabled={
                           !user ||
-                          (!knockoutPicksOpen && !isAdmin) ||
-                          Boolean(
-                            myKnockoutPick &&
-                            !isAdminEditingKnockoutPick &&
-                            !isAdmin,
-                          )
+                          (!knockoutPicksOpen && !isAdmin)
                         }
                         placeholder={`QF Team ${index + 1}`}
                         value={
@@ -4521,12 +4506,7 @@ export default function Home() {
                         isDisabled={
                           !user ||
                           semiTeamOptions.length < 8 ||
-                          (!knockoutPicksOpen && !isAdmin) ||
-                          Boolean(
-                            myKnockoutPick &&
-                            !isAdminEditingKnockoutPick &&
-                            !isAdmin,
-                          )
+                          (!knockoutPicksOpen && !isAdmin)
                         }
                         placeholder={`Semi Team ${index + 1}`}
                         value={
@@ -4562,18 +4542,15 @@ export default function Home() {
                     type="submit"
                     disabled={
                       !user ||
-                      (!knockoutPicksOpen && !isAdmin) ||
-                      Boolean(
-                        myKnockoutPick &&
-                        !isAdminEditingKnockoutPick &&
-                        !isAdmin,
-                      )
+                      (!knockoutPicksOpen && !isAdmin)
                     }
                     className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
                   >
                     {isAdminEditingKnockoutPick
                       ? "Save Admin Edit"
-                      : "Submit Knockout Picks"}
+                      : myKnockoutPick
+                        ? "Update Knockout Picks"
+                        : "Submit Knockout Picks"}
                   </button>
 
                   {isAdminEditingKnockoutPick && (
