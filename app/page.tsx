@@ -1175,7 +1175,7 @@ const starterMatches: Match[] = [
     date: "Tue, Jun 30, 2026",
     time: "6:00 PM PDT",
     teamA: "Mexico",
-    teamB: "TBD (3rd Group C/E/F/H/I)",
+    teamB: "3E",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1186,8 +1186,8 @@ const starterMatches: Match[] = [
     stage: "Round of 32",
     date: "Wed, Jul 1, 2026",
     time: "9:00 AM PDT",
-    teamA: "TBD (1st Group L)",
-    teamB: "TBD (3rd Group E/H/I/J/K)",
+    teamA: "1L",
+    teamB: "3K",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1199,7 +1199,7 @@ const starterMatches: Match[] = [
     date: "Wed, Jul 1, 2026",
     time: "1:00 PM PDT",
     teamA: "1G",
-    teamB: "TBD (3rd Group A/E/H/I/J)",
+    teamB: "3I",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1223,7 +1223,7 @@ const starterMatches: Match[] = [
     date: "Thu, Jul 2, 2026",
     time: "12:00 PM PDT",
     teamA: "Spain",
-    teamB: "TBD (2nd Group J)",
+    teamB: "2J",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1234,8 +1234,8 @@ const starterMatches: Match[] = [
     stage: "Round of 32",
     date: "Thu, Jul 2, 2026",
     time: "4:00 PM PDT",
-    teamA: "TBD (2nd Group K)",
-    teamB: "TBD (2nd Group L)",
+    teamA: "2K",
+    teamB: "2L",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1247,7 +1247,7 @@ const starterMatches: Match[] = [
     date: "Thu, Jul 2, 2026",
     time: "8:00 PM PDT",
     teamA: "Switzerland",
-    teamB: "TBD (3rd Group E/F/G/I/J)",
+    teamB: "3J",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1270,8 +1270,8 @@ const starterMatches: Match[] = [
     stage: "Round of 32",
     date: "Fri, Jul 3, 2026",
     time: "6:30 PM PDT",
-    teamA: "TBD (1st Group K)",
-    teamB: "TBD (3rd Group D/E/I/J/L)",
+    teamA: "1K",
+    teamB: "3L",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1293,18 +1293,6 @@ const starterMatches: Match[] = [
     id: 89,
     stage: "Round of 16",
     date: "Sat, Jul 4, 2026",
-    time: "10:00 AM PDT",
-    teamA: "W73",
-    teamB: "W75",
-    scoreA: "",
-    scoreB: "",
-    status: "Scheduled",
-    venue: "Houston Stadium, Houston",
-  },
-  {
-    id: 90,
-    stage: "Round of 16",
-    date: "Sat, Jul 4, 2026",
     time: "2:00 PM PDT",
     teamA: "W74",
     teamB: "W77",
@@ -1312,6 +1300,18 @@ const starterMatches: Match[] = [
     scoreB: "",
     status: "Scheduled",
     venue: "Philadelphia Stadium, Philadelphia",
+  },
+  {
+    id: 90,
+    stage: "Round of 16",
+    date: "Sat, Jul 4, 2026",
+    time: "10:00 AM PDT",
+    teamA: "W73",
+    teamB: "W75",
+    scoreA: "",
+    scoreB: "",
+    status: "Scheduled",
+    venue: "Houston Stadium, Houston",
   },
   {
     id: 91,
@@ -4972,7 +4972,7 @@ export default function Home() {
                 .filter((match) => match.stage === round.stage)
                 .sort((a, b) => {
                   const roundOf32Order = [
-                    73, 75, 74, 77, 76, 78, 79, 80, 83, 84, 81, 82, 86, 88, 85,
+                    74, 77, 73, 75, 84, 83, 82, 81, 76, 78, 79, 80, 88, 86, 85,
                     87,
                   ];
 
@@ -4980,7 +4980,7 @@ export default function Home() {
                   // so the bracket visual position matches the requested layout:
                   // 90 before 89, 92 before 91, 94 before 93, and 96 before 95.
                   // Round of 32 stays unchanged.
-                  const roundOf16Order = [89, 90, 91, 92, 93, 94, 95, 96];
+                  const roundOf16Order = [89, 90, 93, 94, 91, 92, 95, 96];
                   const quarterFinalOrder = [97, 98, 99, 100];
                   const semiFinalOrder = [101, 102];
 
