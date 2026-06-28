@@ -1560,7 +1560,9 @@ export default function Home() {
   const shouldLockPickForm =
     !authLoaded ||
     !user ||
-    (!isAdminEditingParticipant && (picksLocked || hasSubmittedPick));
+    (!isAdmin &&
+      !isAdminEditingParticipant &&
+      (picksLocked || hasSubmittedPick));
 
   const isAdminEditingKnockoutPick = Boolean(
     isAdmin && adminEditingKnockoutPick,
@@ -2412,7 +2414,8 @@ export default function Home() {
     const totalPossibleBracketSpots = quarterTotal + semiTotal;
     const totalCompletedBracketSpots =
       actualQuarterFinalTeams.length + actualSemiFinalTeams.length;
-    const quarterPercentage = Math.round((quarterScore / quarterTotal) * 1000) / 10;
+    const quarterPercentage =
+      Math.round((quarterScore / quarterTotal) * 1000) / 10;
     const semiPercentage = Math.round((semiScore / semiTotal) * 1000) / 10;
     const matchPercentage =
       Math.round(((quarterPercentage + semiPercentage) / 2) * 10) / 10;
@@ -2697,12 +2700,14 @@ export default function Home() {
       return;
     }
 
-    if (picksLocked && !isAdminEditingParticipant) {
-      alert("Picks are locked. Only the admin can edit submitted teams.");
+    if (picksLocked && !isAdmin && !isAdminEditingParticipant) {
+      alert(
+        "Picks are locked. Only the admin can add or edit submitted teams.",
+      );
       return;
     }
 
-    if (myPick && !isAdminEditingParticipant) {
+    if (myPick && !isAdmin && !isAdminEditingParticipant) {
       alert(
         "Your teams are already submitted and cannot be changed. Please contact the admin if a correction is needed.",
       );
@@ -2718,6 +2723,8 @@ export default function Home() {
     ) {
       return;
     }
+
+    const editedParticipantUserId = adminEditingParticipant?.user_id;
 
     if (isAdminEditingParticipant && adminEditingParticipant) {
       const { data, error } = await supabase
@@ -2751,7 +2758,7 @@ export default function Home() {
           team1,
           team2,
           team3,
-          user_id: user.id,
+          user_id: isAdmin ? null : user.id,
         },
       ]);
 
@@ -2762,6 +2769,19 @@ export default function Home() {
     }
 
     await fetchParticipants();
+
+    if (isAdmin) {
+      if (editedParticipantUserId === user.id) {
+        await fetchMyPick(user.id);
+      }
+
+      setParticipantName("");
+      setTeam1("");
+      setTeam2("");
+      setTeam3("");
+      return;
+    }
+
     await fetchMyPick(user.id);
   }
 
@@ -4003,9 +4023,11 @@ export default function Home() {
               <h2 className="mb-4 text-xl font-semibold">
                 {isAdminEditingParticipant
                   ? `Admin Edit: ${adminEditingParticipant?.name}`
-                  : myPick
-                    ? "Your Picks Are Locked"
-                    : "Add Participant"}
+                  : isAdmin
+                    ? "Admin Add Participant"
+                    : myPick
+                      ? "Your Picks Are Locked"
+                      : "Add Participant"}
               </h2>
               <form
                 onSubmit={addParticipant}
@@ -4130,7 +4152,9 @@ export default function Home() {
                 >
                   {isAdminEditingParticipant
                     ? "Save Admin Edit"
-                    : "Submit Picks"}
+                    : isAdmin
+                      ? "Add Participant"
+                      : "Submit Picks"}
                 </button>
 
                 {isAdminEditingParticipant && (
@@ -4150,10 +4174,17 @@ export default function Home() {
                 </p>
               )}
 
-              {user && myPick && !isAdminEditingParticipant && (
+              {user && myPick && !isAdmin && !isAdminEditingParticipant && (
                 <p className="mt-3 text-sm font-medium text-orange-700">
                   Your teams are submitted and locked. Only the admin can edit
                   submitted teams.
+                </p>
+              )}
+
+              {user && isAdmin && !isAdminEditingParticipant && (
+                <p className="mt-3 text-sm font-medium text-blue-700">
+                  Admin mode: you can add new participants after the cutoff and
+                  edit any participant teams anytime.
                 </p>
               )}
 
@@ -4415,8 +4446,8 @@ export default function Home() {
 
               {!knockoutPicksOpen && !isAdmin && (
                 <p className="mt-4 rounded-xl bg-orange-50 p-3 text-sm font-semibold text-orange-700">
-                  Quarter / Semi picks are locked after June 27, 2026 at
-                  11:59 PM PDT.
+                  Quarter / Semi picks are locked after June 27, 2026 at 11:59
+                  PM PDT.
                 </p>
               )}
             </section>
@@ -4448,10 +4479,7 @@ export default function Home() {
                   placeholder="Participant name"
                   value={knockoutName}
                   onChange={(e) => setKnockoutName(e.target.value)}
-                  disabled={
-                    !user ||
-                    (!knockoutPicksOpen && !isAdmin)
-                  }
+                  disabled={!user || (!knockoutPicksOpen && !isAdmin)}
                 />
 
                 <div>
@@ -4464,10 +4492,7 @@ export default function Home() {
                         key={`quarter-${index}`}
                         instanceId={`quarter-team-${index}`}
                         inputId={`quarter-team-${index}`}
-                        isDisabled={
-                          !user ||
-                          (!knockoutPicksOpen && !isAdmin)
-                        }
+                        isDisabled={!user || (!knockoutPicksOpen && !isAdmin)}
                         placeholder={`QF Team ${index + 1}`}
                         value={
                           selectedTeam
@@ -4548,10 +4573,7 @@ export default function Home() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <button
                     type="submit"
-                    disabled={
-                      !user ||
-                      (!knockoutPicksOpen && !isAdmin)
-                    }
+                    disabled={!user || (!knockoutPicksOpen && !isAdmin)}
                     className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
                   >
                     {isAdminEditingKnockoutPick
@@ -4657,7 +4679,8 @@ export default function Home() {
                             {pick.matchPercentage}%
                           </span>
                           <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">
-                            {pick.matchedCount}/{pick.totalPossibleBracketSpots} matched
+                            {pick.matchedCount}/{pick.totalPossibleBracketSpots}{" "}
+                            matched
                           </span>
                           {isAdmin && (
                             <>
