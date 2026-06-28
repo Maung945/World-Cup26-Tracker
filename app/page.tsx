@@ -1402,8 +1402,8 @@ const starterMatches: Match[] = [
     stage: "Quarter Final",
     date: "Fri, Jul 10, 2026",
     time: "12:00 PM PDT",
-    teamA: "W91",
-    teamB: "W92",
+    teamA: "W93",
+    teamB: "W94",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -1414,8 +1414,8 @@ const starterMatches: Match[] = [
     stage: "Quarter Final",
     date: "Sat, Jul 11, 2026",
     time: "11:00 AM PDT",
-    teamA: "W93",
-    teamB: "W94",
+    teamA: "W91",
+    teamB: "W92",
     scoreA: "",
     scoreB: "",
     status: "Scheduled",
@@ -2287,12 +2287,90 @@ export default function Home() {
     );
   }
 
+  const computedGroupStandings = useMemo(() => {
+    const standings: GroupStanding[] = teamData.map((team) => ({
+      team: team.name,
+      group: team.group,
+      mp: 0,
+      w: 0,
+      d: 0,
+      l: 0,
+      gf: 0,
+      ga: 0,
+      gd: 0,
+      pts: 0,
+    }));
+
+    const findTeam = (teamName: string) =>
+      standings.find((standing) => standing.team === teamName);
+
+    matches.forEach((match) => {
+      if (!match.stage.startsWith("Group")) return;
+      if (match.scoreA.trim() === "" || match.scoreB.trim() === "") return;
+
+      const scoreA = Number(match.scoreA);
+      const scoreB = Number(match.scoreB);
+
+      if (Number.isNaN(scoreA) || Number.isNaN(scoreB)) return;
+
+      const teamA = findTeam(match.teamA);
+      const teamB = findTeam(match.teamB);
+
+      if (!teamA || !teamB) return;
+
+      teamA.mp += 1;
+      teamB.mp += 1;
+
+      teamA.gf += scoreA;
+      teamA.ga += scoreB;
+      teamB.gf += scoreB;
+      teamB.ga += scoreA;
+
+      teamA.gd = teamA.gf - teamA.ga;
+      teamB.gd = teamB.gf - teamB.ga;
+
+      if (scoreA > scoreB) {
+        teamA.w += 1;
+        teamA.pts += 3;
+        teamB.l += 1;
+      } else if (scoreB > scoreA) {
+        teamB.w += 1;
+        teamB.pts += 3;
+        teamA.l += 1;
+      } else {
+        teamA.d += 1;
+        teamB.d += 1;
+        teamA.pts += 1;
+        teamB.pts += 1;
+      }
+    });
+
+    const groups: Record<string, GroupStanding[]> = {};
+
+    standings.forEach((standing) => {
+      if (!groups[standing.group]) groups[standing.group] = [];
+      groups[standing.group].push(standing);
+    });
+
+    Object.keys(groups).forEach((group) => {
+      groups[group].sort(
+        (a, b) =>
+          b.pts - a.pts ||
+          b.gd - a.gd ||
+          b.gf - a.gf ||
+          a.team.localeCompare(b.team),
+      );
+    });
+
+    return groups;
+  }, [matches, teamData]);
+
   const actualQuarterFinalTeams = useMemo(
     () =>
       [89, 90, 91, 92, 93, 94, 95, 96]
         .map((matchId) => getMatchWinner(matchId))
         .filter(Boolean) as string[],
-    [matches],
+    [matches, computedGroupStandings],
   );
 
   const actualSemiFinalTeams = useMemo(
@@ -2300,7 +2378,7 @@ export default function Home() {
       [97, 98, 99, 100]
         .map((matchId) => getMatchWinner(matchId))
         .filter(Boolean) as string[],
-    [matches],
+    [matches, computedGroupStandings],
   );
 
   function getKnockoutPickScore(pick: KnockoutPick) {
@@ -2329,13 +2407,15 @@ export default function Home() {
     ).length;
 
     const matchedCount = quarterScore + semiScore;
+    const quarterTotal = 8;
+    const semiTotal = 4;
+    const totalPossibleBracketSpots = quarterTotal + semiTotal;
     const totalCompletedBracketSpots =
       actualQuarterFinalTeams.length + actualSemiFinalTeams.length;
-    const totalPossibleBracketSpots = 12;
+    const quarterPercentage = Math.round((quarterScore / quarterTotal) * 1000) / 10;
+    const semiPercentage = Math.round((semiScore / semiTotal) * 1000) / 10;
     const matchPercentage =
-      totalCompletedBracketSpots > 0
-        ? Math.round((matchedCount / totalCompletedBracketSpots) * 1000) / 10
-        : 0;
+      Math.round(((quarterPercentage + semiPercentage) / 2) * 10) / 10;
     const fullPoolPercentage =
       Math.round((matchedCount / totalPossibleBracketSpots) * 1000) / 10;
 
@@ -2343,8 +2423,12 @@ export default function Home() {
       quarterScore,
       semiScore,
       matchedCount,
+      quarterTotal,
+      semiTotal,
       totalCompletedBracketSpots,
       totalPossibleBracketSpots,
+      quarterPercentage,
+      semiPercentage,
       matchPercentage,
       fullPoolPercentage,
     };
@@ -2355,9 +2439,11 @@ export default function Home() {
     .sort(
       (a, b) =>
         b.matchPercentage - a.matchPercentage ||
+        b.quarterPercentage - a.quarterPercentage ||
+        b.semiPercentage - a.semiPercentage ||
         b.matchedCount - a.matchedCount ||
-        b.semiScore - a.semiScore ||
         b.quarterScore - a.quarterScore ||
+        b.semiScore - a.semiScore ||
         a.name.localeCompare(b.name),
     );
 
@@ -3489,84 +3575,6 @@ export default function Home() {
     );
   }
 
-  const computedGroupStandings = useMemo(() => {
-    const standings: GroupStanding[] = teamData.map((team) => ({
-      team: team.name,
-      group: team.group,
-      mp: 0,
-      w: 0,
-      d: 0,
-      l: 0,
-      gf: 0,
-      ga: 0,
-      gd: 0,
-      pts: 0,
-    }));
-
-    const findTeam = (teamName: string) =>
-      standings.find((standing) => standing.team === teamName);
-
-    matches.forEach((match) => {
-      if (!match.stage.startsWith("Group")) return;
-      if (match.scoreA.trim() === "" || match.scoreB.trim() === "") return;
-
-      const scoreA = Number(match.scoreA);
-      const scoreB = Number(match.scoreB);
-
-      if (Number.isNaN(scoreA) || Number.isNaN(scoreB)) return;
-
-      const teamA = findTeam(match.teamA);
-      const teamB = findTeam(match.teamB);
-
-      if (!teamA || !teamB) return;
-
-      teamA.mp += 1;
-      teamB.mp += 1;
-
-      teamA.gf += scoreA;
-      teamA.ga += scoreB;
-      teamB.gf += scoreB;
-      teamB.ga += scoreA;
-
-      teamA.gd = teamA.gf - teamA.ga;
-      teamB.gd = teamB.gf - teamB.ga;
-
-      if (scoreA > scoreB) {
-        teamA.w += 1;
-        teamA.pts += 3;
-        teamB.l += 1;
-      } else if (scoreB > scoreA) {
-        teamB.w += 1;
-        teamB.pts += 3;
-        teamA.l += 1;
-      } else {
-        teamA.d += 1;
-        teamB.d += 1;
-        teamA.pts += 1;
-        teamB.pts += 1;
-      }
-    });
-
-    const groups: Record<string, GroupStanding[]> = {};
-
-    standings.forEach((standing) => {
-      if (!groups[standing.group]) groups[standing.group] = [];
-      groups[standing.group].push(standing);
-    });
-
-    Object.keys(groups).forEach((group) => {
-      groups[group].sort(
-        (a, b) =>
-          b.pts - a.pts ||
-          b.gd - a.gd ||
-          b.gf - a.gf ||
-          a.team.localeCompare(b.team),
-      );
-    });
-
-    return groups;
-  }, [matches, teamData]);
-
   function GroupTable({
     group,
     standings,
@@ -4591,8 +4599,8 @@ export default function Home() {
                   </h2>
                   <p className="mt-1 text-sm text-gray-500">
                     Compares each entry against the actual Bracket Quarter-Final
-                    and Semi-Final teams, then ranks by highest match
-                    percentage.
+                    teams out of 8 and Semi-Final teams out of 4, then ranks by
+                    the highest combined category percentage.
                   </p>
                 </div>
                 <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
@@ -4614,8 +4622,9 @@ export default function Home() {
                       found: {actualSemiFinalTeams.length}/4
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
-                      Match percentage is calculated from completed bracket
-                      spots only, so it updates as scores are entered.
+                      QF percentage is scored out of 8 teams. Semi percentage is
+                      scored out of 4 teams. Overall match percentage is the
+                      average of those two category percentages.
                     </p>
                   </div>
                   {scoredKnockoutPicks.map((pick, index) => (
@@ -4637,13 +4646,10 @@ export default function Home() {
                             )}
                           </h3>
                           <p className="mt-1 text-sm font-semibold text-gray-600">
-                            QF {pick.quarterScore}/
-                            {pick.totalCompletedBracketSpots >= 8
-                              ? 8
-                              : actualQuarterFinalTeams.length}{" "}
-                            • Semi {pick.semiScore}/
-                            {actualSemiFinalTeams.length} •{" "}
-                            {pick.matchPercentage}% match
+                            QF {pick.quarterScore}/{pick.quarterTotal} ={" "}
+                            {pick.quarterPercentage}% • Semi {pick.semiScore}/
+                            {pick.semiTotal} = {pick.semiPercentage}% • Overall{" "}
+                            {pick.matchPercentage}%
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -4651,8 +4657,7 @@ export default function Home() {
                             {pick.matchPercentage}%
                           </span>
                           <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">
-                            {pick.matchedCount}/
-                            {pick.totalCompletedBracketSpots || 12} matched
+                            {pick.matchedCount}/{pick.totalPossibleBracketSpots} matched
                           </span>
                           {isAdmin && (
                             <>
