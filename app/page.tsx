@@ -2958,13 +2958,20 @@ export default function Home() {
     }
   }
 
-  function toggleParticipantPaid(participant: Participant) {
+  async function toggleParticipantPaid(participant: Participant) {
     if (!isAdmin) {
       alert("Only admins can update payment status.");
       return;
     }
 
     const nextPaidStatus = !participant.paid;
+    const previousParticipants = participants;
+    const previousMyPick = myPick;
+    const previousAdminEditingParticipant = adminEditingParticipant;
+
+    setPaymentSaveMessage(
+      nextPaidStatus ? "Saving paid status..." : "Removing paid status...",
+    );
 
     setParticipants((current) =>
       current.map((item) =>
@@ -2983,12 +2990,46 @@ export default function Home() {
       });
     }
 
-    setPendingPaidById((current) => ({
-      ...current,
-      [participant.id]: nextPaidStatus,
-    }));
+    setPendingPaidById((current) => {
+      const next = { ...current };
+      delete next[participant.id];
+      return next;
+    });
+
+    const { data, error } = await supabase
+      .from("participants")
+      .update({ paid: nextPaidStatus })
+      .eq("id", participant.id)
+      .select("id, paid");
+
+    if (error) {
+      setParticipants(previousParticipants);
+      setMyPick(previousMyPick);
+      setAdminEditingParticipant(previousAdminEditingParticipant);
+      setPaymentSaveMessage(error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setParticipants(previousParticipants);
+      setMyPick(previousMyPick);
+      setAdminEditingParticipant(previousAdminEditingParticipant);
+      setPaymentSaveMessage(
+        "Supabase did not save the payment change. Run the admin UPDATE policy SQL, then try Add $ again.",
+      );
+      return;
+    }
+
+    await fetchParticipants();
+
+    if (user?.id) {
+      await fetchMyPick(user.id);
+    }
+
     setPaymentSaveMessage(
-      "Payment changes are not saved yet. Click Save changes.",
+      nextPaidStatus
+        ? `$ saved for ${participant.name}. Pot money updated.`
+        : `$ removed for ${participant.name}. Pot money updated.`,
     );
   }
 
@@ -3763,20 +3804,20 @@ export default function Home() {
 
               {isAdmin && (
                 <div className="flex flex-col items-center gap-2 sm:items-end">
-                  <button
-                    type="button"
-                    onClick={savePaymentChanges}
-                    disabled={
-                      !hasUnsavedPaymentChanges || isSavingPaymentChanges
-                    }
-                    className={`rounded-xl px-4 py-2 text-sm font-bold text-white shadow ${
-                      !hasUnsavedPaymentChanges || isSavingPaymentChanges
-                        ? "cursor-not-allowed bg-gray-400"
-                        : "bg-emerald-700 hover:bg-emerald-800"
-                    }`}
-                  >
-                    {isSavingPaymentChanges ? "Saving..." : "Save changes"}
-                  </button>
+                  {hasUnsavedPaymentChanges && (
+                    <button
+                      type="button"
+                      onClick={savePaymentChanges}
+                      disabled={isSavingPaymentChanges}
+                      className={`rounded-xl px-4 py-2 text-sm font-bold text-white shadow ${
+                        isSavingPaymentChanges
+                          ? "cursor-not-allowed bg-gray-400"
+                          : "bg-emerald-700 hover:bg-emerald-800"
+                      }`}
+                    >
+                      {isSavingPaymentChanges ? "Saving..." : "Save changes"}
+                    </button>
+                  )}
 
                   {paymentSaveMessage && (
                     <p className="max-w-xs text-center text-xs font-semibold text-emerald-800 sm:text-right">
