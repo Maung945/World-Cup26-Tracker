@@ -2383,6 +2383,33 @@ export default function Home() {
     [matches, computedGroupStandings],
   );
 
+  const knockoutEliminatedTeams = useMemo(() => {
+    return new Set(
+      matches
+        .filter((match) => {
+          if (match.id < 73) return false;
+          if (match.scoreA.trim() === "" || match.scoreB.trim() === "") {
+            return false;
+          }
+
+          const scoreA = Number(match.scoreA);
+          const scoreB = Number(match.scoreB);
+
+          return (
+            !Number.isNaN(scoreA) && !Number.isNaN(scoreB) && scoreA !== scoreB
+          );
+        })
+        .map((match) => getMatchLoser(match.id))
+        .filter((teamName): teamName is string =>
+          Boolean(teamName && shortCodeMap[teamName]),
+        ),
+    );
+  }, [matches, computedGroupStandings]);
+
+  function isKnockoutEliminatedTeam(teamName: string) {
+    return knockoutEliminatedTeams.has(teamName);
+  }
+
   function getKnockoutPickScore(pick: KnockoutPick) {
     const pickedQuarterTeams = [
       pick.qf_team1,
@@ -3154,15 +3181,33 @@ export default function Home() {
   }) {
     const participantNames = selectedByTeam[teamName] || [];
     const isKnownTeam = Boolean(shortCodeMap[teamName]);
+    const isEliminated = isKnockoutEliminatedTeam(teamName);
 
     return (
-      <div className="group relative flex min-w-0 max-w-full items-center gap-2">
+      <div
+        className={`group relative flex min-w-0 max-w-full items-center gap-2 ${
+          isEliminated ? "opacity-45 grayscale" : ""
+        }`}
+        title={
+          isEliminated
+            ? `${teamName} was eliminated in the knockout stage`
+            : teamName
+        }
+      >
         <img
           src={flagMap[teamName] || "/logos/fifa.png"}
           alt={`${teamName} flag`}
-          className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm sm:h-8 sm:w-11"
+          className={`h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm sm:h-8 sm:w-11 ${
+            isEliminated ? "grayscale" : ""
+          }`}
         />
-        <span className="truncate font-semibold">{teamName}</span>
+        <span
+          className={`truncate font-semibold ${
+            isEliminated ? "text-gray-400 line-through decoration-gray-400" : ""
+          }`}
+        >
+          {teamName}
+        </span>
 
         {showPickedByHover && isKnownTeam && (
           <div className="absolute bottom-full left-0 z-30 mb-2 hidden min-w-56 rounded-xl bg-black p-3 text-white shadow-xl group-hover:block">
@@ -3183,6 +3228,38 @@ export default function Home() {
             )}
           </div>
         )}
+      </div>
+    );
+  }
+
+  function SelectTeamOption({ option }: { option: any }) {
+    const isEliminated = isKnockoutEliminatedTeam(option.label);
+
+    return (
+      <div
+        className={`flex items-center gap-3 ${
+          isEliminated ? "opacity-45 grayscale" : ""
+        }`}
+        title={
+          isEliminated
+            ? `${option.label} was eliminated in the knockout stage`
+            : option.label
+        }
+      >
+        <img
+          src={option.image}
+          alt={option.label}
+          className={`h-5 w-7 rounded-sm object-cover ${
+            isEliminated ? "grayscale" : ""
+          }`}
+        />
+        <span
+          className={
+            isEliminated ? "text-gray-400 line-through decoration-gray-400" : ""
+          }
+        >
+          {option.label}
+        </span>
       </div>
     );
   }
@@ -3343,6 +3420,9 @@ export default function Home() {
     const flagSrc = resolvedTeam.resolved
       ? flagMap[resolvedTeam.name]
       : "/logos/fifa.png";
+    const isEliminated = resolvedTeam.resolved
+      ? isKnockoutEliminatedTeam(resolvedTeam.name)
+      : false;
 
     return (
       <div
@@ -3350,18 +3430,28 @@ export default function Home() {
           align === "right"
             ? "justify-end text-right"
             : "justify-start text-left"
-        } ${isWinner ? "bg-green-50 ring-2 ring-green-200" : "bg-white"}`}
+        } ${isWinner ? "bg-green-50 ring-2 ring-green-200" : "bg-white"} ${
+          isEliminated ? "opacity-45 grayscale" : ""
+        }`}
         title={resolvedTeam.resolved ? resolvedTeam.name : resolvedTeam.source}
       >
         {align === "left" && (
           <img
             src={flagSrc}
             alt={resolvedTeam.resolved ? `${resolvedTeam.name} flag` : "TBD"}
-            className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
+            className={`h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm ${
+              isEliminated ? "grayscale" : ""
+            }`}
           />
         )}
 
-        <span className="min-w-0 truncate text-base font-extrabold leading-tight text-gray-900 sm:text-xl">
+        <span
+          className={`min-w-0 truncate text-base font-extrabold leading-tight sm:text-xl ${
+            isEliminated
+              ? "text-gray-400 line-through decoration-gray-400"
+              : "text-gray-900"
+          }`}
+        >
           {teamLabel}
         </span>
 
@@ -3369,7 +3459,9 @@ export default function Home() {
           <img
             src={flagSrc}
             alt={resolvedTeam.resolved ? `${resolvedTeam.name} flag` : "TBD"}
-            className="h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm"
+            className={`h-6 w-9 flex-shrink-0 rounded-md object-cover shadow-sm ${
+              isEliminated ? "grayscale" : ""
+            }`}
           />
         )}
       </div>
@@ -3413,6 +3505,7 @@ export default function Home() {
   }) {
     const participantNames = selectedByTeam[teamName] || [];
     const isKnownTeam = Boolean(shortCodeMap[teamName]);
+    const isEliminated = isKnockoutEliminatedTeam(teamName);
 
     return (
       <div
@@ -3420,14 +3513,21 @@ export default function Home() {
           align === "right"
             ? "justify-end text-right"
             : "justify-start text-left"
-        }`}
+        } ${isEliminated ? "opacity-45 grayscale" : ""}`}
+        title={
+          isEliminated
+            ? `${teamName} was eliminated in the knockout stage`
+            : teamName
+        }
       >
         {align === "left" && (
           <div className="group relative flex-shrink-0">
             <img
               src={flagSrc}
               alt={teamName}
-              className="h-6 w-9 rounded-md object-cover shadow-sm"
+              className={`h-6 w-9 rounded-md object-cover shadow-sm ${
+                isEliminated ? "grayscale" : ""
+              }`}
             />
 
             {isKnownTeam && (
@@ -3455,7 +3555,13 @@ export default function Home() {
           </div>
         )}
 
-        <span className="min-w-0 truncate text-sm font-bold text-gray-900">
+        <span
+          className={`min-w-0 truncate text-sm font-bold ${
+            isEliminated
+              ? "text-gray-400 line-through decoration-gray-400"
+              : "text-gray-900"
+          }`}
+        >
           {teamName}
         </span>
 
@@ -3464,7 +3570,9 @@ export default function Home() {
             <img
               src={flagSrc}
               alt={teamName}
-              className="h-6 w-9 rounded-md object-cover shadow-sm"
+              className={`h-6 w-9 rounded-md object-cover shadow-sm ${
+                isEliminated ? "grayscale" : ""
+              }`}
             />
 
             {isKnownTeam && (
@@ -3813,8 +3921,8 @@ export default function Home() {
 
                 <p className="mx-auto mt-5 max-w-3xl text-base font-medium leading-8 text-blue-50 sm:text-lg">
                   Pick your favorite teams, follow every group-stage result,
-                  track the knockout bracket, and compete with others on a
-                  live leaderboard throughout the tournament.
+                  track the knockout bracket, and compete with others on a live
+                  leaderboard throughout the tournament.
                 </p>
               </div>
             </div>
@@ -4299,14 +4407,7 @@ export default function Home() {
                           image: flagMap[team.name],
                         }))}
                       formatOptionLabel={(option: any) => (
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={option.image}
-                            alt={option.label}
-                            className="h-5 w-7 rounded-sm object-cover"
-                          />
-                          <span>{option.label}</span>
-                        </div>
+                        <SelectTeamOption option={option} />
                       )}
                     />
 
@@ -4334,14 +4435,7 @@ export default function Home() {
                           image: flagMap[team.name],
                         }))}
                       formatOptionLabel={(option: any) => (
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={option.image}
-                            alt={option.label}
-                            className="h-5 w-7 rounded-sm object-cover"
-                          />
-                          <span>{option.label}</span>
-                        </div>
+                        <SelectTeamOption option={option} />
                       )}
                     />
 
@@ -4369,14 +4463,7 @@ export default function Home() {
                           image: flagMap[team.name],
                         }))}
                       formatOptionLabel={(option: any) => (
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={option.image}
-                            alt={option.label}
-                            className="h-5 w-7 rounded-sm object-cover"
-                          />
-                          <span>{option.label}</span>
-                        </div>
+                        <SelectTeamOption option={option} />
                       )}
                     />
 
@@ -4758,14 +4845,7 @@ export default function Home() {
                             }
                             options={quarterTeamOptions}
                             formatOptionLabel={(option: any) => (
-                              <div className="flex items-center gap-3">
-                                <img
-                                  src={option.image}
-                                  alt={option.label}
-                                  className="h-5 w-7 rounded-sm object-cover"
-                                />
-                                <span>{option.label}</span>
-                              </div>
+                              <SelectTeamOption option={option} />
                             )}
                           />
                         ))}
@@ -4806,14 +4886,7 @@ export default function Home() {
                             }
                             options={semiTeamOptions}
                             formatOptionLabel={(option: any) => (
-                              <div className="flex items-center gap-3">
-                                <img
-                                  src={option.image}
-                                  alt={option.label}
-                                  className="h-5 w-7 rounded-sm object-cover"
-                                />
-                                <span>{option.label}</span>
-                              </div>
+                              <SelectTeamOption option={option} />
                             )}
                           />
                         ))}
