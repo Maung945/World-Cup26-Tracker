@@ -3813,7 +3813,7 @@ export default function Home() {
 
                 <p className="mx-auto mt-5 max-w-3xl text-base font-medium leading-8 text-blue-50 sm:text-lg">
                   Pick your favorite teams, follow every group-stage result,
-                  track the knockout bracket, and compete with coworkers on a
+                  track the knockout bracket, and compete with others on a
                   live leaderboard throughout the tournament.
                 </p>
               </div>
