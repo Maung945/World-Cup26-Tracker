@@ -3784,225 +3784,137 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow sm:p-5">
-          <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
-                Pot Money
-              </p>
-              <h2 className="mt-1 text-2xl font-extrabold text-emerald-900 sm:text-3xl">
-                ${potMoney.toLocaleString()}
-              </h2>
-            </div>
-
-            <div className="flex flex-col items-center gap-2 sm:items-end">
-              <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-emerald-800 shadow-sm">
-                {paidParticipantCount} participant
-                {paidParticipantCount === 1 ? "" : "s"} paid × $
-                {CONTRIBUTION_AMOUNT}
+        {!authLoaded ? (
+          <section className="rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-xl">
+            <p className="text-sm font-semibold text-gray-600">Loading...</p>
+          </section>
+        ) : !user ? (
+          <section className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
+            <div className="relative bg-gradient-to-br from-blue-950 via-blue-800 to-emerald-700 px-5 py-10 text-white sm:px-10 sm:py-14">
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute left-6 top-8 h-28 w-28 rounded-full bg-white blur-3xl" />
+                <div className="absolute bottom-8 right-10 h-36 w-36 rounded-full bg-yellow-300 blur-3xl" />
               </div>
 
-              {isAdmin && (
-                <div className="flex flex-col items-center gap-2 sm:items-end">
-                  {hasUnsavedPaymentChanges && (
-                    <button
-                      type="button"
-                      onClick={savePaymentChanges}
-                      disabled={isSavingPaymentChanges}
-                      className={`rounded-xl px-4 py-2 text-sm font-bold text-white shadow ${
-                        isSavingPaymentChanges
-                          ? "cursor-not-allowed bg-gray-400"
-                          : "bg-emerald-700 hover:bg-emerald-800"
-                      }`}
-                    >
-                      {isSavingPaymentChanges ? "Saving..." : "Save changes"}
-                    </button>
-                  )}
+              <div className="relative mx-auto max-w-5xl text-center">
+                <img
+                  src="/logos/fifa-world-cup-2026-logo.png"
+                  alt="FIFA World Cup 2026 Logo"
+                  className="mx-auto h-28 w-auto object-contain drop-shadow-2xl sm:h-36 md:h-44"
+                />
 
-                  {paymentSaveMessage && (
-                    <p className="max-w-xs text-center text-xs font-semibold text-emerald-800 sm:text-right">
-                      {paymentSaveMessage}
-                    </p>
-                  )}
-                </div>
-              )}
+                <p className="mt-6 text-sm font-black uppercase tracking-[0.35em] text-yellow-200">
+                  Office Competition
+                </p>
+
+                <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl md:text-6xl">
+                  FIFA World Cup 2026 Pool
+                </h2>
+
+                <p className="mx-auto mt-5 max-w-3xl text-base font-medium leading-8 text-blue-50 sm:text-lg">
+                  Pick your favorite teams, follow every group-stage result,
+                  track the knockout bracket, and compete with coworkers on a
+                  live leaderboard throughout the tournament.
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
 
-        <section className="sticky top-0 z-50 overflow-hidden rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/90">
-          <div className="flex">
-            {(
-              [
-                "participants",
-                "knockout",
-                "matches",
-                "bracket",
-                "groups",
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
-                  activeTab === tab
-                    ? "border-b-4 border-black bg-white text-black"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                {tab === "groups"
-                  ? "GROUPS/TEAMS"
-                  : tab === "knockout"
-                    ? "QF/SEMI PICKS"
-                    : tab}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {activeTab === "participants" && (
-          <>
-            {liveMatches.length > 0 && (
-              <section className="rounded-2xl border-2 border-green-200 bg-green-50 p-4 shadow sm:p-6">
-                <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="relative flex h-3 w-3">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                        <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
-                      </span>
-                      <h2 className="text-xl font-bold text-green-900">
-                        Live Now
-                      </h2>
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-green-800">
-                      {liveMatches.length === 1
-                        ? "1 game is currently live."
-                        : `${liveMatches.length} games are currently live.`}
+            <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+              <div className="space-y-5">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 text-center">
+                    <p className="text-3xl font-black text-blue-900">48</p>
+                    <p className="mt-1 text-sm font-bold text-gray-600">
+                      Teams
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleTabClick("matches")}
-                    className="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow hover:bg-green-800"
-                  >
-                    View in Matches
-                  </button>
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 text-center">
+                    <p className="text-3xl font-black text-blue-900">104</p>
+                    <p className="mt-1 text-sm font-bold text-gray-600">
+                      Matches
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 text-center">
+                    <p className="text-3xl font-black text-blue-900">3</p>
+                    <p className="mt-1 text-sm font-bold text-gray-600">
+                      Team Picks
+                    </p>
+                  </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  {liveMatches.map((match) => {
-                    const isKnockoutMatch = !match.stage.startsWith("Group");
-                    const resolvedA = isKnockoutMatch
-                      ? resolveBracketTeam(match.teamA)
-                      : { name: match.teamA, resolved: true };
-                    const resolvedB = isKnockoutMatch
-                      ? resolveBracketTeam(match.teamB)
-                      : { name: match.teamB, resolved: true };
-                    const liveTeamA = resolvedA.resolved
-                      ? resolvedA.name
-                      : "TBD";
-                    const liveTeamB = resolvedB.resolved
-                      ? resolvedB.name
-                      : "TBD";
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+                  <h3 className="text-2xl font-extrabold text-gray-900">
+                    Competition Summary
+                  </h3>
 
-                    return (
-                      <div
-                        key={match.id}
-                        className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm"
-                      >
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                            Match {match.id} • {match.stage}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs font-bold text-green-700">
-                            <span className="relative flex h-3 w-3">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                              <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
-                            </span>
-                            LIVE
-                          </div>
-                        </div>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-2xl bg-blue-50 p-4">
+                      <p className="text-sm font-black uppercase tracking-wide text-blue-800">
+                        Main Pool
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-gray-700">
+                        Each logged-in participant chooses three teams. Team
+                        results earn points: win = 3, draw = 1, loss = 0.
+                      </p>
+                    </div>
 
-                        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                          <div className="min-w-0">
-                            <TeamDisplay teamName={liveTeamA} />
-                          </div>
+                    <div className="rounded-2xl bg-emerald-50 p-4">
+                      <p className="text-sm font-black uppercase tracking-wide text-emerald-800">
+                        QF / Semi Picks
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-gray-700">
+                        Participants can also predict the Quarter Final and Semi
+                        Final teams, with leaders ranked by best match
+                        percentage.
+                      </p>
+                    </div>
 
-                          <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
-                            <p className="text-2xl font-black text-gray-900">
-                              {match.scoreA || "-"} - {match.scoreB || "-"}
-                            </p>
-                            <p className="mt-1 text-xs font-bold text-gray-500">
-                              {match.time}
-                            </p>
-                          </div>
+                    <div className="rounded-2xl bg-yellow-50 p-4">
+                      <p className="text-sm font-black uppercase tracking-wide text-yellow-800">
+                        Live Tracking
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-gray-700">
+                        Match scores, group tables, bracket progress, and
+                        leaderboards update after the admin saves results.
+                      </p>
+                    </div>
 
-                          <div className="min-w-0">
-                            <TeamDisplay teamName={liveTeamB} />
-                          </div>
-                        </div>
-
-                        {match.venue && (
-                          <p className="mt-3 text-center text-xs font-medium text-gray-500">
-                            {match.venue}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
+                    <div className="rounded-2xl bg-purple-50 p-4">
+                      <p className="text-sm font-black uppercase tracking-wide text-purple-800">
+                        Private Access
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-gray-700">
+                        Participant tabs and pool details stay hidden until a
+                        user signs in with email and password.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </section>
-            )}
+              </div>
 
-            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
-              <h2 className="text-xl font-semibold">Login Required</h2>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
-                <li>
-                  Each participant must create or sign in with an email and
-                  password.
-                </li>
-                <li>You can submit only one set of picks per account.</li>
-                <li>
-                  You may update your name or <strong>ONE</strong> team until{" "}
-                  <strong>June 27, 2026 at 11:59 PM PDT</strong>. After that,
-                  all picks are locked.
-                </li>
-              </ul>
-
-              {picksLocked && (
-                <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700">
-                  Picks are now locked. No more team changes are allowed.
+              <div className="rounded-3xl border border-gray-200 bg-gray-50 p-5 shadow-inner sm:p-6">
+                <h3 className="text-2xl font-extrabold text-gray-900">
+                  Sign in to enter
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Log in to view Participants, QF/Semi Picks, Matches, Bracket,
+                  Groups, and submit your picks.
                 </p>
-              )}
 
-              {user ? (
-                <div className="mt-4 flex flex-col gap-3 rounded-xl bg-green-50 p-4 md:flex-row md:items-center md:justify-between">
-                  <p className="text-sm text-green-800">
-                    Logged in as <strong>{user.email}</strong>
-                  </p>
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
-                  >
-                    Log out
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handlePasswordAuth} className="mt-4 space-y-3">
-                  <div className="flex flex-wrap gap-2">
+                <form onSubmit={handlePasswordAuth} className="mt-5 space-y-4">
+                  <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white p-1 shadow-sm">
                     <button
                       type="button"
                       onClick={() => {
                         setAuthMode("signIn");
                         setAuthMessage("");
                       }}
-                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                      className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
                         authMode === "signIn"
                           ? "bg-black text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          : "text-gray-600 hover:bg-gray-100"
                       }`}
                     >
                       Sign In
@@ -4014,1129 +3926,133 @@ export default function Home() {
                         setAuthMode("signUp");
                         setAuthMessage("");
                       }}
-                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                      className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
                         authMode === "signUp"
                           ? "bg-black text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          : "text-gray-600 hover:bg-gray-100"
                       }`}
                     >
                       Create Account
                     </button>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-                    <input
-                      className="rounded-xl border p-3"
-                      type="email"
-                      placeholder="Email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
+                  <input
+                    className="w-full rounded-2xl border border-gray-300 bg-white p-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
 
-                    <input
-                      className="rounded-xl border p-3"
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
+                  <input
+                    className="w-full rounded-2xl border border-gray-300 bg-white p-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
 
-                    <button className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800">
-                      {authMode === "signIn" ? "Sign In" : "Create Account"}
-                    </button>
-                  </div>
+                  <button className="w-full rounded-2xl bg-black px-5 py-4 font-extrabold text-white shadow-lg transition hover:bg-gray-800">
+                    {authMode === "signIn" ? "Sign In" : "Create Account"}
+                  </button>
 
-                  <p className="text-xs text-gray-500">
-                    Use the same email and password each time. No magic-link
-                    email is needed.
+                  <p className="text-center text-xs text-gray-500">
+                    Use the same email and password each time.
                   </p>
                 </form>
-              )}
 
-              {authMessage && (
-                <p className="mt-3 text-sm font-medium text-blue-700">
-                  {authMessage}
-                </p>
-              )}
-            </section>
-
-            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
-              <h2 className="mb-4 text-xl font-semibold">
-                {isAdminEditingParticipant
-                  ? `Admin Edit: ${adminEditingParticipant?.name}`
-                  : isAdmin
-                    ? "Admin Add Participant"
-                    : myPick
-                      ? "Your Picks Are Locked"
-                      : "Add Participant"}
-              </h2>
-              <form
-                onSubmit={addParticipant}
-                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto]"
-              >
-                <input
-                  className="min-w-0 rounded-xl border p-3 sm:col-span-2 lg:col-span-1"
-                  placeholder="Participant name"
-                  value={participantName}
-                  onChange={(e) => setParticipantName(e.target.value)}
-                  disabled={Boolean(shouldLockPickForm)}
-                />
-
-                <Select
-                  instanceId="favorite-team-1"
-                  inputId="favorite-team-1"
-                  className="min-w-0"
-                  isDisabled={Boolean(shouldLockPickForm)}
-                  placeholder="Favorite Team 1"
-                  value={
-                    team1
-                      ? {
-                          value: team1,
-                          label: team1,
-                          image: flagMap[team1],
-                        }
-                      : null
-                  }
-                  onChange={(selected) => setTeam1(selected?.value || "")}
-                  options={[...teamData]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((team) => ({
-                      value: team.name,
-                      label: team.name,
-                      image: flagMap[team.name],
-                    }))}
-                  formatOptionLabel={(option: any) => (
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={option.image}
-                        alt={option.label}
-                        className="h-5 w-7 rounded-sm object-cover"
-                      />
-                      <span>{option.label}</span>
-                    </div>
-                  )}
-                />
-
-                <Select
-                  instanceId="favorite-team-2"
-                  inputId="favorite-team-2"
-                  className="min-w-0"
-                  isDisabled={Boolean(shouldLockPickForm)}
-                  placeholder="Favorite Team 2"
-                  value={
-                    team2
-                      ? {
-                          value: team2,
-                          label: team2,
-                          image: flagMap[team2],
-                        }
-                      : null
-                  }
-                  onChange={(selected) => setTeam2(selected?.value || "")}
-                  options={[...teamData]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((team) => ({
-                      value: team.name,
-                      label: team.name,
-                      image: flagMap[team.name],
-                    }))}
-                  formatOptionLabel={(option: any) => (
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={option.image}
-                        alt={option.label}
-                        className="h-5 w-7 rounded-sm object-cover"
-                      />
-                      <span>{option.label}</span>
-                    </div>
-                  )}
-                />
-
-                <Select
-                  instanceId="favorite-team-3"
-                  inputId="favorite-team-3"
-                  className="min-w-0"
-                  isDisabled={Boolean(shouldLockPickForm)}
-                  placeholder="Favorite Team 3"
-                  value={
-                    team3
-                      ? {
-                          value: team3,
-                          label: team3,
-                          image: flagMap[team3],
-                        }
-                      : null
-                  }
-                  onChange={(selected) => setTeam3(selected?.value || "")}
-                  options={[...teamData]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((team) => ({
-                      value: team.name,
-                      label: team.name,
-                      image: flagMap[team.name],
-                    }))}
-                  formatOptionLabel={(option: any) => (
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={option.image}
-                        alt={option.label}
-                        className="h-5 w-7 rounded-sm object-cover"
-                      />
-                      <span>{option.label}</span>
-                    </div>
-                  )}
-                />
-
-                <button
-                  disabled={Boolean(shouldLockPickForm)}
-                  className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400 sm:col-span-2 lg:col-span-1"
-                >
-                  {isAdminEditingParticipant
-                    ? "Save Admin Edit"
-                    : isAdmin
-                      ? "Add Participant"
-                      : "Submit Picks"}
-                </button>
-
-                {isAdminEditingParticipant && (
-                  <button
-                    type="button"
-                    onClick={cancelAdminEditParticipant}
-                    className="rounded-xl border border-gray-300 p-3 font-semibold text-gray-700 hover:bg-gray-100 sm:col-span-2 lg:col-span-1"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </form>
-
-              {!user && (
-                <p className="mt-3 text-sm text-gray-500">
-                  Log in first to enable the pick form.
-                </p>
-              )}
-
-              {user && myPick && !isAdmin && !isAdminEditingParticipant && (
-                <p className="mt-3 text-sm font-medium text-orange-700">
-                  Your teams are submitted and locked. Only the admin can edit
-                  submitted teams.
-                </p>
-              )}
-
-              {user && isAdmin && !isAdminEditingParticipant && (
-                <p className="mt-3 text-sm font-medium text-blue-700">
-                  Admin mode: you can add new participants after the cutoff and
-                  edit any participant teams anytime.
-                </p>
-              )}
-
-              {[team1, team2, team3].every(Boolean) &&
-                new Set([team1, team2, team3]).size !== 3 && (
-                  <p className="mt-3 text-red-600">
-                    Please choose three different teams.
+                {authMessage && (
+                  <p className="mt-4 rounded-2xl bg-blue-50 p-3 text-center text-sm font-semibold text-blue-700">
+                    {authMessage}
                   </p>
                 )}
-            </section>
-
-            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
-              <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    Participant Leaderboard
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Scoring: win = 3 points, draw = 1 point, loss = 0 points.
-                  </p>
-                </div>
-                <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
-                  {participants.length} participants
-                </span>
               </div>
-
-              {participants.length === 0 ? (
-                <p className="text-gray-500">No participants yet.</p>
-              ) : (
-                <>
-                  <div className="space-y-3 md:hidden">
-                    {scoredParticipants.map((participant, index) => (
-                      <div
-                        key={participant.id}
-                        className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-                      >
-                        <div className="mb-3 flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                              Rank #{index + 1}
-                            </p>
-                            <h3
-                              className={`truncate text-lg font-extrabold ${
-                                isWinnerScore(participant.score)
-                                  ? "text-yellow-600"
-                                  : "text-gray-900"
-                              }`}
-                            >
-                              <span>
-                                {isWinnerScore(participant.score) ? "🏆 " : ""}
-                                {participant.name}
-                              </span>
-                              {participant.paid && (
-                                <span className="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-700">
-                                  $
-                                </span>
-                              )}
-                            </h3>
-                          </div>
-
-                          <span className="flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
-                            {participant.score} pts
-                          </span>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
-                            <TeamDisplay teamName={participant.team1} />
-                            <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
-                              {participant.team1Score} pts
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
-                            <TeamDisplay teamName={participant.team2} />
-                            <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
-                              {participant.team2Score} pts
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
-                            <TeamDisplay teamName={participant.team3} />
-                            <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
-                              {participant.team3Score} pts
-                            </span>
-                          </div>
-                        </div>
-
-                        {isAdmin && (
-                          <div className="mt-3 grid grid-cols-3 gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                startAdminEditParticipant(participant)
-                              }
-                              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => toggleParticipantPaid(participant)}
-                              className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${
-                                participant.paid
-                                  ? "bg-emerald-700 hover:bg-emerald-800"
-                                  : "bg-emerald-600 hover:bg-emerald-700"
-                              }`}
-                            >
-                              {participant.paid ? "Remove $" : "Add $"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => deleteParticipant(participant)}
-                              className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="hidden overflow-visible md:block">
-                    <table className="w-full text-left text-sm">
-                      <thead>
-                        <tr className="border-b bg-gray-50">
-                          <th className="p-3">Rank</th>
-                          <th className="p-3">Name</th>
-                          <th className="p-3">Team 1</th>
-                          <th className="p-3">Team 2</th>
-                          <th className="p-3">Team 3</th>
-                          <th className="p-3 text-right">Score</th>
-                          {isAdmin && <th className="p-3 text-right">Admin</th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {scoredParticipants.map((participant, index) => (
-                          <tr key={participant.id} className="border-b">
-                            <td className="p-3 font-semibold">{index + 1}</td>
-                            <td
-                              className={`p-3 font-bold ${
-                                isWinnerScore(participant.score)
-                                  ? "text-yellow-600"
-                                  : "text-gray-900"
-                              }`}
-                            >
-                              <span>
-                                {isWinnerScore(participant.score) ? "🏆 " : ""}
-                                {participant.name}
-                              </span>
-                              {participant.paid && (
-                                <span className="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-700">
-                                  $
-                                </span>
-                              )}
-                            </td>
-                            <td className="p-3">
-                              <div className="flex items-center justify-between gap-3">
-                                <TeamDisplay teamName={participant.team1} />
-                                <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
-                                  {participant.team1Score} pts
-                                </span>
-                              </div>
-                            </td>
-                            <td className="p-3">
-                              <div className="flex items-center justify-between gap-3">
-                                <TeamDisplay teamName={participant.team2} />
-                                <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
-                                  {participant.team2Score} pts
-                                </span>
-                              </div>
-                            </td>
-                            <td className="p-3">
-                              <div className="flex items-center justify-between gap-3">
-                                <TeamDisplay teamName={participant.team3} />
-                                <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
-                                  {participant.team3Score} pts
-                                </span>
-                              </div>
-                            </td>
-                            <td className="p-3 text-right text-lg font-bold">
-                              <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
-                                {participant.score} pts
-                              </span>
-                            </td>
-                            {isAdmin && (
-                              <td className="p-3 text-right">
-                                <div className="flex justify-end gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      startAdminEditParticipant(participant)
-                                    }
-                                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      toggleParticipantPaid(participant)
-                                    }
-                                    className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${
-                                      participant.paid
-                                        ? "bg-emerald-700 hover:bg-emerald-800"
-                                        : "bg-emerald-600 hover:bg-emerald-700"
-                                    }`}
-                                  >
-                                    {participant.paid ? "Remove $" : "Add $"}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      deleteParticipant(participant)
-                                    }
-                                    className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </section>
-          </>
-        )}
-
-        {activeTab === "knockout" && (
+            </div>
+          </section>
+        ) : (
           <>
-            <section className="rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow sm:p-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow sm:p-5">
+              <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-blue-700">
-                    Separate $20 Pool
+                  <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
+                    Pot Money
                   </p>
-                  <h2 className="mt-1 text-2xl font-extrabold text-blue-950 sm:text-3xl">
-                    Quarter / Semi Pick Pot: $
-                    {knockoutPotMoney.toLocaleString()}
+                  <h2 className="mt-1 text-2xl font-extrabold text-emerald-900 sm:text-3xl">
+                    ${potMoney.toLocaleString()}
                   </h2>
-                  <p className="mt-2 text-sm text-blue-800">
-                    Pick 8 quarter-final teams and 4 semi-final teams. Entry is
-                    separate from the original ${CONTRIBUTION_AMOUNT} pot.
-                  </p>
                 </div>
 
-                <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-blue-800 shadow-sm">
-                  {paidKnockoutCount} participant
-                  {paidKnockoutCount === 1 ? "" : "s"} paid × $
-                  {KNOCKOUT_CONTRIBUTION_AMOUNT}
-                </div>
-              </div>
-
-              {!knockoutPicksOpen && !isAdmin && (
-                <p className="mt-4 rounded-xl bg-orange-50 p-3 text-sm font-semibold text-orange-700">
-                  Quarter / Semi picks are locked after June 27, 2026 at 11:59
-                  PM PDT.
-                </p>
-              )}
-            </section>
-
-            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
-              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    {isAdminEditingKnockoutPick
-                      ? `Admin Edit: ${adminEditingKnockoutPick?.name}`
-                      : "Submit Quarter / Semi Picks"}
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Leaderboard compares your picks against the actual teams
-                    shown in the Bracket tab. Ranking is based on highest match
-                    percentage, then total matched teams.
-                  </p>
-                </div>
-                {myKnockoutPick && (
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-700">
-                    Submitted
-                  </span>
-                )}
-              </div>
-
-              <form onSubmit={submitKnockoutPick} className="space-y-5">
-                <input
-                  className="w-full rounded-xl border p-3"
-                  placeholder="Participant name"
-                  value={knockoutName}
-                  onChange={(e) => setKnockoutName(e.target.value)}
-                  disabled={!user || (!knockoutPicksOpen && !isAdmin)}
-                />
-
-                <div>
-                  <h3 className="mb-3 font-bold text-gray-900">
-                    Pick 8 Quarter-Final Teams
-                  </h3>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    {quarterTeams.map((selectedTeam, index) => (
-                      <Select
-                        key={`quarter-${index}`}
-                        instanceId={`quarter-team-${index}`}
-                        inputId={`quarter-team-${index}`}
-                        isDisabled={!user || (!knockoutPicksOpen && !isAdmin)}
-                        placeholder={`QF Team ${index + 1}`}
-                        value={
-                          selectedTeam
-                            ? {
-                                value: selectedTeam,
-                                label: selectedTeam,
-                                image: flagMap[selectedTeam],
-                              }
-                            : null
-                        }
-                        onChange={(selected) =>
-                          setQuarterTeam(index, selected?.value || "")
-                        }
-                        options={quarterTeamOptions}
-                        formatOptionLabel={(option: any) => (
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={option.image}
-                              alt={option.label}
-                              className="h-5 w-7 rounded-sm object-cover"
-                            />
-                            <span>{option.label}</span>
-                          </div>
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="mb-1 font-bold text-gray-900">
-                    Pick 4 Semi-Final Teams
-                  </h3>
-                  <p className="mb-3 text-sm text-gray-500">
-                    Only the 8 teams you picked in Quarter-Final section will
-                    show here.
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    {semiTeams.map((selectedTeam, index) => (
-                      <Select
-                        key={`semi-${index}`}
-                        instanceId={`semi-team-${index}`}
-                        inputId={`semi-team-${index}`}
-                        isDisabled={
-                          !user ||
-                          semiTeamOptions.length < 8 ||
-                          (!knockoutPicksOpen && !isAdmin)
-                        }
-                        placeholder={`Semi Team ${index + 1}`}
-                        value={
-                          selectedTeam
-                            ? {
-                                value: selectedTeam,
-                                label: selectedTeam,
-                                image: flagMap[selectedTeam],
-                              }
-                            : null
-                        }
-                        onChange={(selected) =>
-                          setSemiTeam(index, selected?.value || "")
-                        }
-                        options={semiTeamOptions}
-                        formatOptionLabel={(option: any) => (
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={option.image}
-                              alt={option.label}
-                              className="h-5 w-7 rounded-sm object-cover"
-                            />
-                            <span>{option.label}</span>
-                          </div>
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <button
-                    type="submit"
-                    disabled={!user || (!knockoutPicksOpen && !isAdmin)}
-                    className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-                  >
-                    {isAdminEditingKnockoutPick
-                      ? "Save Admin Edit"
-                      : myKnockoutPick
-                        ? "Update Knockout Picks"
-                        : "Submit Knockout Picks"}
-                  </button>
-
-                  {isAdminEditingKnockoutPick && (
-                    <button
-                      type="button"
-                      onClick={cancelAdminEditKnockoutPick}
-                      className="rounded-xl border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
-                    >
-                      Cancel Edit
-                    </button>
-                  )}
-
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={saveKnockoutPaymentChanges}
-                      disabled={!hasUnsavedKnockoutPaymentChanges}
-                      className="rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-                    >
-                      Save $20 Payments
-                    </button>
-                  )}
-                </div>
-
-                {knockoutMessage && (
-                  <p className="text-sm font-semibold text-blue-700">
-                    {knockoutMessage}
-                  </p>
-                )}
-              </form>
-            </section>
-
-            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
-              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    Quarter / Semi Leaderboard
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Compares each entry against the actual Bracket Quarter-Final
-                    teams out of 8 and Semi-Final teams out of 4, then ranks by
-                    the highest combined category percentage.
-                  </p>
-                </div>
-                <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
-                  {knockoutPicks.length} entries
-                </span>
-              </div>
-
-              {knockoutPicks.length === 0 ? (
-                <p className="text-gray-500">No knockout picks yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Actual bracket teams used for scoring
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-gray-700">
-                      Quarter-Final teams found:{" "}
-                      {actualQuarterFinalTeams.length}/8 • Semi-Final teams
-                      found: {actualSemiFinalTeams.length}/4
-                    </p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      QF percentage is scored out of 8 teams. Semi percentage is
-                      scored out of 4 teams. Overall match percentage is the
-                      average of those two category percentages.
-                    </p>
-                  </div>
-                  {scoredKnockoutPicks.map((pick, index) => (
-                    <div
-                      key={pick.id}
-                      className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                            Rank #{index + 1}
-                          </p>
-                          <h3 className="text-lg font-extrabold text-gray-900">
-                            {pick.name}
-                            {pick.paid && (
-                              <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-extrabold text-blue-700">
-                                $20
-                              </span>
-                            )}
-                          </h3>
-                          <p className="mt-1 text-sm font-semibold text-gray-600">
-                            QF {pick.quarterScore}/{pick.quarterTotal} ={" "}
-                            {pick.quarterPercentage}% • Semi {pick.semiScore}/
-                            {pick.semiTotal} = {pick.semiPercentage}% • Overall{" "}
-                            {pick.matchPercentage}%
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
-                            {pick.matchPercentage}%
-                          </span>
-                          <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">
-                            {pick.matchedCount}/{pick.totalPossibleBracketSpots}{" "}
-                            matched
-                          </span>
-                          {isAdmin && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => startAdminEditKnockoutPick(pick)}
-                                className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => toggleKnockoutPaid(pick)}
-                                className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800"
-                              >
-                                {pick.paid ? "Remove $20" : "Add $20"}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => deleteKnockoutPick(pick)}
-                                className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                              >
-                                Delete
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                        <div className="rounded-xl bg-gray-50 p-3">
-                          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
-                            Quarter Picks
-                          </p>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            {[
-                              pick.qf_team1,
-                              pick.qf_team2,
-                              pick.qf_team3,
-                              pick.qf_team4,
-                              pick.qf_team5,
-                              pick.qf_team6,
-                              pick.qf_team7,
-                              pick.qf_team8,
-                            ].map((team, teamIndex) => (
-                              <TeamDisplay
-                                key={`${pick.id}-qf-${teamIndex}`}
-                                teamName={team}
-                                showPickedByHover={false}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-gray-50 p-3">
-                          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
-                            Semi Picks
-                          </p>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            {[
-                              pick.sf_team1,
-                              pick.sf_team2,
-                              pick.sf_team3,
-                              pick.sf_team4,
-                            ].map((team, teamIndex) => (
-                              <TeamDisplay
-                                key={`${pick.id}-sf-${teamIndex}`}
-                                teamName={team}
-                                showPickedByHover={false}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </>
-        )}
-
-        {activeTab === "matches" && (
-          <>
-            <section className="space-y-6">
-              <div className="rounded-2xl bg-white p-4 shadow sm:p-6">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                  <div>
-                    <h2 className="text-2xl font-bold">Matches</h2>
-                    <p className="mt-1 text-sm text-gray-500">
-                      All times are Pacific Time. Group-stage matches are shown
-                      here; knockout matches are available in the Bracket tab.
-                    </p>
-                    <p className="mt-1 text-sm font-medium text-gray-700">
-                      {isAdmin
-                        ? "Admin mode: you can edit scores and match status."
-                        : "Viewer mode: only the admin can update match scores."}
-                    </p>
+                <div className="flex flex-col items-center gap-2 sm:items-end">
+                  <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-emerald-800 shadow-sm">
+                    {paidParticipantCount} participant
+                    {paidParticipantCount === 1 ? "" : "s"} paid × $
+                    {CONTRIBUTION_AMOUNT}
                   </div>
 
                   {isAdmin && (
-                    <div className="flex flex-col items-start gap-2 md:items-end">
-                      <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col items-center gap-2 sm:items-end">
+                      {hasUnsavedPaymentChanges && (
                         <button
                           type="button"
-                          onClick={saveAllScores}
-                          className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800"
+                          onClick={savePaymentChanges}
+                          disabled={isSavingPaymentChanges}
+                          className={`rounded-xl px-4 py-2 text-sm font-bold text-white shadow ${
+                            isSavingPaymentChanges
+                              ? "cursor-not-allowed bg-gray-400"
+                              : "bg-emerald-700 hover:bg-emerald-800"
+                          }`}
                         >
-                          Save Scores
+                          {isSavingPaymentChanges
+                            ? "Saving..."
+                            : "Save changes"}
                         </button>
+                      )}
 
-                        <button
-                          type="button"
-                          onClick={resetAllScores}
-                          className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700"
-                        >
-                          Reset Scores
-                        </button>
-                      </div>
-
-                      {scoreSaveMessage && (
-                        <p className="text-sm font-medium text-green-700">
-                          {scoreSaveMessage}
+                      {paymentSaveMessage && (
+                        <p className="max-w-xs text-center text-xs font-semibold text-emerald-800 sm:text-right">
+                          {paymentSaveMessage}
                         </p>
                       )}
                     </div>
                   )}
                 </div>
-
-                <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                  <label
-                    htmlFor="match-search"
-                    className="text-sm font-bold text-gray-700"
-                  >
-                    Search matches by team
-                  </label>
-                  <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-                    <input
-                      id="match-search"
-                      value={matchSearch}
-                      onChange={(e) => setMatchSearch(e.target.value)}
-                      placeholder="Type USA, United States, Mexico, Brazil..."
-                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-medium outline-none ring-blue-500 focus:ring-2"
-                    />
-
-                    {matchSearch.trim() && (
-                      <button
-                        type="button"
-                        onClick={() => setMatchSearch("")}
-                        className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-100"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-
-                  <p className="mt-2 text-sm font-medium text-gray-600">
-                    {matchSearch.trim()
-                      ? `${totalFilteredMatchCount} match${
-                          totalFilteredMatchCount === 1 ? "" : "es"
-                        } found for "${matchSearch.trim()}".`
-                      : "Search by team name or short code to show that team’s past, live, and future games."}
-                  </p>
-                </div>
               </div>
-
-              {matchSearch.trim() && totalFilteredMatchCount === 0 && (
-                <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow">
-                  <p className="text-lg font-bold text-gray-800">
-                    No matches found
-                  </p>
-                  <p className="mt-2 text-sm text-gray-500">
-                    Try searching by full team name or short code, such as USA,
-                    United States, MEX, Brazil, or England.
-                  </p>
-                </div>
-              )}
-
-              {Object.entries(filteredGroupedMatches).map(
-                ([date, dateMatches]) => (
-                  <section
-                    key={date}
-                    ref={(element) => {
-                      matchDateRefs.current[date] = element;
-                    }}
-                    className="overflow-hidden rounded-2xl bg-white shadow"
-                  >
-                    <div className="border-b bg-gray-50 px-6 py-4">
-                      <h3 className="text-lg font-bold">{date}</h3>
-                    </div>
-
-                    <div className="divide-y">
-                      {dateMatches.map((match) => (
-                        <div
-                          key={match.id}
-                          className="grid gap-4 p-4 sm:p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
-                        >
-                          <div className="flex flex-col gap-2">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                              Match {match.id} • {match.stage}
-                            </p>
-                            <TeamDisplay teamName={match.teamA} />
-                          </div>
-
-                          <div className="rounded-2xl bg-gray-100 px-4 py-4 text-center sm:px-6">
-                            {isAdmin ? (
-                              <select
-                                className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
-                                value={match.status}
-                                onChange={(e) =>
-                                  updateMatchStatus(
-                                    match.id,
-                                    e.target.value as Match["status"],
-                                  )
-                                }
-                              >
-                                <option value="Scheduled">Scheduled</option>
-                                <option value="Live">Live</option>
-                                <option value="Half Time">Half Time</option>
-                                <option value="Full Time">Full Time</option>
-                              </select>
-                            ) : (
-                              <p className="text-sm font-semibold text-gray-500">
-                                {match.status}
-                              </p>
-                            )}
-
-                            {match.status === "Live" && <LivePulse />}
-
-                            <p className="mt-1 text-lg font-bold">
-                              {match.time}
-                            </p>
-
-                            {match.venue && (
-                              <p className="mt-1 text-xs font-medium text-gray-500">
-                                {match.venue}
-                              </p>
-                            )}
-
-                            <div className="mt-3 flex items-center justify-center gap-3">
-                              {isAdmin ? (
-                                <>
-                                  <input
-                                    className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
-                                    value={match.scoreA}
-                                    onChange={(e) =>
-                                      updateMatchScore(
-                                        match.id,
-                                        "scoreA",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                  <span className="font-semibold text-gray-400">
-                                    -
-                                  </span>
-                                  <input
-                                    className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
-                                    value={match.scoreB}
-                                    onChange={(e) =>
-                                      updateMatchScore(
-                                        match.id,
-                                        "scoreB",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </>
-                              ) : (
-                                <div className="rounded-xl bg-white px-5 py-2 text-xl font-extrabold">
-                                  {match.scoreA.trim() !== "" &&
-                                  match.scoreB.trim() !== ""
-                                    ? `${match.scoreA} - ${match.scoreB}`
-                                    : "-"}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-start gap-2 md:items-end">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                              {match.stage}
-                            </p>
-                            <TeamDisplay teamName={match.teamB} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                ),
-              )}
             </section>
-          </>
-        )}
 
-        {activeTab === "bracket" &&
-          (() => {
-            const cardWidth = 270;
-            const cardHeight = 166;
-            // Increase rowGap and colGap together to create more diagonal breathing room
-            // between connected bracket cards while keeping the same mapping/order.
-            const rowGap = 48;
-            const step = cardHeight + rowGap;
-            const colGap = 56;
-            const headerOffset = 54;
+            <section className="sticky top-0 z-50 overflow-hidden rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/90">
+              <div className="flex">
+                {(
+                  [
+                    "participants",
+                    "knockout",
+                    "matches",
+                    "bracket",
+                    "groups",
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => handleTabClick(tab)}
+                    className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
+                      activeTab === tab
+                        ? "border-b-4 border-black bg-white text-black"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {tab === "groups"
+                      ? "GROUPS/TEAMS"
+                      : tab === "knockout"
+                        ? "QF/SEMI PICKS"
+                        : tab}
+                  </button>
+                ))}
+              </div>
+            </section>
 
-            const rounds = [
-              { title: "Round of 32", stage: "Round of 32" },
-              { title: "Round of 16", stage: "Round of 16" },
-              { title: "Quarter Finals", stage: "Quarter Final" },
-              { title: "Semi Finals", stage: "Semi Final" },
-              { title: "Final", stage: "Final" },
-            ];
-
-            const bracketRounds = rounds.map((round) => ({
-              ...round,
-              matches: matches
-                .filter((match) => match.stage === round.stage)
-                .sort((a, b) => {
-                  const roundOf32Order = [
-                    74, 77, 73, 75, 84, 83, 82, 81, 76, 78, 79, 80, 88, 86, 85,
-                    87,
-                  ];
-
-                  // Round of 16 is intentionally displayed in swapped pairs
-                  // so the bracket visual position matches the requested layout:
-                  // 90 before 89, 92 before 91, 94 before 93, and 96 before 95.
-                  // Round of 32 stays unchanged.
-                  const roundOf16Order = [89, 90, 93, 94, 91, 92, 95, 96];
-                  const quarterFinalOrder = [97, 98, 99, 100];
-                  const semiFinalOrder = [101, 102];
-
-                  if (round.stage === "Round of 32") {
-                    return (
-                      roundOf32Order.indexOf(a.id) -
-                      roundOf32Order.indexOf(b.id)
-                    );
-                  }
-
-                  if (round.stage === "Round of 16") {
-                    return (
-                      roundOf16Order.indexOf(a.id) -
-                      roundOf16Order.indexOf(b.id)
-                    );
-                  }
-
-                  if (round.stage === "Quarter Final") {
-                    return (
-                      quarterFinalOrder.indexOf(a.id) -
-                      quarterFinalOrder.indexOf(b.id)
-                    );
-                  }
-
-                  if (round.stage === "Semi Final") {
-                    return (
-                      semiFinalOrder.indexOf(a.id) -
-                      semiFinalOrder.indexOf(b.id)
-                    );
-                  }
-                  return a.id - b.id;
-                }),
-            }));
-
-            const topFor = (roundIndex: number, index: number) => {
-              const spacing = Math.pow(2, roundIndex);
-              const offset = (spacing - 1) / 2;
-              return headerOffset + (index * spacing + offset) * step;
-            };
-
-            const centerY = (roundIndex: number, index: number) =>
-              topFor(roundIndex, index) + cardHeight / 2;
-
-            const leftFor = (roundIndex: number) =>
-              roundIndex * (cardWidth + colGap);
-
-            const bracketWidth =
-              rounds.length * cardWidth + (rounds.length - 1) * colGap;
-
-            const bracketHeight = headerOffset + 16 * step + 120;
-
-            return (
-              <section className="max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-xl md:p-8">
-                <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
-                  <div>
-                    <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
-                      Knockout Bracket
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600">
-                      Winners advance from each match into the next round.
-                    </p>
-                    <p className="mt-2 text-xs font-medium text-blue-700 sm:hidden">
-                      Swipe sideways to view the full bracket.
-                    </p>
-                  </div>
-
-                  {isAdmin && (
-                    <div className="flex flex-col items-start gap-2 md:items-end">
-                      <button
-                        type="button"
-                        onClick={resetBracketScores}
-                        className="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-red-700 sm:text-base"
-                      >
-                        Reset Bracket Scores
-                      </button>
-
-                      {scoreSaveMessage && (
-                        <p className="text-sm font-medium text-green-700">
-                          {scoreSaveMessage}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {liveBracketMatches.length > 0 && (
-                  <section className="mb-6 rounded-2xl border-2 border-green-200 bg-green-50 p-4 shadow sm:p-5">
+            {activeTab === "participants" && (
+              <>
+                {liveMatches.length > 0 && (
+                  <section className="rounded-2xl border-2 border-green-200 bg-green-50 p-4 shadow sm:p-6">
                     <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <div className="flex items-center gap-2">
@@ -5144,26 +4060,40 @@ export default function Home() {
                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
                             <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
                           </span>
-                          <h3 className="text-xl font-bold text-green-900">
-                            Live Knockout Games
-                          </h3>
+                          <h2 className="text-xl font-bold text-green-900">
+                            Live Now
+                          </h2>
                         </div>
                         <p className="mt-1 text-sm font-medium text-green-800">
-                          {liveBracketMatches.length === 1
-                            ? "1 bracket game is currently live."
-                            : `${liveBracketMatches.length} bracket games are currently live.`}
+                          {liveMatches.length === 1
+                            ? "1 game is currently live."
+                            : `${liveMatches.length} games are currently live.`}
                         </p>
                       </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleTabClick("matches")}
+                        className="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow hover:bg-green-800"
+                      >
+                        View in Matches
+                      </button>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                      {liveBracketMatches.map((match) => {
-                        const resolvedA = resolveBracketTeam(match.teamA);
-                        const resolvedB = resolveBracketTeam(match.teamB);
-                        const teamAName = resolvedA.resolved
+                      {liveMatches.map((match) => {
+                        const isKnockoutMatch =
+                          !match.stage.startsWith("Group");
+                        const resolvedA = isKnockoutMatch
+                          ? resolveBracketTeam(match.teamA)
+                          : { name: match.teamA, resolved: true };
+                        const resolvedB = isKnockoutMatch
+                          ? resolveBracketTeam(match.teamB)
+                          : { name: match.teamB, resolved: true };
+                        const liveTeamA = resolvedA.resolved
                           ? resolvedA.name
                           : "TBD";
-                        const teamBName = resolvedB.resolved
+                        const liveTeamB = resolvedB.resolved
                           ? resolvedB.name
                           : "TBD";
 
@@ -5187,7 +4117,7 @@ export default function Home() {
 
                             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                               <div className="min-w-0">
-                                <TeamDisplay teamName={teamAName} />
+                                <TeamDisplay teamName={liveTeamA} />
                               </div>
 
                               <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
@@ -5200,9 +4130,15 @@ export default function Home() {
                               </div>
 
                               <div className="min-w-0">
-                                <TeamDisplay teamName={teamBName} />
+                                <TeamDisplay teamName={liveTeamB} />
                               </div>
                             </div>
+
+                            {match.venue && (
+                              <p className="mt-3 text-center text-xs font-medium text-gray-500">
+                                {match.venue}
+                              </p>
+                            )}
                           </div>
                         );
                       })}
@@ -5210,153 +4146,1447 @@ export default function Home() {
                   </section>
                 )}
 
-                <div className="w-full max-w-full overflow-x-auto rounded-3xl border border-gray-200 bg-gray-50 p-3 shadow-inner md:p-5">
-                  <div
-                    className="relative"
-                    style={{ width: bracketWidth, height: bracketHeight }}
-                  >
-                    <svg
-                      className="pointer-events-none absolute left-0 top-0 z-0"
-                      width={bracketWidth}
-                      height={bracketHeight}
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <h2 className="text-xl font-semibold">Login Required</h2>
+                  <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
+                    <li>
+                      Each participant must create or sign in with an email and
+                      password.
+                    </li>
+                    <li>You can submit only one set of picks per account.</li>
+                    <li>
+                      You may update your name or <strong>ONE</strong> team
+                      until <strong>June 27, 2026 at 11:59 PM PDT</strong>.
+                      After that, all picks are locked.
+                    </li>
+                  </ul>
+
+                  {picksLocked && (
+                    <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700">
+                      Picks are now locked. No more team changes are allowed.
+                    </p>
+                  )}
+
+                  {user ? (
+                    <div className="mt-4 flex flex-col gap-3 rounded-xl bg-green-50 p-4 md:flex-row md:items-center md:justify-between">
+                      <p className="text-sm text-green-800">
+                        Logged in as <strong>{user.email}</strong>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={logout}
+                        className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                      >
+                        Log out
+                      </button>
+                    </div>
+                  ) : (
+                    <form
+                      onSubmit={handlePasswordAuth}
+                      className="mt-4 space-y-3"
                     >
-                      {bracketRounds
-                        .slice(0, -1)
-                        .flatMap((round, roundIndex) => {
-                          const nextRound = bracketRounds[roundIndex + 1];
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMode("signIn");
+                            setAuthMessage("");
+                          }}
+                          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                            authMode === "signIn"
+                              ? "bg-black text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          Sign In
+                        </button>
 
-                          return nextRound.matches.map((_, nextIndex) => {
-                            const sourceIndexA = nextIndex * 2;
-                            const sourceIndexB = nextIndex * 2 + 1;
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMode("signUp");
+                            setAuthMessage("");
+                          }}
+                          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                            authMode === "signUp"
+                              ? "bg-black text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          Create Account
+                        </button>
+                      </div>
 
-                            const sourceYA = centerY(roundIndex, sourceIndexA);
-                            const sourceYB = centerY(roundIndex, sourceIndexB);
-                            const targetY = centerY(roundIndex + 1, nextIndex);
+                      <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                        <input
+                          className="rounded-xl border p-3"
+                          type="email"
+                          placeholder="Email address"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
 
-                            const sourceX = leftFor(roundIndex) + cardWidth;
-                            const targetX = leftFor(roundIndex + 1);
-                            const midX = sourceX + colGap / 2;
+                        <input
+                          className="rounded-xl border p-3"
+                          type="password"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+
+                        <button className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800">
+                          {authMode === "signIn" ? "Sign In" : "Create Account"}
+                        </button>
+                      </div>
+
+                      <p className="text-xs text-gray-500">
+                        Use the same email and password each time. No magic-link
+                        email is needed.
+                      </p>
+                    </form>
+                  )}
+
+                  {authMessage && (
+                    <p className="mt-3 text-sm font-medium text-blue-700">
+                      {authMessage}
+                    </p>
+                  )}
+                </section>
+
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <h2 className="mb-4 text-xl font-semibold">
+                    {isAdminEditingParticipant
+                      ? `Admin Edit: ${adminEditingParticipant?.name}`
+                      : isAdmin
+                        ? "Admin Add Participant"
+                        : myPick
+                          ? "Your Picks Are Locked"
+                          : "Add Participant"}
+                  </h2>
+                  <form
+                    onSubmit={addParticipant}
+                    className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto]"
+                  >
+                    <input
+                      className="min-w-0 rounded-xl border p-3 sm:col-span-2 lg:col-span-1"
+                      placeholder="Participant name"
+                      value={participantName}
+                      onChange={(e) => setParticipantName(e.target.value)}
+                      disabled={Boolean(shouldLockPickForm)}
+                    />
+
+                    <Select
+                      instanceId="favorite-team-1"
+                      inputId="favorite-team-1"
+                      className="min-w-0"
+                      isDisabled={Boolean(shouldLockPickForm)}
+                      placeholder="Favorite Team 1"
+                      value={
+                        team1
+                          ? {
+                              value: team1,
+                              label: team1,
+                              image: flagMap[team1],
+                            }
+                          : null
+                      }
+                      onChange={(selected) => setTeam1(selected?.value || "")}
+                      options={[...teamData]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((team) => ({
+                          value: team.name,
+                          label: team.name,
+                          image: flagMap[team.name],
+                        }))}
+                      formatOptionLabel={(option: any) => (
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={option.image}
+                            alt={option.label}
+                            className="h-5 w-7 rounded-sm object-cover"
+                          />
+                          <span>{option.label}</span>
+                        </div>
+                      )}
+                    />
+
+                    <Select
+                      instanceId="favorite-team-2"
+                      inputId="favorite-team-2"
+                      className="min-w-0"
+                      isDisabled={Boolean(shouldLockPickForm)}
+                      placeholder="Favorite Team 2"
+                      value={
+                        team2
+                          ? {
+                              value: team2,
+                              label: team2,
+                              image: flagMap[team2],
+                            }
+                          : null
+                      }
+                      onChange={(selected) => setTeam2(selected?.value || "")}
+                      options={[...teamData]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((team) => ({
+                          value: team.name,
+                          label: team.name,
+                          image: flagMap[team.name],
+                        }))}
+                      formatOptionLabel={(option: any) => (
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={option.image}
+                            alt={option.label}
+                            className="h-5 w-7 rounded-sm object-cover"
+                          />
+                          <span>{option.label}</span>
+                        </div>
+                      )}
+                    />
+
+                    <Select
+                      instanceId="favorite-team-3"
+                      inputId="favorite-team-3"
+                      className="min-w-0"
+                      isDisabled={Boolean(shouldLockPickForm)}
+                      placeholder="Favorite Team 3"
+                      value={
+                        team3
+                          ? {
+                              value: team3,
+                              label: team3,
+                              image: flagMap[team3],
+                            }
+                          : null
+                      }
+                      onChange={(selected) => setTeam3(selected?.value || "")}
+                      options={[...teamData]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((team) => ({
+                          value: team.name,
+                          label: team.name,
+                          image: flagMap[team.name],
+                        }))}
+                      formatOptionLabel={(option: any) => (
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={option.image}
+                            alt={option.label}
+                            className="h-5 w-7 rounded-sm object-cover"
+                          />
+                          <span>{option.label}</span>
+                        </div>
+                      )}
+                    />
+
+                    <button
+                      disabled={Boolean(shouldLockPickForm)}
+                      className="rounded-xl bg-black p-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400 sm:col-span-2 lg:col-span-1"
+                    >
+                      {isAdminEditingParticipant
+                        ? "Save Admin Edit"
+                        : isAdmin
+                          ? "Add Participant"
+                          : "Submit Picks"}
+                    </button>
+
+                    {isAdminEditingParticipant && (
+                      <button
+                        type="button"
+                        onClick={cancelAdminEditParticipant}
+                        className="rounded-xl border border-gray-300 p-3 font-semibold text-gray-700 hover:bg-gray-100 sm:col-span-2 lg:col-span-1"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </form>
+
+                  {!user && (
+                    <p className="mt-3 text-sm text-gray-500">
+                      Log in first to enable the pick form.
+                    </p>
+                  )}
+
+                  {user && myPick && !isAdmin && !isAdminEditingParticipant && (
+                    <p className="mt-3 text-sm font-medium text-orange-700">
+                      Your teams are submitted and locked. Only the admin can
+                      edit submitted teams.
+                    </p>
+                  )}
+
+                  {user && isAdmin && !isAdminEditingParticipant && (
+                    <p className="mt-3 text-sm font-medium text-blue-700">
+                      Admin mode: you can add new participants after the cutoff
+                      and edit any participant teams anytime.
+                    </p>
+                  )}
+
+                  {[team1, team2, team3].every(Boolean) &&
+                    new Set([team1, team2, team3]).size !== 3 && (
+                      <p className="mt-3 text-red-600">
+                        Please choose three different teams.
+                      </p>
+                    )}
+                </section>
+
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                    <div>
+                      <h2 className="text-xl font-semibold">
+                        Participant Leaderboard
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Scoring: win = 3 points, draw = 1 point, loss = 0
+                        points.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
+                      {participants.length} participants
+                    </span>
+                  </div>
+
+                  {participants.length === 0 ? (
+                    <p className="text-gray-500">No participants yet.</p>
+                  ) : (
+                    <>
+                      <div className="space-y-3 md:hidden">
+                        {scoredParticipants.map((participant, index) => (
+                          <div
+                            key={participant.id}
+                            className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                          >
+                            <div className="mb-3 flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                                  Rank #{index + 1}
+                                </p>
+                                <h3
+                                  className={`truncate text-lg font-extrabold ${
+                                    isWinnerScore(participant.score)
+                                      ? "text-yellow-600"
+                                      : "text-gray-900"
+                                  }`}
+                                >
+                                  <span>
+                                    {isWinnerScore(participant.score)
+                                      ? "🏆 "
+                                      : ""}
+                                    {participant.name}
+                                  </span>
+                                  {participant.paid && (
+                                    <span className="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-700">
+                                      $
+                                    </span>
+                                  )}
+                                </h3>
+                              </div>
+
+                              <span className="flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
+                                {participant.score} pts
+                              </span>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                                <TeamDisplay teamName={participant.team1} />
+                                <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                                  {participant.team1Score} pts
+                                </span>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                                <TeamDisplay teamName={participant.team2} />
+                                <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
+                                  {participant.team2Score} pts
+                                </span>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 p-3">
+                                <TeamDisplay teamName={participant.team3} />
+                                <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
+                                  {participant.team3Score} pts
+                                </span>
+                              </div>
+                            </div>
+
+                            {isAdmin && (
+                              <div className="mt-3 grid grid-cols-3 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    startAdminEditParticipant(participant)
+                                  }
+                                  className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    toggleParticipantPaid(participant)
+                                  }
+                                  className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${
+                                    participant.paid
+                                      ? "bg-emerald-700 hover:bg-emerald-800"
+                                      : "bg-emerald-600 hover:bg-emerald-700"
+                                  }`}
+                                >
+                                  {participant.paid ? "Remove $" : "Add $"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteParticipant(participant)}
+                                  className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="hidden overflow-visible md:block">
+                        <table className="w-full text-left text-sm">
+                          <thead>
+                            <tr className="border-b bg-gray-50">
+                              <th className="p-3">Rank</th>
+                              <th className="p-3">Name</th>
+                              <th className="p-3">Team 1</th>
+                              <th className="p-3">Team 2</th>
+                              <th className="p-3">Team 3</th>
+                              <th className="p-3 text-right">Score</th>
+                              {isAdmin && (
+                                <th className="p-3 text-right">Admin</th>
+                              )}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {scoredParticipants.map((participant, index) => (
+                              <tr key={participant.id} className="border-b">
+                                <td className="p-3 font-semibold">
+                                  {index + 1}
+                                </td>
+                                <td
+                                  className={`p-3 font-bold ${
+                                    isWinnerScore(participant.score)
+                                      ? "text-yellow-600"
+                                      : "text-gray-900"
+                                  }`}
+                                >
+                                  <span>
+                                    {isWinnerScore(participant.score)
+                                      ? "🏆 "
+                                      : ""}
+                                    {participant.name}
+                                  </span>
+                                  {participant.paid && (
+                                    <span className="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-700">
+                                      $
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <TeamDisplay teamName={participant.team1} />
+                                    <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                                      {participant.team1Score} pts
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <TeamDisplay teamName={participant.team2} />
+                                    <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
+                                      {participant.team2Score} pts
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <TeamDisplay teamName={participant.team3} />
+                                    <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
+                                      {participant.team3Score} pts
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-right text-lg font-bold">
+                                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
+                                    {participant.score} pts
+                                  </span>
+                                </td>
+                                {isAdmin && (
+                                  <td className="p-3 text-right">
+                                    <div className="flex justify-end gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          startAdminEditParticipant(participant)
+                                        }
+                                        className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          toggleParticipantPaid(participant)
+                                        }
+                                        className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${
+                                          participant.paid
+                                            ? "bg-emerald-700 hover:bg-emerald-800"
+                                            : "bg-emerald-600 hover:bg-emerald-700"
+                                        }`}
+                                      >
+                                        {participant.paid
+                                          ? "Remove $"
+                                          : "Add $"}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          deleteParticipant(participant)
+                                        }
+                                        className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </section>
+              </>
+            )}
+
+            {activeTab === "knockout" && (
+              <>
+                <section className="rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow sm:p-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wide text-blue-700">
+                        Separate $20 Pool
+                      </p>
+                      <h2 className="mt-1 text-2xl font-extrabold text-blue-950 sm:text-3xl">
+                        Quarter / Semi Pick Pot: $
+                        {knockoutPotMoney.toLocaleString()}
+                      </h2>
+                      <p className="mt-2 text-sm text-blue-800">
+                        Pick 8 quarter-final teams and 4 semi-final teams. Entry
+                        is separate from the original ${CONTRIBUTION_AMOUNT}{" "}
+                        pot.
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-blue-800 shadow-sm">
+                      {paidKnockoutCount} participant
+                      {paidKnockoutCount === 1 ? "" : "s"} paid × $
+                      {KNOCKOUT_CONTRIBUTION_AMOUNT}
+                    </div>
+                  </div>
+
+                  {!knockoutPicksOpen && !isAdmin && (
+                    <p className="mt-4 rounded-xl bg-orange-50 p-3 text-sm font-semibold text-orange-700">
+                      Quarter / Semi picks are locked after June 27, 2026 at
+                      11:59 PM PDT.
+                    </p>
+                  )}
+                </section>
+
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-xl font-semibold">
+                        {isAdminEditingKnockoutPick
+                          ? `Admin Edit: ${adminEditingKnockoutPick?.name}`
+                          : "Submit Quarter / Semi Picks"}
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Leaderboard compares your picks against the actual teams
+                        shown in the Bracket tab. Ranking is based on highest
+                        match percentage, then total matched teams.
+                      </p>
+                    </div>
+                    {myKnockoutPick && (
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-700">
+                        Submitted
+                      </span>
+                    )}
+                  </div>
+
+                  <form onSubmit={submitKnockoutPick} className="space-y-5">
+                    <input
+                      className="w-full rounded-xl border p-3"
+                      placeholder="Participant name"
+                      value={knockoutName}
+                      onChange={(e) => setKnockoutName(e.target.value)}
+                      disabled={!user || (!knockoutPicksOpen && !isAdmin)}
+                    />
+
+                    <div>
+                      <h3 className="mb-3 font-bold text-gray-900">
+                        Pick 8 Quarter-Final Teams
+                      </h3>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {quarterTeams.map((selectedTeam, index) => (
+                          <Select
+                            key={`quarter-${index}`}
+                            instanceId={`quarter-team-${index}`}
+                            inputId={`quarter-team-${index}`}
+                            isDisabled={
+                              !user || (!knockoutPicksOpen && !isAdmin)
+                            }
+                            placeholder={`QF Team ${index + 1}`}
+                            value={
+                              selectedTeam
+                                ? {
+                                    value: selectedTeam,
+                                    label: selectedTeam,
+                                    image: flagMap[selectedTeam],
+                                  }
+                                : null
+                            }
+                            onChange={(selected) =>
+                              setQuarterTeam(index, selected?.value || "")
+                            }
+                            options={quarterTeamOptions}
+                            formatOptionLabel={(option: any) => (
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={option.image}
+                                  alt={option.label}
+                                  className="h-5 w-7 rounded-sm object-cover"
+                                />
+                                <span>{option.label}</span>
+                              </div>
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-1 font-bold text-gray-900">
+                        Pick 4 Semi-Final Teams
+                      </h3>
+                      <p className="mb-3 text-sm text-gray-500">
+                        Only the 8 teams you picked in Quarter-Final section
+                        will show here.
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {semiTeams.map((selectedTeam, index) => (
+                          <Select
+                            key={`semi-${index}`}
+                            instanceId={`semi-team-${index}`}
+                            inputId={`semi-team-${index}`}
+                            isDisabled={
+                              !user ||
+                              semiTeamOptions.length < 8 ||
+                              (!knockoutPicksOpen && !isAdmin)
+                            }
+                            placeholder={`Semi Team ${index + 1}`}
+                            value={
+                              selectedTeam
+                                ? {
+                                    value: selectedTeam,
+                                    label: selectedTeam,
+                                    image: flagMap[selectedTeam],
+                                  }
+                                : null
+                            }
+                            onChange={(selected) =>
+                              setSemiTeam(index, selected?.value || "")
+                            }
+                            options={semiTeamOptions}
+                            formatOptionLabel={(option: any) => (
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={option.image}
+                                  alt={option.label}
+                                  className="h-5 w-7 rounded-sm object-cover"
+                                />
+                                <span>{option.label}</span>
+                              </div>
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <button
+                        type="submit"
+                        disabled={!user || (!knockoutPicksOpen && !isAdmin)}
+                        className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                      >
+                        {isAdminEditingKnockoutPick
+                          ? "Save Admin Edit"
+                          : myKnockoutPick
+                            ? "Update Knockout Picks"
+                            : "Submit Knockout Picks"}
+                      </button>
+
+                      {isAdminEditingKnockoutPick && (
+                        <button
+                          type="button"
+                          onClick={cancelAdminEditKnockoutPick}
+                          className="rounded-xl border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={saveKnockoutPaymentChanges}
+                          disabled={!hasUnsavedKnockoutPaymentChanges}
+                          className="rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                        >
+                          Save $20 Payments
+                        </button>
+                      )}
+                    </div>
+
+                    {knockoutMessage && (
+                      <p className="text-sm font-semibold text-blue-700">
+                        {knockoutMessage}
+                      </p>
+                    )}
+                  </form>
+                </section>
+
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-xl font-semibold">
+                        Quarter / Semi Leaderboard
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Compares each entry against the actual Bracket
+                        Quarter-Final teams out of 8 and Semi-Final teams out of
+                        4, then ranks by the highest combined category
+                        percentage.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
+                      {knockoutPicks.length} entries
+                    </span>
+                  </div>
+
+                  {knockoutPicks.length === 0 ? (
+                    <p className="text-gray-500">No knockout picks yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                          Actual bracket teams used for scoring
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-gray-700">
+                          Quarter-Final teams found:{" "}
+                          {actualQuarterFinalTeams.length}/8 • Semi-Final teams
+                          found: {actualSemiFinalTeams.length}/4
+                        </p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          QF percentage is scored out of 8 teams. Semi
+                          percentage is scored out of 4 teams. Overall match
+                          percentage is the average of those two category
+                          percentages.
+                        </p>
+                      </div>
+                      {scoredKnockoutPicks.map((pick, index) => (
+                        <div
+                          key={pick.id}
+                          className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                        >
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                                Rank #{index + 1}
+                              </p>
+                              <h3 className="text-lg font-extrabold text-gray-900">
+                                {pick.name}
+                                {pick.paid && (
+                                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-extrabold text-blue-700">
+                                    $20
+                                  </span>
+                                )}
+                              </h3>
+                              <p className="mt-1 text-sm font-semibold text-gray-600">
+                                QF {pick.quarterScore}/{pick.quarterTotal} ={" "}
+                                {pick.quarterPercentage}% • Semi{" "}
+                                {pick.semiScore}/{pick.semiTotal} ={" "}
+                                {pick.semiPercentage}% • Overall{" "}
+                                {pick.matchPercentage}%
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
+                                {pick.matchPercentage}%
+                              </span>
+                              <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">
+                                {pick.matchedCount}/
+                                {pick.totalPossibleBracketSpots} matched
+                              </span>
+                              {isAdmin && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      startAdminEditKnockoutPick(pick)
+                                    }
+                                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleKnockoutPaid(pick)}
+                                    className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800"
+                                  >
+                                    {pick.paid ? "Remove $20" : "Add $20"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteKnockoutPick(pick)}
+                                    className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                            <div className="rounded-xl bg-gray-50 p-3">
+                              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+                                Quarter Picks
+                              </p>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {[
+                                  pick.qf_team1,
+                                  pick.qf_team2,
+                                  pick.qf_team3,
+                                  pick.qf_team4,
+                                  pick.qf_team5,
+                                  pick.qf_team6,
+                                  pick.qf_team7,
+                                  pick.qf_team8,
+                                ].map((team, teamIndex) => (
+                                  <TeamDisplay
+                                    key={`${pick.id}-qf-${teamIndex}`}
+                                    teamName={team}
+                                    showPickedByHover={false}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="rounded-xl bg-gray-50 p-3">
+                              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+                                Semi Picks
+                              </p>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {[
+                                  pick.sf_team1,
+                                  pick.sf_team2,
+                                  pick.sf_team3,
+                                  pick.sf_team4,
+                                ].map((team, teamIndex) => (
+                                  <TeamDisplay
+                                    key={`${pick.id}-sf-${teamIndex}`}
+                                    teamName={team}
+                                    showPickedByHover={false}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
+            )}
+
+            {activeTab === "matches" && (
+              <>
+                <section className="space-y-6">
+                  <div className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                      <div>
+                        <h2 className="text-2xl font-bold">Matches</h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                          All times are Pacific Time. Group-stage matches are
+                          shown here; knockout matches are available in the
+                          Bracket tab.
+                        </p>
+                        <p className="mt-1 text-sm font-medium text-gray-700">
+                          {isAdmin
+                            ? "Admin mode: you can edit scores and match status."
+                            : "Viewer mode: only the admin can update match scores."}
+                        </p>
+                      </div>
+
+                      {isAdmin && (
+                        <div className="flex flex-col items-start gap-2 md:items-end">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={saveAllScores}
+                              className="rounded-xl bg-black px-5 py-3 font-semibold text-white hover:bg-gray-800"
+                            >
+                              Save Scores
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={resetAllScores}
+                              className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700"
+                            >
+                              Reset Scores
+                            </button>
+                          </div>
+
+                          {scoreSaveMessage && (
+                            <p className="text-sm font-medium text-green-700">
+                              {scoreSaveMessage}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                      <label
+                        htmlFor="match-search"
+                        className="text-sm font-bold text-gray-700"
+                      >
+                        Search matches by team
+                      </label>
+                      <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                        <input
+                          id="match-search"
+                          value={matchSearch}
+                          onChange={(e) => setMatchSearch(e.target.value)}
+                          placeholder="Type USA, United States, Mexico, Brazil..."
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-medium outline-none ring-blue-500 focus:ring-2"
+                        />
+
+                        {matchSearch.trim() && (
+                          <button
+                            type="button"
+                            onClick={() => setMatchSearch("")}
+                            className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-100"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+
+                      <p className="mt-2 text-sm font-medium text-gray-600">
+                        {matchSearch.trim()
+                          ? `${totalFilteredMatchCount} match${
+                              totalFilteredMatchCount === 1 ? "" : "es"
+                            } found for "${matchSearch.trim()}".`
+                          : "Search by team name or short code to show that team’s past, live, and future games."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {matchSearch.trim() && totalFilteredMatchCount === 0 && (
+                    <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow">
+                      <p className="text-lg font-bold text-gray-800">
+                        No matches found
+                      </p>
+                      <p className="mt-2 text-sm text-gray-500">
+                        Try searching by full team name or short code, such as
+                        USA, United States, MEX, Brazil, or England.
+                      </p>
+                    </div>
+                  )}
+
+                  {Object.entries(filteredGroupedMatches).map(
+                    ([date, dateMatches]) => (
+                      <section
+                        key={date}
+                        ref={(element) => {
+                          matchDateRefs.current[date] = element;
+                        }}
+                        className="overflow-hidden rounded-2xl bg-white shadow"
+                      >
+                        <div className="border-b bg-gray-50 px-6 py-4">
+                          <h3 className="text-lg font-bold">{date}</h3>
+                        </div>
+
+                        <div className="divide-y">
+                          {dateMatches.map((match) => (
+                            <div
+                              key={match.id}
+                              className="grid gap-4 p-4 sm:p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
+                            >
+                              <div className="flex flex-col gap-2">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  Match {match.id} • {match.stage}
+                                </p>
+                                <TeamDisplay teamName={match.teamA} />
+                              </div>
+
+                              <div className="rounded-2xl bg-gray-100 px-4 py-4 text-center sm:px-6">
+                                {isAdmin ? (
+                                  <select
+                                    className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
+                                    value={match.status}
+                                    onChange={(e) =>
+                                      updateMatchStatus(
+                                        match.id,
+                                        e.target.value as Match["status"],
+                                      )
+                                    }
+                                  >
+                                    <option value="Scheduled">Scheduled</option>
+                                    <option value="Live">Live</option>
+                                    <option value="Half Time">Half Time</option>
+                                    <option value="Full Time">Full Time</option>
+                                  </select>
+                                ) : (
+                                  <p className="text-sm font-semibold text-gray-500">
+                                    {match.status}
+                                  </p>
+                                )}
+
+                                {match.status === "Live" && <LivePulse />}
+
+                                <p className="mt-1 text-lg font-bold">
+                                  {match.time}
+                                </p>
+
+                                {match.venue && (
+                                  <p className="mt-1 text-xs font-medium text-gray-500">
+                                    {match.venue}
+                                  </p>
+                                )}
+
+                                <div className="mt-3 flex items-center justify-center gap-3">
+                                  {isAdmin ? (
+                                    <>
+                                      <input
+                                        className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                                        value={match.scoreA}
+                                        onChange={(e) =>
+                                          updateMatchScore(
+                                            match.id,
+                                            "scoreA",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                      <span className="font-semibold text-gray-400">
+                                        -
+                                      </span>
+                                      <input
+                                        className="w-14 rounded-lg border bg-white p-2 text-center text-lg font-bold"
+                                        value={match.scoreB}
+                                        onChange={(e) =>
+                                          updateMatchScore(
+                                            match.id,
+                                            "scoreB",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    </>
+                                  ) : (
+                                    <div className="rounded-xl bg-white px-5 py-2 text-xl font-extrabold">
+                                      {match.scoreA.trim() !== "" &&
+                                      match.scoreB.trim() !== ""
+                                        ? `${match.scoreA} - ${match.scoreB}`
+                                        : "-"}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col items-start gap-2 md:items-end">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  {match.stage}
+                                </p>
+                                <TeamDisplay teamName={match.teamB} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    ),
+                  )}
+                </section>
+              </>
+            )}
+
+            {activeTab === "bracket" &&
+              (() => {
+                const cardWidth = 270;
+                const cardHeight = 166;
+                // Increase rowGap and colGap together to create more diagonal breathing room
+                // between connected bracket cards while keeping the same mapping/order.
+                const rowGap = 48;
+                const step = cardHeight + rowGap;
+                const colGap = 56;
+                const headerOffset = 54;
+
+                const rounds = [
+                  { title: "Round of 32", stage: "Round of 32" },
+                  { title: "Round of 16", stage: "Round of 16" },
+                  { title: "Quarter Finals", stage: "Quarter Final" },
+                  { title: "Semi Finals", stage: "Semi Final" },
+                  { title: "Final", stage: "Final" },
+                ];
+
+                const bracketRounds = rounds.map((round) => ({
+                  ...round,
+                  matches: matches
+                    .filter((match) => match.stage === round.stage)
+                    .sort((a, b) => {
+                      const roundOf32Order = [
+                        74, 77, 73, 75, 84, 83, 82, 81, 76, 78, 79, 80, 88, 86,
+                        85, 87,
+                      ];
+
+                      // Round of 16 is intentionally displayed in swapped pairs
+                      // so the bracket visual position matches the requested layout:
+                      // 90 before 89, 92 before 91, 94 before 93, and 96 before 95.
+                      // Round of 32 stays unchanged.
+                      const roundOf16Order = [89, 90, 93, 94, 91, 92, 95, 96];
+                      const quarterFinalOrder = [97, 98, 99, 100];
+                      const semiFinalOrder = [101, 102];
+
+                      if (round.stage === "Round of 32") {
+                        return (
+                          roundOf32Order.indexOf(a.id) -
+                          roundOf32Order.indexOf(b.id)
+                        );
+                      }
+
+                      if (round.stage === "Round of 16") {
+                        return (
+                          roundOf16Order.indexOf(a.id) -
+                          roundOf16Order.indexOf(b.id)
+                        );
+                      }
+
+                      if (round.stage === "Quarter Final") {
+                        return (
+                          quarterFinalOrder.indexOf(a.id) -
+                          quarterFinalOrder.indexOf(b.id)
+                        );
+                      }
+
+                      if (round.stage === "Semi Final") {
+                        return (
+                          semiFinalOrder.indexOf(a.id) -
+                          semiFinalOrder.indexOf(b.id)
+                        );
+                      }
+                      return a.id - b.id;
+                    }),
+                }));
+
+                const topFor = (roundIndex: number, index: number) => {
+                  const spacing = Math.pow(2, roundIndex);
+                  const offset = (spacing - 1) / 2;
+                  return headerOffset + (index * spacing + offset) * step;
+                };
+
+                const centerY = (roundIndex: number, index: number) =>
+                  topFor(roundIndex, index) + cardHeight / 2;
+
+                const leftFor = (roundIndex: number) =>
+                  roundIndex * (cardWidth + colGap);
+
+                const bracketWidth =
+                  rounds.length * cardWidth + (rounds.length - 1) * colGap;
+
+                const bracketHeight = headerOffset + 16 * step + 120;
+
+                return (
+                  <section className="max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-xl md:p-8">
+                    <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+                      <div>
+                        <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
+                          Knockout Bracket
+                        </h2>
+                        <p className="mt-2 text-sm text-gray-600">
+                          Winners advance from each match into the next round.
+                        </p>
+                        <p className="mt-2 text-xs font-medium text-blue-700 sm:hidden">
+                          Swipe sideways to view the full bracket.
+                        </p>
+                      </div>
+
+                      {isAdmin && (
+                        <div className="flex flex-col items-start gap-2 md:items-end">
+                          <button
+                            type="button"
+                            onClick={resetBracketScores}
+                            className="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-red-700 sm:text-base"
+                          >
+                            Reset Bracket Scores
+                          </button>
+
+                          {scoreSaveMessage && (
+                            <p className="text-sm font-medium text-green-700">
+                              {scoreSaveMessage}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {liveBracketMatches.length > 0 && (
+                      <section className="mb-6 rounded-2xl border-2 border-green-200 bg-green-50 p-4 shadow sm:p-5">
+                        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="relative flex h-3 w-3">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                                <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                              </span>
+                              <h3 className="text-xl font-bold text-green-900">
+                                Live Knockout Games
+                              </h3>
+                            </div>
+                            <p className="mt-1 text-sm font-medium text-green-800">
+                              {liveBracketMatches.length === 1
+                                ? "1 bracket game is currently live."
+                                : `${liveBracketMatches.length} bracket games are currently live.`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                          {liveBracketMatches.map((match) => {
+                            const resolvedA = resolveBracketTeam(match.teamA);
+                            const resolvedB = resolveBracketTeam(match.teamB);
+                            const teamAName = resolvedA.resolved
+                              ? resolvedA.name
+                              : "TBD";
+                            const teamBName = resolvedB.resolved
+                              ? resolvedB.name
+                              : "TBD";
 
                             return (
-                              <g key={`${round.stage}-${nextIndex}`}>
-                                <path
-                                  d={`
+                              <div
+                                key={match.id}
+                                className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm"
+                              >
+                                <div className="mb-3 flex items-center justify-between gap-3">
+                                  <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                                    Match {match.id} • {match.stage}
+                                  </p>
+                                  <div className="flex items-center gap-2 text-xs font-bold text-green-700">
+                                    <span className="relative flex h-3 w-3">
+                                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                                      <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                                    </span>
+                                    LIVE
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                                  <div className="min-w-0">
+                                    <TeamDisplay teamName={teamAName} />
+                                  </div>
+
+                                  <div className="rounded-xl bg-gray-100 px-3 py-2 text-center">
+                                    <p className="text-2xl font-black text-gray-900">
+                                      {match.scoreA || "-"} -{" "}
+                                      {match.scoreB || "-"}
+                                    </p>
+                                    <p className="mt-1 text-xs font-bold text-gray-500">
+                                      {match.time}
+                                    </p>
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <TeamDisplay teamName={teamBName} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
+
+                    <div className="w-full max-w-full overflow-x-auto rounded-3xl border border-gray-200 bg-gray-50 p-3 shadow-inner md:p-5">
+                      <div
+                        className="relative"
+                        style={{ width: bracketWidth, height: bracketHeight }}
+                      >
+                        <svg
+                          className="pointer-events-none absolute left-0 top-0 z-0"
+                          width={bracketWidth}
+                          height={bracketHeight}
+                        >
+                          {bracketRounds
+                            .slice(0, -1)
+                            .flatMap((round, roundIndex) => {
+                              const nextRound = bracketRounds[roundIndex + 1];
+
+                              return nextRound.matches.map((_, nextIndex) => {
+                                const sourceIndexA = nextIndex * 2;
+                                const sourceIndexB = nextIndex * 2 + 1;
+
+                                const sourceYA = centerY(
+                                  roundIndex,
+                                  sourceIndexA,
+                                );
+                                const sourceYB = centerY(
+                                  roundIndex,
+                                  sourceIndexB,
+                                );
+                                const targetY = centerY(
+                                  roundIndex + 1,
+                                  nextIndex,
+                                );
+
+                                const sourceX = leftFor(roundIndex) + cardWidth;
+                                const targetX = leftFor(roundIndex + 1);
+                                const midX = sourceX + colGap / 2;
+
+                                return (
+                                  <g key={`${round.stage}-${nextIndex}`}>
+                                    <path
+                                      d={`
                           M ${sourceX} ${sourceYA}
                           H ${midX}
                           V ${sourceYB}
                           H ${sourceX}
                         `}
-                                  fill="none"
-                                  stroke="#60A5FA"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
+                                      fill="none"
+                                      stroke="#60A5FA"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
 
-                                <path
-                                  d={`
+                                    <path
+                                      d={`
                           M ${midX} ${targetY}
                           H ${targetX}
                         `}
-                                  fill="none"
-                                  stroke="#60A5FA"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </g>
-                            );
-                          });
-                        })}
-                    </svg>
+                                      fill="none"
+                                      stroke="#60A5FA"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </g>
+                                );
+                              });
+                            })}
+                        </svg>
 
-                    {bracketRounds.map((round, roundIndex) => (
-                      <div key={round.stage}>
-                        <h3
-                          className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
-                          style={{
-                            left: leftFor(roundIndex),
-                            width: cardWidth,
-                          }}
-                        >
-                          {round.title}
-                        </h3>
+                        {bracketRounds.map((round, roundIndex) => (
+                          <div key={round.stage}>
+                            <h3
+                              className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
+                              style={{
+                                left: leftFor(roundIndex),
+                                width: cardWidth,
+                              }}
+                            >
+                              {round.title}
+                            </h3>
 
-                        {round.matches.map((match, matchIndex) => (
-                          <div
-                            key={match.id}
-                            className="absolute z-10"
-                            style={{
-                              left: leftFor(roundIndex),
-                              top: topFor(roundIndex, matchIndex),
-                              width: cardWidth,
-                              height: cardHeight,
-                            }}
-                          >
-                            <BracketMatchCard match={match} />
+                            {round.matches.map((match, matchIndex) => (
+                              <div
+                                key={match.id}
+                                className="absolute z-10"
+                                style={{
+                                  left: leftFor(roundIndex),
+                                  top: topFor(roundIndex, matchIndex),
+                                  width: cardWidth,
+                                  height: cardHeight,
+                                }}
+                              >
+                                <BracketMatchCard match={match} />
+                              </div>
+                            ))}
                           </div>
                         ))}
                       </div>
-                    ))}
-                  </div>
 
-                  <div className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-xl">
-                    <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-gray-700">
-                      Bronze Final
-                    </h3>
+                      <div className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-xl">
+                        <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-gray-700">
+                          Bronze Final
+                        </h3>
 
-                    <div className="max-w-[270px]">
-                      {matches
-                        .filter((match) => match.stage === "Bronze Final")
-                        .map((match) => (
-                          <BracketMatchCard key={match.id} match={match} />
-                        ))}
+                        <div className="max-w-[270px]">
+                          {matches
+                            .filter((match) => match.stage === "Bronze Final")
+                            .map((match) => (
+                              <BracketMatchCard key={match.id} match={match} />
+                            ))}
+                        </div>
+                      </div>
                     </div>
+                  </section>
+                );
+              })()}
+
+            {activeTab === "groups" && (
+              <section className="space-y-6">
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                    <div>
+                      <h2 className="text-2xl font-bold">Groups / Teams</h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Group tables update automatically as match scores are
+                        saved.
+                      </p>
+                    </div>
+
+                    <input
+                      className="rounded-xl border p-3"
+                      placeholder="Search team"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
                   </div>
-                </div>
+                </section>
+
+                {Object.keys(computedGroupStandings)
+                  .sort()
+                  .map((group) => {
+                    const groupStandings = computedGroupStandings[group].filter(
+                      (standing) =>
+                        standing.team
+                          .toLowerCase()
+                          .includes(search.toLowerCase()),
+                    );
+
+                    if (groupStandings.length === 0) return null;
+
+                    return (
+                      <GroupTable
+                        key={group}
+                        group={group}
+                        standings={groupStandings}
+                      />
+                    );
+                  })}
               </section>
-            );
-          })()}
-
-        {activeTab === "groups" && (
-          <section className="space-y-6">
-            <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
-              <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-                <div>
-                  <h2 className="text-2xl font-bold">Groups / Teams</h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Group tables update automatically as match scores are saved.
-                  </p>
-                </div>
-
-                <input
-                  className="rounded-xl border p-3"
-                  placeholder="Search team"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-            </section>
-
-            {Object.keys(computedGroupStandings)
-              .sort()
-              .map((group) => {
-                const groupStandings = computedGroupStandings[group].filter(
-                  (standing) =>
-                    standing.team.toLowerCase().includes(search.toLowerCase()),
-                );
-
-                if (groupStandings.length === 0) return null;
-
-                return (
-                  <GroupTable
-                    key={group}
-                    group={group}
-                    standings={groupStandings}
-                  />
-                );
-              })}
-          </section>
+            )}
+          </>
         )}
       </section>
     </main>
