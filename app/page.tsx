@@ -3804,7 +3804,7 @@ export default function Home() {
                 />
 
                 <p className="mt-6 text-sm font-black uppercase tracking-[0.35em] text-yellow-200">
-                  Office Competition
+                  Fun Competition
                 </p>
 
                 <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl md:text-6xl">
