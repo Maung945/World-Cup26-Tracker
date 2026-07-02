@@ -1547,6 +1547,10 @@ export default function Home() {
   const [adminEditingParticipant, setAdminEditingParticipant] =
     useState<Participant | null>(null);
   const matchDateRefs = React.useRef<Record<string, HTMLElement | null>>({});
+  const matchCardRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+  const bracketMatchRefs = React.useRef<Record<number, HTMLDivElement | null>>(
+    {},
+  );
 
   const isAdmin = Boolean(
     user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()),
@@ -1972,6 +1976,93 @@ export default function Home() {
     });
   }
 
+  function scrollToCurrentLiveOrNextMatch() {
+    const targetMatch =
+      matches.find((match) => ["Live", "Half Time"].includes(match.status)) ??
+      null;
+
+    if (!targetMatch) {
+      scrollToCurrentMatchDay();
+      return;
+    }
+
+    const targetElement = matchCardRefs.current[targetMatch.id];
+
+    if (!targetElement) {
+      scrollToCurrentMatchDay();
+      return;
+    }
+
+    const stickyTabOffset = 110;
+    const targetTop =
+      targetElement.getBoundingClientRect().top +
+      window.scrollY -
+      stickyTabOffset;
+
+    window.scrollTo({
+      top: targetTop,
+      behavior: "smooth",
+    });
+  }
+
+  function getMatchDateTimeValue(match: Match) {
+    const cleanDate = match.date.replace(/^\w{3},\s*/, "");
+    const parsedDateTime = new Date(
+      `${cleanDate} ${match.time.replace("PDT", "GMT-0700")}`,
+    );
+
+    if (Number.isNaN(parsedDateTime.getTime())) {
+      return getMatchDateValue(match.date);
+    }
+
+    return parsedDateTime.getTime();
+  }
+
+  function getCurrentBracketTargetMatch() {
+    const bracketStageNames = [
+      "Round of 32",
+      "Round of 16",
+      "Quarter Final",
+      "Semi Final",
+      "Bronze Final",
+      "Final",
+    ];
+
+    const bracketMatches = matches
+      .filter((match) => bracketStageNames.includes(match.stage))
+      .sort((a, b) => getMatchDateTimeValue(a) - getMatchDateTimeValue(b));
+
+    const liveMatch = bracketMatches.find((match) =>
+      ["Live", "Half Time"].includes(match.status),
+    );
+
+    if (liveMatch) return liveMatch;
+
+    const now = Date.now();
+
+    return (
+      bracketMatches.find((match) => getMatchDateTimeValue(match) >= now) ??
+      bracketMatches[bracketMatches.length - 1] ??
+      null
+    );
+  }
+
+  function scrollToCurrentBracketMatch() {
+    const targetMatch = getCurrentBracketTargetMatch();
+
+    if (!targetMatch) return;
+
+    const targetElement = bracketMatchRefs.current[targetMatch.id];
+
+    if (!targetElement) return;
+
+    targetElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "center",
+    });
+  }
+
   function handleTabClick(
     tab: "participants" | "knockout" | "matches" | "bracket" | "groups",
   ) {
@@ -1979,8 +2070,14 @@ export default function Home() {
 
     if (tab === "matches") {
       window.setTimeout(() => {
-        scrollToCurrentMatchDay();
+        scrollToCurrentLiveOrNextMatch();
       }, 150);
+    }
+
+    if (tab === "bracket") {
+      window.setTimeout(() => {
+        scrollToCurrentBracketMatch();
+      }, 200);
     }
   }
 
@@ -2213,6 +2310,24 @@ export default function Home() {
 
   const isWinnerScore = (score: number) =>
     highestParticipantScore !== null && score === highestParticipantScore;
+
+  const getParticipantRank = (index: number) => {
+    const participant = scoredParticipants[index];
+    if (!participant) return index + 1;
+
+    const firstSameScoreIndex = scoredParticipants.findIndex(
+      (item) => item.score === participant.score,
+    );
+
+    return firstSameScoreIndex + 1;
+  };
+
+  const getParticipantRankBadgeClass = (rank: number) => {
+    if (rank === 1) return "bg-yellow-400 text-yellow-950 ring-yellow-200";
+    if (rank === 2) return "bg-gray-200 text-gray-900 ring-gray-300";
+    if (rank === 3) return "bg-orange-200 text-orange-900 ring-orange-300";
+    return "bg-gray-100 text-gray-700 ring-gray-200";
+  };
 
   const paidParticipantCount = useMemo(
     () => participants.filter((participant) => participant.paid).length,
@@ -3620,14 +3735,28 @@ export default function Home() {
       ? flagMap[resolvedB.name]
       : "/logos/fifa.png";
 
-    const isLive = match.status === "Live";
+    const isLive = match.status === "Live" || match.status === "Half Time";
+    const isFinal = match.id === 104;
+    const isQuarterFinal = match.stage === "Quarter Final";
+    const isSemiFinal = match.stage === "Semi Final";
 
     return (
       <div
-        className={`relative w-full overflow-visible rounded-3xl border bg-white shadow-xl transition hover:shadow-2xl ${
-          isLive ? "border-green-400 ring-2 ring-green-300" : "border-gray-200"
+        className={`relative w-full overflow-visible rounded-3xl border shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl ${
+          isFinal
+            ? "border-yellow-300 bg-gradient-to-br from-slate-950 via-yellow-950 to-yellow-500 text-white ring-4 ring-yellow-200"
+            : isSemiFinal
+              ? "border-purple-300 bg-gradient-to-br from-purple-950 via-indigo-900 to-fuchsia-700 text-white ring-2 ring-purple-200"
+              : isQuarterFinal
+                ? "border-blue-300 bg-gradient-to-br from-blue-950 via-sky-900 to-cyan-600 text-white ring-2 ring-blue-200"
+                : isLive
+                  ? "border-green-400 bg-white ring-2 ring-green-300"
+                  : "border-gray-200 bg-white"
         }`}
       >
+        {(isFinal || isQuarterFinal || isSemiFinal) && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.26),transparent_48%)]" />
+        )}
         {isLive && (
           <div className="absolute right-2 top-2 z-20">
             <LivePulse compact />
@@ -3635,17 +3764,45 @@ export default function Home() {
         )}
 
         <div
-          className={`border-b px-3 py-2 text-center ${
-            isLive
-              ? "border-green-200 bg-green-50"
-              : "border-gray-200 bg-gray-50"
+          className={`relative z-10 border-b px-3 py-2 text-center ${
+            isFinal
+              ? "border-yellow-300/40 bg-black/20"
+              : isSemiFinal
+                ? "border-purple-200/40 bg-white/10"
+                : isQuarterFinal
+                  ? "border-blue-200/40 bg-white/10"
+                  : isLive
+                    ? "border-green-200 bg-green-50"
+                    : "border-gray-200 bg-gray-50"
           }`}
         >
-          <p className="text-[11px] font-extrabold uppercase tracking-wide text-gray-700">
-            Match {match.id} • {match.stage}
+          <p
+            className={`text-[11px] font-extrabold uppercase tracking-wide ${
+              isFinal || isQuarterFinal || isSemiFinal ? "text-white" : "text-gray-700"
+            }`}
+          >
+            {isFinal
+              ? "🏆 World Cup Final"
+              : isSemiFinal
+                ? `⚡ Match ${match.id} • Semi Final`
+                : isQuarterFinal
+                  ? `⭐ Match ${match.id} • Quarter Final`
+                  : `Match ${match.id} • ${match.stage}`}
           </p>
 
-          <p className="mt-0.5 truncate text-[11px] font-medium text-gray-500">
+          {isFinal && (
+            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.25em] text-yellow-200">
+              Match 104
+            </p>
+          )}
+
+          <p
+            className={`mt-0.5 truncate text-[11px] font-medium ${
+              isFinal || isQuarterFinal || isSemiFinal
+                ? "text-white/85"
+                : "text-gray-500"
+            }`}
+          >
             {match.date} • {match.time}
           </p>
 
@@ -3653,7 +3810,11 @@ export default function Home() {
 
           {match.venue && (
             <p
-              className="mx-auto mt-1 max-w-[230px] break-words text-[11px] font-semibold leading-snug text-blue-700"
+              className={`mx-auto mt-1 max-w-[230px] break-words text-[11px] font-semibold leading-snug ${
+                isFinal || isQuarterFinal || isSemiFinal
+                  ? "text-white/90"
+                  : "text-blue-700"
+              }`}
               title={match.venue}
             >
               📍 {match.venue}
@@ -3661,7 +3822,7 @@ export default function Home() {
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-3 py-3">
+        <div className="relative z-10 flex items-center justify-between gap-2 px-3 py-3">
           {/* LEFT TEAM */}
           <BracketTeamWithHover
             teamName={teamAName}
@@ -3677,15 +3838,37 @@ export default function Home() {
                 onChange={(e) =>
                   updateMatchScore(match.id, "scoreA", e.target.value)
                 }
-                className="h-9 w-10 rounded-xl border border-gray-300 bg-white text-center text-base font-extrabold text-gray-900 outline-none focus:border-blue-500 sm:w-11 sm:text-lg"
+                className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
+                  isFinal
+                    ? "border-yellow-300 bg-white/95 text-yellow-900"
+                    : isQuarterFinal || isSemiFinal
+                      ? "border-white/40 bg-white/95 text-gray-900"
+                      : "border-gray-300 bg-white text-gray-900"
+                }`}
               />
             ) : (
-              <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-gray-100 text-base font-extrabold text-gray-900 sm:w-11 sm:text-lg">
+              <div
+                className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
+                  isFinal
+                    ? "bg-white/95 text-yellow-900"
+                    : isQuarterFinal || isSemiFinal
+                      ? "bg-white/95 text-gray-900"
+                      : "bg-gray-100 text-gray-900"
+                }`}
+              >
                 {hasScore ? match.scoreA : "-"}
               </div>
             )}
 
-            <span className="text-base font-extrabold text-gray-400">-</span>
+            <span
+              className={`text-base font-extrabold ${
+                isFinal || isQuarterFinal || isSemiFinal
+                  ? "text-white/80"
+                  : "text-gray-400"
+              }`}
+            >
+              -
+            </span>
 
             {isAdmin ? (
               <input
@@ -3693,10 +3876,24 @@ export default function Home() {
                 onChange={(e) =>
                   updateMatchScore(match.id, "scoreB", e.target.value)
                 }
-                className="h-9 w-10 rounded-xl border border-gray-300 bg-white text-center text-base font-extrabold text-gray-900 outline-none focus:border-blue-500 sm:w-11 sm:text-lg"
+                className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
+                  isFinal
+                    ? "border-yellow-300 bg-white/95 text-yellow-900"
+                    : isQuarterFinal || isSemiFinal
+                      ? "border-white/40 bg-white/95 text-gray-900"
+                      : "border-gray-300 bg-white text-gray-900"
+                }`}
               />
             ) : (
-              <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-gray-100 text-base font-extrabold text-gray-900 sm:w-11 sm:text-lg">
+              <div
+                className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
+                  isFinal
+                    ? "bg-white/95 text-yellow-900"
+                    : isQuarterFinal || isSemiFinal
+                      ? "bg-white/95 text-gray-900"
+                      : "bg-gray-100 text-gray-900"
+                }`}
+              >
                 {hasScore ? match.scoreB : "-"}
               </div>
             )}
@@ -3710,7 +3907,13 @@ export default function Home() {
           />
         </div>
 
-        <div className="border-t border-gray-100 px-3 pb-3 pt-2">
+        <div
+          className={`relative z-10 border-t px-3 pb-3 pt-2 ${
+            isFinal || isQuarterFinal || isSemiFinal
+              ? "border-white/25"
+              : "border-gray-100"
+          }`}
+        >
           {isAdmin ? (
             <select
               value={match.status}
@@ -3720,7 +3923,11 @@ export default function Home() {
               className={`w-full rounded-xl border px-2 py-2 text-xs font-bold outline-none ${
                 isLive
                   ? "border-green-300 bg-green-50 text-green-800"
-                  : "border-gray-200 bg-gray-50 text-gray-700"
+                  : isFinal
+                    ? "border-yellow-300 bg-white/95 text-yellow-900"
+                    : isQuarterFinal || isSemiFinal
+                      ? "border-white/30 bg-white/95 text-gray-900"
+                      : "border-gray-200 bg-gray-50 text-gray-700"
               }`}
             >
               <option value="Scheduled">Scheduled</option>
@@ -3733,7 +3940,13 @@ export default function Home() {
               className={`rounded-xl px-2 py-2 text-center text-xs font-black uppercase tracking-wide ${
                 isLive
                   ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-600"
+                  : isFinal
+                    ? "bg-yellow-200 text-yellow-950"
+                    : isSemiFinal
+                      ? "bg-white/20 text-white"
+                      : isQuarterFinal
+                        ? "bg-white/20 text-white"
+                        : "bg-gray-100 text-gray-600"
               }`}
             >
               {match.status}
@@ -4128,7 +4341,7 @@ export default function Home() {
             </section>
 
             <section className="sticky top-0 z-50 overflow-hidden rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/90">
-              <div className="flex">
+              <div className="flex overflow-x-auto">
                 {(
                   [
                     "participants",
@@ -4141,7 +4354,7 @@ export default function Home() {
                   <button
                     key={tab}
                     onClick={() => handleTabClick(tab)}
-                    className={`flex-1 p-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
+                    className={`min-w-max flex-1 px-4 py-3 text-xs font-bold uppercase transition sm:p-4 sm:text-sm ${
                       activeTab === tab
                         ? "border-b-4 border-black bg-white text-black"
                         : "bg-white text-gray-600 hover:bg-gray-100"
@@ -4181,10 +4394,16 @@ export default function Home() {
 
                       <button
                         type="button"
-                        onClick={() => handleTabClick("matches")}
-                        className="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow hover:bg-green-800"
+                        onClick={() =>
+                          handleTabClick(
+                            liveMatches.some((match) => !match.stage.startsWith("Group"))
+                              ? "bracket"
+                              : "matches",
+                          )
+                        }
+                        className="w-full rounded-xl bg-green-700 px-4 py-3 text-sm font-bold text-white shadow hover:bg-green-800 sm:w-auto sm:py-2"
                       >
-                        View in Matches
+                        View Current Live Match
                       </button>
                     </div>
 
@@ -4517,10 +4736,10 @@ export default function Home() {
                     )}
                 </section>
 
-                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
-                  <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                <section className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
+                  <div className="flex flex-col justify-between gap-3 border-b border-gray-100 bg-gradient-to-r from-slate-50 via-white to-blue-50 p-4 md:flex-row md:items-center sm:p-6">
                     <div>
-                      <h2 className="text-xl font-semibold">
+                      <h2 className="text-2xl font-extrabold text-gray-900">
                         Participant Leaderboard
                       </h2>
                       <p className="mt-1 text-sm text-gray-500">
@@ -4528,37 +4747,46 @@ export default function Home() {
                         points.
                       </p>
                     </div>
-                    <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
-                      {participants.length} participants
-                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full bg-gray-900 px-4 py-2 text-sm font-bold text-white shadow-sm">
+                        {participants.length} participants
+                      </span>
+                      <span className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm">
+                        Pot: ${potMoney.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
 
                   {participants.length === 0 ? (
-                    <p className="text-gray-500">No participants yet.</p>
+                    <p className="p-6 text-gray-500">No participants yet.</p>
                   ) : (
                     <>
-                      <div className="space-y-3 md:hidden">
-                        {scoredParticipants.map((participant, index) => (
+                      <div className="space-y-3 px-3 py-3 md:hidden">
+                        {scoredParticipants.map((participant, index) => {
+                          const participantRank = getParticipantRank(index);
+                          const winner = participantRank === 1;
+
+                          return (
                           <div
                             key={participant.id}
-                            className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                            className={`rounded-2xl border p-4 shadow-sm ${
+                              winner
+                                ? "border-yellow-200 bg-yellow-50/80"
+                                : "border-gray-200 bg-white"
+                            }`}
                           >
                             <div className="mb-3 flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                  Rank #{index + 1}
+                                  Rank #{participantRank}
                                 </p>
                                 <h3
                                   className={`truncate text-lg font-extrabold ${
-                                    isWinnerScore(participant.score)
-                                      ? "text-yellow-600"
-                                      : "text-gray-900"
+                                    winner ? "text-yellow-700" : "text-gray-900"
                                   }`}
                                 >
                                   <span>
-                                    {isWinnerScore(participant.score)
-                                      ? "🏆 "
-                                      : ""}
+                                    {winner ? "🏆 " : ""}
                                     {participant.name}
                                   </span>
                                   {participant.paid && (
@@ -4569,7 +4797,13 @@ export default function Home() {
                                 </h3>
                               </div>
 
-                              <span className="flex-shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
+                              <span
+                                className={`flex-shrink-0 rounded-full px-3 py-1 text-sm font-extrabold shadow-sm ${
+                                  winner
+                                    ? "bg-yellow-400 text-yellow-950"
+                                    : "bg-gray-900 text-white"
+                                }`}
+                              >
                                 {participant.score} pts
                               </span>
                             </div>
@@ -4631,119 +4865,158 @@ export default function Home() {
                               </div>
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
-                      <div className="hidden overflow-visible md:block">
-                        <table className="w-full text-left text-sm">
+                      <div className="hidden overflow-x-auto p-4 md:block sm:p-6">
+                        <table className="w-full min-w-[980px] overflow-hidden rounded-2xl text-left text-sm shadow-sm ring-1 ring-gray-200">
                           <thead>
-                            <tr className="border-b bg-gray-50">
-                              <th className="p-3">Rank</th>
-                              <th className="p-3">Name</th>
-                              <th className="p-3">Team 1</th>
-                              <th className="p-3">Team 2</th>
-                              <th className="p-3">Team 3</th>
-                              <th className="p-3 text-right">Score</th>
+                            <tr className="bg-gray-950 text-xs font-black uppercase tracking-wide text-white">
+                              <th className="px-4 py-4">Rank</th>
+                              <th className="px-4 py-4">Participant</th>
+                              <th className="px-4 py-4">Team 1</th>
+                              <th className="px-4 py-4">Team 2</th>
+                              <th className="px-4 py-4">Team 3</th>
+                              <th className="px-4 py-4 text-right">
+                                Total Score
+                              </th>
                               {isAdmin && (
-                                <th className="p-3 text-right">Admin</th>
+                                <th className="px-4 py-4 text-right">Admin</th>
                               )}
                             </tr>
                           </thead>
-                          <tbody>
-                            {scoredParticipants.map((participant, index) => (
-                              <tr key={participant.id} className="border-b">
-                                <td className="p-3 font-semibold">
-                                  {index + 1}
-                                </td>
-                                <td
-                                  className={`p-3 font-bold ${
-                                    isWinnerScore(participant.score)
-                                      ? "text-yellow-600"
-                                      : "text-gray-900"
+                          <tbody className="divide-y divide-gray-100 bg-white">
+                            {scoredParticipants.map((participant, index) => {
+                              const participantRank = getParticipantRank(index);
+                              const winner = participantRank === 1;
+
+                              return (
+                                <tr
+                                  key={participant.id}
+                                  className={`transition hover:bg-blue-50/70 ${
+                                    winner ? "bg-yellow-50/80" : "bg-white"
                                   }`}
                                 >
-                                  <span>
-                                    {isWinnerScore(participant.score)
-                                      ? "🏆 "
-                                      : ""}
-                                    {participant.name}
-                                  </span>
-                                  {participant.paid && (
-                                    <span className="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-700">
-                                      $
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  <div className="flex items-center justify-between gap-3">
-                                    <TeamDisplay teamName={participant.team1} />
-                                    <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
-                                      {participant.team1Score} pts
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="p-3">
-                                  <div className="flex items-center justify-between gap-3">
-                                    <TeamDisplay teamName={participant.team2} />
-                                    <span className="flex-shrink-0 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
-                                      {participant.team2Score} pts
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="p-3">
-                                  <div className="flex items-center justify-between gap-3">
-                                    <TeamDisplay teamName={participant.team3} />
-                                    <span className="flex-shrink-0 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
-                                      {participant.team3Score} pts
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="p-3 text-right text-lg font-bold">
-                                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-700">
-                                    {participant.score} pts
-                                  </span>
-                                </td>
-                                {isAdmin && (
-                                  <td className="p-3 text-right">
-                                    <div className="flex justify-end gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          startAdminEditParticipant(participant)
-                                        }
-                                        className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          toggleParticipantPaid(participant)
-                                        }
-                                        className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${
-                                          participant.paid
-                                            ? "bg-emerald-700 hover:bg-emerald-800"
-                                            : "bg-emerald-600 hover:bg-emerald-700"
-                                        }`}
-                                      >
-                                        {participant.paid
-                                          ? "Remove $"
-                                          : "Add $"}
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          deleteParticipant(participant)
-                                        }
-                                        className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                                      >
-                                        Delete
-                                      </button>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div
+                                      className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black shadow-sm ring-2 ${getParticipantRankBadgeClass(
+                                        participantRank,
+                                      )}`}
+                                    >
+                                      #{participantRank}
                                     </div>
                                   </td>
-                                )}
-                              </tr>
-                            ))}
+                                  <td
+                                    className={`px-4 py-4 align-middle font-bold ${
+                                      winner
+                                        ? "text-yellow-700"
+                                        : "text-gray-900"
+                                    }`}
+                                  >
+                                    <div className="flex min-w-[160px] items-center gap-2">
+                                      <span className="truncate text-base">
+                                        {winner ? "🏆 " : ""}
+                                        {participant.name}
+                                      </span>
+                                      {participant.paid && (
+                                        <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black text-emerald-700 ring-1 ring-emerald-200">
+                                          $
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="rounded-2xl bg-blue-50 p-3 ring-1 ring-blue-100">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <TeamDisplay
+                                          teamName={participant.team1}
+                                        />
+                                        <span className="flex-shrink-0 rounded-full bg-blue-600 px-3 py-1 text-xs font-black text-white shadow-sm">
+                                          {participant.team1Score} pts
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-100">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <TeamDisplay
+                                          teamName={participant.team2}
+                                        />
+                                        <span className="flex-shrink-0 rounded-full bg-emerald-600 px-3 py-1 text-xs font-black text-white shadow-sm">
+                                          {participant.team2Score} pts
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="rounded-2xl bg-purple-50 p-3 ring-1 ring-purple-100">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <TeamDisplay
+                                          teamName={participant.team3}
+                                        />
+                                        <span className="flex-shrink-0 rounded-full bg-purple-600 px-3 py-1 text-xs font-black text-white shadow-sm">
+                                          {participant.team3Score} pts
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 text-right align-middle">
+                                    <span
+                                      className={`inline-flex rounded-2xl px-4 py-2 text-lg font-black shadow-sm ${
+                                        winner
+                                          ? "bg-yellow-400 text-yellow-950"
+                                          : "bg-gray-900 text-white"
+                                      }`}
+                                    >
+                                      {participant.score} pts
+                                    </span>
+                                  </td>
+                                  {isAdmin && (
+                                    <td className="px-4 py-4 text-right align-middle">
+                                      <div className="flex justify-end gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            startAdminEditParticipant(
+                                              participant,
+                                            )
+                                          }
+                                          className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            toggleParticipantPaid(participant)
+                                          }
+                                          className={`rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm ${
+                                            participant.paid
+                                              ? "bg-emerald-700 hover:bg-emerald-800"
+                                              : "bg-emerald-600 hover:bg-emerald-700"
+                                          }`}
+                                        >
+                                          {participant.paid
+                                            ? "Remove $"
+                                            : "Add $"}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            deleteParticipant(participant)
+                                          }
+                                          className="rounded-xl bg-red-600 px-3 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -5204,7 +5477,14 @@ export default function Home() {
                           {dateMatches.map((match) => (
                             <div
                               key={match.id}
-                              className="grid gap-4 p-4 sm:p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
+                              ref={(element) => {
+                                matchCardRefs.current[match.id] = element;
+                              }}
+                              className={`grid gap-4 p-4 sm:p-5 md:grid-cols-[1fr_auto_1fr] md:items-center ${
+                                ["Live", "Half Time"].includes(match.status)
+                                  ? "bg-green-50"
+                                  : "bg-white"
+                              }`}
                             >
                               <div className="flex flex-col gap-2">
                                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -5583,6 +5863,9 @@ export default function Home() {
                             {round.matches.map((match, matchIndex) => (
                               <div
                                 key={match.id}
+                                ref={(element) => {
+                                  bracketMatchRefs.current[match.id] = element;
+                                }}
                                 className="absolute z-10"
                                 style={{
                                   left: leftFor(roundIndex),
