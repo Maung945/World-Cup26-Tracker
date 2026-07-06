@@ -2602,6 +2602,15 @@ export default function Home() {
         a.name.localeCompare(b.name),
     );
 
+  const highestKnockoutMatchPercentage =
+    scoredKnockoutPicks.length > 0
+      ? scoredKnockoutPicks[0].matchPercentage
+      : null;
+
+  const isKnockoutWinnerPick = (matchPercentage: number) =>
+    highestKnockoutMatchPercentage !== null &&
+    matchPercentage === highestKnockoutMatchPercentage;
+
   async function submitKnockoutPick(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setKnockoutMessage("");
@@ -5275,17 +5284,41 @@ export default function Home() {
                           percentages.
                         </p>
                       </div>
-                      {scoredKnockoutPicks.map((pick, index) => (
-                        <div
-                          key={pick.id}
-                          className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-                        >
+                      {scoredKnockoutPicks.map((pick, index) => {
+                        const isWinner = isKnockoutWinnerPick(
+                          pick.matchPercentage,
+                        );
+
+                        return (
+                          <div
+                            key={pick.id}
+                            className={`rounded-2xl border p-4 shadow-sm transition ${
+                              isWinner
+                                ? "border-yellow-400 bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 shadow-lg ring-2 ring-yellow-200"
+                                : "border-gray-200 bg-white"
+                            }`}
+                          >
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                              <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                                Rank #{index + 1}
-                              </p>
-                              <h3 className="text-lg font-extrabold text-gray-900">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p
+                                  className={`text-xs font-bold uppercase tracking-wide ${
+                                    isWinner ? "text-yellow-700" : "text-gray-500"
+                                  }`}
+                                >
+                                  Rank #{index + 1}
+                                </p>
+                                {isWinner && (
+                                  <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-black uppercase tracking-wide text-yellow-950 shadow-sm ring-1 ring-yellow-300">
+                                    🏆 Winner
+                                  </span>
+                                )}
+                              </div>
+                              <h3
+                                className={`text-lg font-extrabold ${
+                                  isWinner ? "text-yellow-950" : "text-gray-900"
+                                }`}
+                              >
                                 {pick.name}
                                 {pick.paid && (
                                   <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-extrabold text-blue-700">
@@ -5302,7 +5335,13 @@ export default function Home() {
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-extrabold text-yellow-700">
+                              <span
+                                className={`rounded-full px-3 py-1 text-sm font-extrabold ${
+                                  isWinner
+                                    ? "bg-yellow-400 text-yellow-950 ring-2 ring-yellow-200"
+                                    : "bg-yellow-100 text-yellow-700"
+                                }`}
+                              >
                                 {pick.matchPercentage}%
                               </span>
                               <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">
@@ -5384,7 +5423,8 @@ export default function Home() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </section>
