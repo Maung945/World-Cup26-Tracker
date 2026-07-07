@@ -1551,6 +1551,8 @@ export default function Home() {
   const bracketMatchRefs = React.useRef<Record<number, HTMLDivElement | null>>(
     {},
   );
+  const bracketViewportRef = React.useRef<HTMLDivElement | null>(null);
+  const [bracketZoom, setBracketZoom] = useState(0.78);
 
   const isAdmin = Boolean(
     user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()),
@@ -5855,6 +5857,22 @@ export default function Home() {
                 const finalTop = topForSide(finalRound.roundDepth, 0);
                 const logoTop = Math.max(headerOffset + 18, finalTop - 122);
                 const bronzeTop = finalTop + cardHeight + 44;
+                const clampedBracketZoom = Math.min(1.2, Math.max(0.5, bracketZoom));
+                const zoomedBracketWidth = bracketWidth * clampedBracketZoom;
+                const zoomedBracketHeight = bracketHeight * clampedBracketZoom;
+                const bracketZoomPercent = Math.round(clampedBracketZoom * 100);
+
+                const updateBracketZoom = (nextZoom: number) => {
+                  setBracketZoom(Math.min(1.2, Math.max(0.5, nextZoom)));
+                };
+
+                const fitBracketToViewport = () => {
+                  const viewportWidth =
+                    bracketViewportRef.current?.clientWidth ?? bracketWidth;
+                  const sidePadding = 48;
+                  const nextZoom = Math.min(1, (viewportWidth - sidePadding) / bracketWidth);
+                  updateBracketZoom(nextZoom);
+                };
 
                 return (
                   <section className="max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-xl md:p-8">
@@ -6096,11 +6114,83 @@ export default function Home() {
                       </section>
                     </div>
 
-                    <div className="hidden w-full max-w-full overflow-x-auto rounded-3xl border border-gray-200 bg-gray-50 p-3 shadow-inner md:block md:p-5">
+                    <div className="hidden rounded-3xl border border-gray-200 bg-gray-50 p-3 shadow-inner md:block md:p-5">
+                      <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-blue-100 bg-white p-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                          <p className="text-sm font-extrabold text-gray-900">
+                            Bracket Zoom: {bracketZoomPercent}%
+                          </p>
+                          <p className="mt-1 text-xs font-semibold text-gray-500">
+                            Zoom out for the full bracket view, or zoom in to read team cards clearly.
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateBracketZoom(clampedBracketZoom - 0.1)}
+                            className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-black text-gray-700 shadow-sm hover:bg-gray-50"
+                          >
+                            − Zoom Out
+                          </button>
+
+                          <input
+                            type="range"
+                            min="50"
+                            max="120"
+                            step="5"
+                            value={bracketZoomPercent}
+                            onChange={(event) => updateBracketZoom(Number(event.target.value) / 100)}
+                            className="h-2 w-44 cursor-pointer accent-blue-600"
+                            aria-label="Bracket zoom"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => updateBracketZoom(clampedBracketZoom + 0.1)}
+                            className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-black text-gray-700 shadow-sm hover:bg-gray-50"
+                          >
+                            + Zoom In
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={fitBracketToViewport}
+                            className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-black text-white shadow-sm hover:bg-blue-700"
+                          >
+                            Fit Full View
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => updateBracketZoom(1)}
+                            className="rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm font-black text-gray-700 shadow-sm hover:bg-gray-200"
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+
                       <div
-                        className="relative mx-auto"
-                        style={{ width: bracketWidth, height: bracketHeight }}
+                        ref={bracketViewportRef}
+                        className="w-full max-w-full overflow-auto rounded-2xl border border-gray-200 bg-gray-100 p-4"
                       >
+                        <div
+                          className="mx-auto"
+                          style={{
+                            width: zoomedBracketWidth,
+                            height: zoomedBracketHeight,
+                          }}
+                        >
+                          <div
+                            className="relative origin-top-left"
+                            style={{
+                              width: bracketWidth,
+                              height: bracketHeight,
+                              transform: `scale(${clampedBracketZoom})`,
+                              transformOrigin: "top left",
+                            }}
+                          >
                         <svg
                           className="pointer-events-none absolute left-0 top-0 z-0"
                           width={bracketWidth}
@@ -6327,6 +6417,8 @@ export default function Home() {
                             ))}
                           </div>
                         )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </section>
