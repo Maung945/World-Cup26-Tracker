@@ -3737,7 +3737,13 @@ export default function Home() {
     );
   }
 
-  function BracketMatchCard({ match }: { match: Match }) {
+  function BracketMatchCard({
+    match,
+    variant,
+  }: {
+    match: Match;
+    variant?: "bronze";
+  }) {
     const resolvedA = resolveBracketTeam(match.teamA);
     const resolvedB = resolveBracketTeam(match.teamB);
 
@@ -3760,6 +3766,7 @@ export default function Home() {
     const isSemiFinal = match.stage === "Semi Final";
     const isRoundOf16 = match.stage === "Round of 16";
     const isRoundOf32 = match.stage === "Round of 32";
+    const isBronze = variant === "bronze" || match.stage === "Bronze Final";
 
     const roundBracketCardClass = isRoundOf32
       ? "border-emerald-300 bg-gradient-to-br from-emerald-950 via-green-900 to-teal-600 text-white ring-2 ring-emerald-200"
@@ -3768,7 +3775,12 @@ export default function Home() {
         : null;
 
     const isSpecialBracketCard = Boolean(
-      isFinal || isQuarterFinal || isSemiFinal || isRoundOf16 || isRoundOf32,
+      isFinal ||
+      isBronze ||
+      isQuarterFinal ||
+      isSemiFinal ||
+      isRoundOf16 ||
+      isRoundOf32,
     );
 
     return (
@@ -3776,15 +3788,17 @@ export default function Home() {
         className={`relative w-full overflow-visible rounded-3xl border shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl ${
           isFinal
             ? "border-yellow-300 bg-gradient-to-br from-slate-950 via-yellow-950 to-yellow-500 text-white ring-4 ring-yellow-200"
-            : isSemiFinal
-              ? "border-purple-300 bg-gradient-to-br from-purple-950 via-indigo-900 to-fuchsia-700 text-white ring-2 ring-purple-200"
-              : isQuarterFinal
-                ? "border-blue-300 bg-gradient-to-br from-blue-950 via-sky-900 to-cyan-600 text-white ring-2 ring-blue-200"
-                : roundBracketCardClass
-                  ? roundBracketCardClass
-                  : isLive
-                    ? "border-green-400 bg-white ring-2 ring-green-300"
-                    : "border-gray-200 bg-white"
+            : isBronze
+              ? "border-amber-300 bg-gradient-to-br from-stone-950 via-amber-900 to-orange-500 text-white ring-4 ring-amber-200"
+              : isSemiFinal
+                ? "border-purple-300 bg-gradient-to-br from-purple-950 via-indigo-900 to-fuchsia-700 text-white ring-2 ring-purple-200"
+                : isQuarterFinal
+                  ? "border-blue-300 bg-gradient-to-br from-blue-950 via-sky-900 to-cyan-600 text-white ring-2 ring-blue-200"
+                  : roundBracketCardClass
+                    ? roundBracketCardClass
+                    : isLive
+                      ? "border-green-400 bg-white ring-2 ring-green-300"
+                      : "border-gray-200 bg-white"
         }`}
       >
         {isSpecialBracketCard && (
@@ -3800,15 +3814,17 @@ export default function Home() {
           className={`relative z-10 border-b px-3 py-2 text-center ${
             isFinal
               ? "border-yellow-300/40 bg-black/20"
-              : isSemiFinal
-                ? "border-purple-200/40 bg-white/10"
-                : isQuarterFinal
-                  ? "border-blue-200/40 bg-white/10"
-                  : isRoundOf16 || isRoundOf32
-                    ? "border-white/30 bg-white/10"
-                    : isLive
-                      ? "border-green-200 bg-green-50"
-                      : "border-gray-200 bg-gray-50"
+              : isBronze
+                ? "border-amber-200/40 bg-white/10"
+                : isSemiFinal
+                  ? "border-purple-200/40 bg-white/10"
+                  : isQuarterFinal
+                    ? "border-blue-200/40 bg-white/10"
+                    : isRoundOf16 || isRoundOf32
+                      ? "border-white/30 bg-white/10"
+                      : isLive
+                        ? "border-green-200 bg-green-50"
+                        : "border-gray-200 bg-gray-50"
           }`}
         >
           <p
@@ -3818,20 +3834,28 @@ export default function Home() {
           >
             {isFinal
               ? "🏆 World Cup Final"
-              : isSemiFinal
-                ? `⚡ Match ${match.id} • Semi Final`
-                : isQuarterFinal
-                  ? `⭐ Match ${match.id} • Quarter Final`
-                  : isRoundOf16
-                    ? `🎯 Match ${match.id} • Round of 16`
-                    : isRoundOf32
-                      ? `🌎 Match ${match.id} • Round of 32`
-                      : `Match ${match.id} • ${match.stage}`}
+              : isBronze
+                ? "🥉 Third Place Match"
+                : isSemiFinal
+                  ? `⚡ Match ${match.id} • Semi Final`
+                  : isQuarterFinal
+                    ? `⭐ Match ${match.id} • Quarter Final`
+                    : isRoundOf16
+                      ? `🎯 Match ${match.id} • Round of 16`
+                      : isRoundOf32
+                        ? `🌎 Match ${match.id} • Round of 32`
+                        : `Match ${match.id} • ${match.stage}`}
           </p>
 
           {isFinal && (
             <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.25em] text-yellow-200">
               Match 104
+            </p>
+          )}
+
+          {isBronze && (
+            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.25em] text-amber-100">
+              Match 103
             </p>
           )}
 
@@ -3876,9 +3900,11 @@ export default function Home() {
                 className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
                   isFinal
                     ? "border-yellow-300 bg-white/95 text-yellow-900"
-                    : isSpecialBracketCard
-                      ? "border-white/40 bg-white/95 text-gray-900"
-                      : "border-gray-300 bg-white text-gray-900"
+                    : isBronze
+                      ? "border-amber-300 bg-white/95 text-amber-950"
+                      : isSpecialBracketCard
+                        ? "border-white/40 bg-white/95 text-gray-900"
+                        : "border-gray-300 bg-white text-gray-900"
                 }`}
               />
             ) : (
@@ -3886,9 +3912,11 @@ export default function Home() {
                 className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
                   isFinal
                     ? "bg-white/95 text-yellow-900"
-                    : isSpecialBracketCard
-                      ? "bg-white/95 text-gray-900"
-                      : "bg-gray-100 text-gray-900"
+                    : isBronze
+                      ? "bg-white/95 text-amber-950"
+                      : isSpecialBracketCard
+                        ? "bg-white/95 text-gray-900"
+                        : "bg-gray-100 text-gray-900"
                 }`}
               >
                 {hasScore ? match.scoreA : "-"}
@@ -3912,9 +3940,11 @@ export default function Home() {
                 className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
                   isFinal
                     ? "border-yellow-300 bg-white/95 text-yellow-900"
-                    : isSpecialBracketCard
-                      ? "border-white/40 bg-white/95 text-gray-900"
-                      : "border-gray-300 bg-white text-gray-900"
+                    : isBronze
+                      ? "border-amber-300 bg-white/95 text-amber-950"
+                      : isSpecialBracketCard
+                        ? "border-white/40 bg-white/95 text-gray-900"
+                        : "border-gray-300 bg-white text-gray-900"
                 }`}
               />
             ) : (
@@ -3922,9 +3952,11 @@ export default function Home() {
                 className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
                   isFinal
                     ? "bg-white/95 text-yellow-900"
-                    : isSpecialBracketCard
-                      ? "bg-white/95 text-gray-900"
-                      : "bg-gray-100 text-gray-900"
+                    : isBronze
+                      ? "bg-white/95 text-amber-950"
+                      : isSpecialBracketCard
+                        ? "bg-white/95 text-gray-900"
+                        : "bg-gray-100 text-gray-900"
                 }`}
               >
                 {hasScore ? match.scoreB : "-"}
@@ -3956,9 +3988,11 @@ export default function Home() {
                   ? "border-green-300 bg-green-50 text-green-800"
                   : isFinal
                     ? "border-yellow-300 bg-white/95 text-yellow-900"
-                    : isSpecialBracketCard
-                      ? "border-white/30 bg-white/95 text-gray-900"
-                      : "border-gray-200 bg-gray-50 text-gray-700"
+                    : isBronze
+                      ? "border-amber-300 bg-white/95 text-amber-950"
+                      : isSpecialBracketCard
+                        ? "border-white/30 bg-white/95 text-gray-900"
+                        : "border-gray-200 bg-gray-50 text-gray-700"
               }`}
             >
               <option value="Scheduled">Scheduled</option>
@@ -3973,11 +4007,13 @@ export default function Home() {
                   ? "bg-green-100 text-green-800"
                   : isFinal
                     ? "bg-yellow-200 text-yellow-950"
-                    : isSemiFinal
-                      ? "bg-white/20 text-white"
-                      : isQuarterFinal || isRoundOf16 || isRoundOf32
+                    : isBronze
+                      ? "bg-amber-200 text-amber-950"
+                      : isSemiFinal
                         ? "bg-white/20 text-white"
-                        : "bg-gray-100 text-gray-600"
+                        : isQuarterFinal || isRoundOf16 || isRoundOf32
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-600"
               }`}
             >
               {match.status}
@@ -5298,131 +5334,135 @@ export default function Home() {
                                 : "border-gray-200 bg-white"
                             }`}
                           >
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p
-                                  className={`text-xs font-bold uppercase tracking-wide ${
-                                    isWinner ? "text-yellow-700" : "text-gray-500"
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <p
+                                    className={`text-xs font-bold uppercase tracking-wide ${
+                                      isWinner
+                                        ? "text-yellow-700"
+                                        : "text-gray-500"
+                                    }`}
+                                  >
+                                    Rank #{index + 1}
+                                  </p>
+                                  {isWinner && (
+                                    <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-black uppercase tracking-wide text-yellow-950 shadow-sm ring-1 ring-yellow-300">
+                                      🏆 Winner
+                                    </span>
+                                  )}
+                                </div>
+                                <h3
+                                  className={`text-lg font-extrabold ${
+                                    isWinner
+                                      ? "text-yellow-950"
+                                      : "text-gray-900"
                                   }`}
                                 >
-                                  Rank #{index + 1}
+                                  {pick.name}
+                                  {pick.paid && (
+                                    <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-extrabold text-blue-700">
+                                      $20
+                                    </span>
+                                  )}
+                                </h3>
+                                <p className="mt-1 text-sm font-semibold text-gray-600">
+                                  QF {pick.quarterScore}/{pick.quarterTotal} ={" "}
+                                  {pick.quarterPercentage}% • Semi{" "}
+                                  {pick.semiScore}/{pick.semiTotal} ={" "}
+                                  {pick.semiPercentage}% • Overall{" "}
+                                  {pick.matchPercentage}%
                                 </p>
-                                {isWinner && (
-                                  <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-black uppercase tracking-wide text-yellow-950 shadow-sm ring-1 ring-yellow-300">
-                                    🏆 Winner
-                                  </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`rounded-full px-3 py-1 text-sm font-extrabold ${
+                                    isWinner
+                                      ? "bg-yellow-400 text-yellow-950 ring-2 ring-yellow-200"
+                                      : "bg-yellow-100 text-yellow-700"
+                                  }`}
+                                >
+                                  {pick.matchPercentage}%
+                                </span>
+                                <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">
+                                  {pick.matchedCount}/
+                                  {pick.totalPossibleBracketSpots} matched
+                                </span>
+                                {isAdmin && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        startAdminEditKnockoutPick(pick)
+                                      }
+                                      className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleKnockoutPaid(pick)}
+                                      className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800"
+                                    >
+                                      {pick.paid ? "Remove $20" : "Add $20"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteKnockoutPick(pick)}
+                                      className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </button>
+                                  </>
                                 )}
                               </div>
-                              <h3
-                                className={`text-lg font-extrabold ${
-                                  isWinner ? "text-yellow-950" : "text-gray-900"
-                                }`}
-                              >
-                                {pick.name}
-                                {pick.paid && (
-                                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-extrabold text-blue-700">
-                                    $20
-                                  </span>
-                                )}
-                              </h3>
-                              <p className="mt-1 text-sm font-semibold text-gray-600">
-                                QF {pick.quarterScore}/{pick.quarterTotal} ={" "}
-                                {pick.quarterPercentage}% • Semi{" "}
-                                {pick.semiScore}/{pick.semiTotal} ={" "}
-                                {pick.semiPercentage}% • Overall{" "}
-                                {pick.matchPercentage}%
-                              </p>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`rounded-full px-3 py-1 text-sm font-extrabold ${
-                                  isWinner
-                                    ? "bg-yellow-400 text-yellow-950 ring-2 ring-yellow-200"
-                                    : "bg-yellow-100 text-yellow-700"
-                                }`}
-                              >
-                                {pick.matchPercentage}%
-                              </span>
-                              <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-extrabold text-gray-700">
-                                {pick.matchedCount}/
-                                {pick.totalPossibleBracketSpots} matched
-                              </span>
-                              {isAdmin && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      startAdminEditKnockoutPick(pick)
-                                    }
-                                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleKnockoutPaid(pick)}
-                                    className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800"
-                                  >
-                                    {pick.paid ? "Remove $20" : "Add $20"}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => deleteKnockoutPick(pick)}
-                                    className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                                  >
-                                    Delete
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
 
-                          <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                            <div className="rounded-xl bg-gray-50 p-3">
-                              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
-                                Quarter Picks
-                              </p>
-                              <div className="grid gap-2 sm:grid-cols-2">
-                                {[
-                                  pick.qf_team1,
-                                  pick.qf_team2,
-                                  pick.qf_team3,
-                                  pick.qf_team4,
-                                  pick.qf_team5,
-                                  pick.qf_team6,
-                                  pick.qf_team7,
-                                  pick.qf_team8,
-                                ].map((team, teamIndex) => (
-                                  <TeamDisplay
-                                    key={`${pick.id}-qf-${teamIndex}`}
-                                    teamName={team}
-                                    showPickedByHover={false}
-                                  />
-                                ))}
+                            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                              <div className="rounded-xl bg-gray-50 p-3">
+                                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+                                  Quarter Picks
+                                </p>
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  {[
+                                    pick.qf_team1,
+                                    pick.qf_team2,
+                                    pick.qf_team3,
+                                    pick.qf_team4,
+                                    pick.qf_team5,
+                                    pick.qf_team6,
+                                    pick.qf_team7,
+                                    pick.qf_team8,
+                                  ].map((team, teamIndex) => (
+                                    <TeamDisplay
+                                      key={`${pick.id}-qf-${teamIndex}`}
+                                      teamName={team}
+                                      showPickedByHover={false}
+                                    />
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                            <div className="rounded-xl bg-gray-50 p-3">
-                              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
-                                Semi Picks
-                              </p>
-                              <div className="grid gap-2 sm:grid-cols-2">
-                                {[
-                                  pick.sf_team1,
-                                  pick.sf_team2,
-                                  pick.sf_team3,
-                                  pick.sf_team4,
-                                ].map((team, teamIndex) => (
-                                  <TeamDisplay
-                                    key={`${pick.id}-sf-${teamIndex}`}
-                                    teamName={team}
-                                    showPickedByHover={false}
-                                  />
-                                ))}
+                              <div className="rounded-xl bg-gray-50 p-3">
+                                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+                                  Semi Picks
+                                </p>
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  {[
+                                    pick.sf_team1,
+                                    pick.sf_team2,
+                                    pick.sf_team3,
+                                    pick.sf_team4,
+                                  ].map((team, teamIndex) => (
+                                    <TeamDisplay
+                                      key={`${pick.id}-sf-${teamIndex}`}
+                                      teamName={team}
+                                      showPickedByHover={false}
+                                    />
+                                  ))}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
                         );
                       })}
                     </div>
@@ -5720,22 +5760,101 @@ export default function Home() {
                     }),
                 }));
 
-                const topFor = (roundIndex: number, index: number) => {
-                  const spacing = Math.pow(2, roundIndex);
+                const bracketColumnCount = 9;
+                const centerColumnIndex = 4;
+                const bracketWidth =
+                  bracketColumnCount * cardWidth +
+                  (bracketColumnCount - 1) * colGap;
+                const bracketHeight = headerOffset + 8 * step + 140;
+
+                const columnLeft = (columnIndex: number) =>
+                  columnIndex * (cardWidth + colGap);
+
+                const topForSide = (roundDepth: number, index: number) => {
+                  const spacing = Math.pow(2, roundDepth);
                   const offset = (spacing - 1) / 2;
                   return headerOffset + (index * spacing + offset) * step;
                 };
 
-                const centerY = (roundIndex: number, index: number) =>
-                  topFor(roundIndex, index) + cardHeight / 2;
+                const centerYForSide = (roundDepth: number, index: number) =>
+                  topForSide(roundDepth, index) + cardHeight / 2;
 
-                const leftFor = (roundIndex: number) =>
-                  roundIndex * (cardWidth + colGap);
+                const leftSideRounds = [
+                  {
+                    title: "Round of 32",
+                    stage: "Round of 32",
+                    roundDepth: 0,
+                    columnIndex: 0,
+                    matches: bracketRounds[0].matches.slice(0, 8),
+                  },
+                  {
+                    title: "Round of 16",
+                    stage: "Round of 16",
+                    roundDepth: 1,
+                    columnIndex: 1,
+                    matches: bracketRounds[1].matches.slice(0, 4),
+                  },
+                  {
+                    title: "Quarter Finals",
+                    stage: "Quarter Final",
+                    roundDepth: 2,
+                    columnIndex: 2,
+                    matches: bracketRounds[2].matches.slice(0, 2),
+                  },
+                  {
+                    title: "Semi Finals",
+                    stage: "Semi Final",
+                    roundDepth: 3,
+                    columnIndex: 3,
+                    matches: bracketRounds[3].matches.slice(0, 1),
+                  },
+                ];
 
-                const bracketWidth =
-                  rounds.length * cardWidth + (rounds.length - 1) * colGap;
+                const rightSideRounds = [
+                  {
+                    title: "Semi Finals",
+                    stage: "Semi Final",
+                    roundDepth: 3,
+                    columnIndex: 5,
+                    matches: bracketRounds[3].matches.slice(1, 2),
+                  },
+                  {
+                    title: "Quarter Finals",
+                    stage: "Quarter Final",
+                    roundDepth: 2,
+                    columnIndex: 6,
+                    matches: bracketRounds[2].matches.slice(2, 4),
+                  },
+                  {
+                    title: "Round of 16",
+                    stage: "Round of 16",
+                    roundDepth: 1,
+                    columnIndex: 7,
+                    matches: bracketRounds[1].matches.slice(4, 8),
+                  },
+                  {
+                    title: "Round of 32",
+                    stage: "Round of 32",
+                    roundDepth: 0,
+                    columnIndex: 8,
+                    matches: bracketRounds[0].matches.slice(8, 16),
+                  },
+                ];
 
-                const bracketHeight = headerOffset + 16 * step + 120;
+                const finalRound = {
+                  title: "Final",
+                  stage: "Final",
+                  roundDepth: 3,
+                  columnIndex: centerColumnIndex,
+                  matches: bracketRounds[4].matches,
+                };
+
+                const bronzeFinalMatches = matches.filter(
+                  (match) => match.stage === "Bronze Final",
+                );
+                const finalTop = topForSide(finalRound.roundDepth, 0);
+                const logoTop = Math.max(headerOffset + 18, finalTop - 122);
+                const bronzeTop = finalTop + cardHeight + 44;
 
                 return (
                   <section className="max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-xl md:p-8">
@@ -5969,6 +6088,7 @@ export default function Home() {
                                 <BracketMatchCard
                                   key={`mobile-bronze-${match.id}`}
                                   match={match}
+                                  variant="bronze"
                                 />
                               ))}
                           </div>
@@ -5978,7 +6098,7 @@ export default function Home() {
 
                     <div className="hidden w-full max-w-full overflow-x-auto rounded-3xl border border-gray-200 bg-gray-50 p-3 shadow-inner md:block md:p-5">
                       <div
-                        className="relative"
+                        className="relative mx-auto"
                         style={{ width: bracketWidth, height: bracketHeight }}
                       >
                         <svg
@@ -5986,41 +6106,42 @@ export default function Home() {
                           width={bracketWidth}
                           height={bracketHeight}
                         >
-                          {bracketRounds
+                          {leftSideRounds
                             .slice(0, -1)
                             .flatMap((round, roundIndex) => {
-                              const nextRound = bracketRounds[roundIndex + 1];
+                              const nextRound = leftSideRounds[roundIndex + 1];
 
                               return nextRound.matches.map((_, nextIndex) => {
                                 const sourceIndexA = nextIndex * 2;
                                 const sourceIndexB = nextIndex * 2 + 1;
-
-                                const sourceYA = centerY(
-                                  roundIndex,
+                                const sourceYA = centerYForSide(
+                                  round.roundDepth,
                                   sourceIndexA,
                                 );
-                                const sourceYB = centerY(
-                                  roundIndex,
+                                const sourceYB = centerYForSide(
+                                  round.roundDepth,
                                   sourceIndexB,
                                 );
-                                const targetY = centerY(
-                                  roundIndex + 1,
+                                const targetY = centerYForSide(
+                                  nextRound.roundDepth,
                                   nextIndex,
                                 );
-
-                                const sourceX = leftFor(roundIndex) + cardWidth;
-                                const targetX = leftFor(roundIndex + 1);
+                                const sourceX =
+                                  columnLeft(round.columnIndex) + cardWidth;
+                                const targetX = columnLeft(
+                                  nextRound.columnIndex,
+                                );
                                 const midX = sourceX + colGap / 2;
 
                                 return (
-                                  <g key={`${round.stage}-${nextIndex}`}>
+                                  <g key={`left-${round.stage}-${nextIndex}`}>
                                     <path
                                       d={`
-                          M ${sourceX} ${sourceYA}
-                          H ${midX}
-                          V ${sourceYB}
-                          H ${sourceX}
-                        `}
+                                      M ${sourceX} ${sourceYA}
+                                      H ${midX}
+                                      V ${sourceYB}
+                                      H ${sourceX}
+                                    `}
                                       fill="none"
                                       stroke="#60A5FA"
                                       strokeWidth="2"
@@ -6030,9 +6151,9 @@ export default function Home() {
 
                                     <path
                                       d={`
-                          M ${midX} ${targetY}
-                          H ${targetX}
-                        `}
+                                      M ${midX} ${targetY}
+                                      H ${targetX}
+                                    `}
                                       fill="none"
                                       stroke="#60A5FA"
                                       strokeWidth="2"
@@ -6043,30 +6164,137 @@ export default function Home() {
                                 );
                               });
                             })}
+
+                          {rightSideRounds
+                            .slice(1)
+                            .flatMap((round, roundIndex) => {
+                              const nextRound = rightSideRounds[roundIndex];
+
+                              return nextRound.matches.map((_, nextIndex) => {
+                                const sourceIndexA = nextIndex * 2;
+                                const sourceIndexB = nextIndex * 2 + 1;
+                                const sourceYA = centerYForSide(
+                                  round.roundDepth,
+                                  sourceIndexA,
+                                );
+                                const sourceYB = centerYForSide(
+                                  round.roundDepth,
+                                  sourceIndexB,
+                                );
+                                const targetY = centerYForSide(
+                                  nextRound.roundDepth,
+                                  nextIndex,
+                                );
+                                const sourceX = columnLeft(round.columnIndex);
+                                const targetX =
+                                  columnLeft(nextRound.columnIndex) + cardWidth;
+                                const midX = sourceX - colGap / 2;
+
+                                return (
+                                  <g key={`right-${round.stage}-${nextIndex}`}>
+                                    <path
+                                      d={`
+                                      M ${sourceX} ${sourceYA}
+                                      H ${midX}
+                                      V ${sourceYB}
+                                      H ${sourceX}
+                                    `}
+                                      fill="none"
+                                      stroke="#60A5FA"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+
+                                    <path
+                                      d={`
+                                      M ${midX} ${targetY}
+                                      H ${targetX}
+                                    `}
+                                      fill="none"
+                                      stroke="#60A5FA"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </g>
+                                );
+                              });
+                            })}
+
+                          {finalRound.matches.length > 0 && (
+                            <>
+                              <path
+                                d={`
+                                  M ${columnLeft(leftSideRounds[3].columnIndex) + cardWidth} ${centerYForSide(3, 0)}
+                                  H ${columnLeft(finalRound.columnIndex)}
+                                `}
+                                fill="none"
+                                stroke="#60A5FA"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d={`
+                                  M ${columnLeft(rightSideRounds[0].columnIndex)} ${centerYForSide(3, 0)}
+                                  H ${columnLeft(finalRound.columnIndex) + cardWidth}
+                                `}
+                                fill="none"
+                                stroke="#60A5FA"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </>
+                          )}
                         </svg>
 
-                        {bracketRounds.map((round, roundIndex) => (
-                          <div key={round.stage}>
+                        {[
+                          ...leftSideRounds,
+                          finalRound,
+                          ...rightSideRounds,
+                        ].map((round) => (
+                          <div
+                            key={`desktop-${round.stage}-${round.columnIndex}`}
+                          >
                             <h3
                               className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
                               style={{
-                                left: leftFor(roundIndex),
+                                left: columnLeft(round.columnIndex),
                                 width: cardWidth,
                               }}
                             >
                               {round.title}
                             </h3>
 
+                            {round.stage === "Final" && (
+                              <div
+                                className="absolute z-10 flex justify-center"
+                                style={{
+                                  left: columnLeft(round.columnIndex),
+                                  top: logoTop,
+                                  width: cardWidth,
+                                }}
+                              >
+                                <img
+                                  src="/logos/fifa-world-cup-2026-logo.png"
+                                  alt="FIFA World Cup 2026"
+                                  className="h-24 w-auto object-contain drop-shadow-xl"
+                                />
+                              </div>
+                            )}
+
                             {round.matches.map((match, matchIndex) => (
                               <div
-                                key={match.id}
+                                key={`desktop-${match.id}`}
                                 ref={(element) => {
                                   bracketMatchRefs.current[match.id] = element;
                                 }}
                                 className="absolute z-10"
                                 style={{
-                                  left: leftFor(roundIndex),
-                                  top: topFor(roundIndex, matchIndex),
+                                  left: columnLeft(round.columnIndex),
+                                  top: topForSide(round.roundDepth, matchIndex),
                                   width: cardWidth,
                                   height: cardHeight,
                                 }}
@@ -6076,20 +6304,29 @@ export default function Home() {
                             ))}
                           </div>
                         ))}
-                      </div>
 
-                      <div className="mt-10 rounded-3xl border border-gray-200 bg-white p-5 shadow-xl">
-                        <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-gray-700">
-                          Bronze Final
-                        </h3>
-
-                        <div className="max-w-[270px]">
-                          {matches
-                            .filter((match) => match.stage === "Bronze Final")
-                            .map((match) => (
-                              <BracketMatchCard key={match.id} match={match} />
+                        {bronzeFinalMatches.length > 0 && (
+                          <div
+                            className="absolute z-10"
+                            style={{
+                              left: columnLeft(centerColumnIndex),
+                              top: bronzeTop,
+                              width: cardWidth,
+                              height: cardHeight,
+                            }}
+                          >
+                            <h3 className="mb-3 rounded-full border border-amber-300 bg-amber-100 px-3 py-1.5 text-center text-xs font-black uppercase tracking-wide text-amber-950 shadow">
+                              Third Place Winner
+                            </h3>
+                            {bronzeFinalMatches.map((match) => (
+                              <BracketMatchCard
+                                key={match.id}
+                                match={match}
+                                variant="bronze"
+                              />
                             ))}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </section>
