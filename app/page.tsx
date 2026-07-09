@@ -2280,6 +2280,10 @@ export default function Home() {
 
     const getTeamPoints = (teamName: string) => {
       return matches.reduce((points, match) => {
+        // Exception: do not count the third-place / Bronze Final match
+        // toward participant team scores. Teams playing Match 103 collect
+        // 0 points from that match regardless of win, draw, or loss.
+        if (match.id === 103 || match.stage === "Bronze Final") return points;
         if (!hasValidScore(match)) return points;
 
         const resolvedTeamA = resolveScoringSlot(match.teamA);
@@ -4247,6 +4251,7 @@ export default function Home() {
                       <p className="mt-2 text-sm leading-6 text-gray-700">
                         Each logged-in participant chooses three teams. Team
                         results earn points: win = 3, draw = 1, loss = 0.
+                        Third-place match points are not counted.
                       </p>
                     </div>
 
@@ -4815,7 +4820,7 @@ export default function Home() {
                       </h2>
                       <p className="mt-1 text-sm text-gray-500">
                         Scoring: win = 3 points, draw = 1 point, loss = 0
-                        points.
+                        points. Third-place match points are not counted.
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
