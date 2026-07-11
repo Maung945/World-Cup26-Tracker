@@ -3359,6 +3359,18 @@ export default function Home() {
       return;
     }
 
+    const toNullableInteger = (value: string | undefined) => {
+      const trimmedValue = (value ?? "").trim();
+
+      if (trimmedValue === "") return null;
+
+      const parsedValue = Number(trimmedValue);
+
+      return Number.isInteger(parsedValue) && parsedValue >= 0
+        ? parsedValue
+        : null;
+    };
+
     const rows = matches
       .filter(
         (match) =>
@@ -3370,10 +3382,10 @@ export default function Home() {
       )
       .map((match) => ({
         match_id: match.id,
-        score_a: match.scoreA,
-        score_b: match.scoreB,
-        final_score_a: match.finalScoreA ?? "",
-        final_score_b: match.finalScoreB ?? "",
+        score_a: toNullableInteger(match.scoreA),
+        score_b: toNullableInteger(match.scoreB),
+        final_score_a: toNullableInteger(match.finalScoreA),
+        final_score_b: toNullableInteger(match.finalScoreB),
         status: match.status,
         updated_by: user.id,
       }));
@@ -3406,10 +3418,10 @@ export default function Home() {
 
     const rows = starterMatches.map((match) => ({
       match_id: match.id,
-      score_a: "",
-      score_b: "",
-      final_score_a: "",
-      final_score_b: "",
+      score_a: null,
+      score_b: null,
+      final_score_a: null,
+      final_score_b: null,
       status: "Scheduled",
       updated_by: user.id,
     }));
@@ -3447,10 +3459,10 @@ export default function Home() {
 
     const rows = bracketStarterMatches.map((match) => ({
       match_id: match.id,
-      score_a: "",
-      score_b: "",
-      final_score_a: "",
-      final_score_b: "",
+      score_a: null,
+      score_b: null,
+      final_score_a: null,
+      final_score_b: null,
       status: "Scheduled",
       updated_by: user.id,
     }));
