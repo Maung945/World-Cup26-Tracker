@@ -6597,7 +6597,8 @@ export default function Home() {
                 const bracketWidth =
                   bracketColumnCount * cardWidth +
                   (bracketColumnCount - 1) * colGap;
-                const bracketHeight = headerOffset + 8 * step + 140;
+                // Extra vertical space keeps the Third Place card fully visible below the Final.
+                const bracketHeight = headerOffset + 8 * step + 380;
 
                 const columnLeft = (columnIndex: number) =>
                   columnIndex * (cardWidth + colGap);
@@ -6686,7 +6687,8 @@ export default function Home() {
                 );
                 const finalTop = topForSide(finalRound.roundDepth, 0);
                 const logoTop = Math.max(headerOffset + 18, finalTop - 122);
-                const bronzeTop = finalTop + cardHeight + 44;
+                // Keep the Third Place match well below the Final so it never blocks the view.
+                const bronzeTop = finalTop + cardHeight + 260;
                 const clampedBracketZoom = Math.min(
                   1.2,
                   Math.max(0.5, bracketZoom),
