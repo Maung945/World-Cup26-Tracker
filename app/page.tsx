@@ -28,6 +28,8 @@ type Match = {
   teamB: string;
   scoreA: string;
   scoreB: string;
+  finalScoreA?: string;
+  finalScoreB?: string;
   status: "Scheduled" | "Live" | "Half Time" | "Full Time";
   venue?: string;
 };
@@ -67,8 +69,8 @@ type FinalPrediction = {
   finalist1: string;
   finalist2: string;
   winner: string;
-  score1: number;
-  score2: number;
+  ninety_score1: number;
+  ninety_score2: number;
   user_id?: string;
   paid?: boolean;
 };
@@ -1513,7 +1515,7 @@ const ADMIN_EMAILS = ["ma_945@outlook.com"];
 const CONTRIBUTION_AMOUNT = 30;
 const KNOCKOUT_CONTRIBUTION_AMOUNT = 20;
 const FINAL_PREDICTION_CONTRIBUTION_AMOUNT = 20;
-const FINAL_PREDICTION_CUTOFF = new Date("2026-07-19T09:00:00-07:00");
+const FINAL_PREDICTION_CUTOFF = new Date("2026-07-14T00:00:00-07:00");
 
 function flagText(teamName: string) {
   return teamName;
@@ -1546,8 +1548,8 @@ export default function Home() {
   const [finalist1, setFinalist1] = useState("");
   const [finalist2, setFinalist2] = useState("");
   const [predictedWinner, setPredictedWinner] = useState("");
-  const [predictedScore1, setPredictedScore1] = useState("");
-  const [predictedScore2, setPredictedScore2] = useState("");
+  const [predictedNinetyScore1, setPredictedNinetyScore1] = useState("");
+  const [predictedNinetyScore2, setPredictedNinetyScore2] = useState("");
   const [finalPredictionMessage, setFinalPredictionMessage] = useState("");
   const [pendingFinalPaidById, setPendingFinalPaidById] = useState<
     Record<number, boolean>
@@ -1790,8 +1792,8 @@ export default function Home() {
     setFinalist1(pick.finalist1);
     setFinalist2(pick.finalist2);
     setPredictedWinner(pick.winner);
-    setPredictedScore1(String(pick.score1));
-    setPredictedScore2(String(pick.score2));
+    setPredictedNinetyScore1(String(pick.ninety_score1));
+    setPredictedNinetyScore2(String(pick.ninety_score2));
   }
 
   function resetFinalPredictionForm() {
@@ -1799,8 +1801,8 @@ export default function Home() {
     setFinalist1("");
     setFinalist2("");
     setPredictedWinner("");
-    setPredictedScore1("");
-    setPredictedScore2("");
+    setPredictedNinetyScore1("");
+    setPredictedNinetyScore2("");
   }
 
   async function fetchMatchScores() {
@@ -1822,6 +1824,8 @@ export default function Home() {
             ...match,
             scoreA: savedScore.score_a ?? "",
             scoreB: savedScore.score_b ?? "",
+            finalScoreA: savedScore.final_score_a ?? "",
+            finalScoreB: savedScore.final_score_b ?? "",
             status: savedScore.status ?? match.status,
           };
         }),
@@ -2759,7 +2763,7 @@ export default function Home() {
     [matches, computedGroupStandings],
   );
   const finalMatch = matches.find((match) => match.id === 104);
-  const finalHasValidScore = Boolean(
+  const finalHasValidNinetyScore = Boolean(
     finalMatch &&
     finalMatch.scoreA.trim() !== "" &&
     finalMatch.scoreB.trim() !== "" &&
@@ -2767,35 +2771,62 @@ export default function Home() {
     !Number.isNaN(Number(finalMatch.scoreB)),
   );
 
+  const finalHasValidFinalScore = Boolean(
+    finalMatch &&
+    (finalMatch.finalScoreA ?? "").trim() !== "" &&
+    (finalMatch.finalScoreB ?? "").trim() !== "" &&
+    !Number.isNaN(Number(finalMatch.finalScoreA)) &&
+    !Number.isNaN(Number(finalMatch.finalScoreB)),
+  );
+
+  const resolvedFinalTeamA = finalMatch
+    ? resolveBracketTeam(finalMatch.teamA).name
+    : "Finalist 1";
+  const resolvedFinalTeamB = finalMatch
+    ? resolveBracketTeam(finalMatch.teamB).name
+    : "Finalist 2";
+
   function getFinalPredictionScore(pick: FinalPrediction) {
     const pickedFinalists = [pick.finalist1, pick.finalist2];
     const finalistMatches = pickedFinalists.filter((team) =>
       actualFinalTeams.includes(team),
     ).length;
     const finalistPercentage = finalistMatches * 25;
+
     const winnerCorrect = Boolean(
       actualChampion && pick.winner === actualChampion,
     );
     const winnerPercentage = winnerCorrect ? 25 : 0;
 
-    let scoreCorrect = false;
-    if (finalHasValidScore && finalMatch) {
-      const actualByTeam: Record<string, number> = {
-        [resolveBracketTeam(finalMatch.teamA).name]: Number(finalMatch.scoreA),
-        [resolveBracketTeam(finalMatch.teamB).name]: Number(finalMatch.scoreB),
+    let ninetyScoreCorrect = false;
+
+    if (finalMatch && finalHasValidNinetyScore) {
+      const teamA = resolveBracketTeam(finalMatch.teamA).name;
+      const teamB = resolveBracketTeam(finalMatch.teamB).name;
+      const actualNinetyByTeam: Record<string, number> = {
+        [teamA]: Number(finalMatch.scoreA),
+        [teamB]: Number(finalMatch.scoreB),
       };
-      scoreCorrect =
-        actualByTeam[pick.finalist1] === Number(pick.score1) &&
-        actualByTeam[pick.finalist2] === Number(pick.score2);
+
+      ninetyScoreCorrect =
+        actualNinetyByTeam[pick.finalist1] === Number(pick.ninety_score1) &&
+        actualNinetyByTeam[pick.finalist2] === Number(pick.ninety_score2);
     }
+
+    // Participants predict only the score after 90 minutes.
+    // The stored final score is used only to determine the actual champion.
+    const scoreCorrect = ninetyScoreCorrect;
     const scorePercentage = scoreCorrect ? 25 : 0;
+
     const totalPercentage =
       finalistPercentage + winnerPercentage + scorePercentage;
+
     return {
       finalistMatches,
       finalistPercentage,
       winnerCorrect,
       winnerPercentage,
+      ninetyScoreCorrect,
       scoreCorrect,
       scorePercentage,
       totalPercentage,
@@ -2817,54 +2848,67 @@ export default function Home() {
   async function submitFinalPrediction(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFinalPredictionMessage("");
-    if (!user)
+
+    if (!user) {
       return setFinalPredictionMessage(
         "Please log in before submitting your prediction.",
       );
-    if (new Date() >= FINAL_PREDICTION_CUTOFF && !isAdmin)
+    }
+
+    if (new Date() >= FINAL_PREDICTION_CUTOFF && !isAdmin) {
       return setFinalPredictionMessage(
-        "Final predictions are locked because the Final has started.",
+        "Final predictions are locked because the semifinal deadline has passed.",
       );
+    }
+
     if (
       !finalPredictionName.trim() ||
       !finalist1 ||
       !finalist2 ||
       !predictedWinner ||
-      predictedScore1 === "" ||
-      predictedScore2 === ""
+      predictedNinetyScore1 === "" ||
+      predictedNinetyScore2 === ""
     ) {
       return setFinalPredictionMessage(
         "Complete your name, two finalists, winner, and both 90-minute scores.",
       );
     }
-    if (finalist1 === finalist2)
+
+    if (finalist1 === finalist2) {
       return setFinalPredictionMessage("Choose two different finalist teams.");
-    if (![finalist1, finalist2].includes(predictedWinner))
+    }
+
+    if (![finalist1, finalist2].includes(predictedWinner)) {
       return setFinalPredictionMessage(
         "The predicted winner must be one of your two finalists.",
       );
-    const score1 = Number(predictedScore1),
-      score2 = Number(predictedScore2);
+    }
+
+    const ninetyScore1 = Number(predictedNinetyScore1);
+    const ninetyScore2 = Number(predictedNinetyScore2);
+
     if (
-      !Number.isInteger(score1) ||
-      !Number.isInteger(score2) ||
-      score1 < 0 ||
-      score2 < 0
-    )
+      [ninetyScore1, ninetyScore2].some(
+        (score) => !Number.isInteger(score) || score < 0,
+      )
+    ) {
       return setFinalPredictionMessage(
-        "Scores must be non-negative whole numbers.",
+        "Both 90-minute scores must be non-negative whole numbers.",
       );
+    }
 
     const row = {
       name: finalPredictionName.trim(),
       finalist1,
       finalist2,
       winner: predictedWinner,
-      score1,
-      score2,
+      ninety_score1: ninetyScore1,
+      ninety_score2: ninetyScore2,
       user_id: adminEditingFinalPrediction?.user_id ?? user.id,
     };
+
     const idToUpdate = adminEditingFinalPrediction?.id ?? myFinalPrediction?.id;
+
     const { data, error } = idToUpdate
       ? await supabase
           .from("final_predictions")
@@ -2872,13 +2916,23 @@ export default function Home() {
           .eq("id", idToUpdate)
           .select("id")
       : await supabase.from("final_predictions").insert([row]).select("id");
-    if (error) return setFinalPredictionMessage(error.message);
-    if (!data?.length)
+
+    if (error) {
+      return setFinalPredictionMessage(error.message);
+    }
+
+    if (!data?.length) {
       return setFinalPredictionMessage(
         "Save was blocked by Supabase Row Level Security.",
       );
+    }
+
     await fetchFinalPredictions();
-    if (user.id) await fetchMyFinalPrediction(user.id);
+
+    if (user.id) {
+      await fetchMyFinalPrediction(user.id);
+    }
+
     setAdminEditingFinalPrediction(null);
     setFinalPredictionMessage("Final prediction saved successfully.");
   }
@@ -3277,7 +3331,7 @@ export default function Home() {
 
   function updateMatchScore(
     matchId: number,
-    field: "scoreA" | "scoreB",
+    field: "scoreA" | "scoreB" | "finalScoreA" | "finalScoreB",
     value: string,
   ) {
     if (!isAdmin) return;
@@ -3310,12 +3364,16 @@ export default function Home() {
         (match) =>
           match.scoreA.trim() !== "" ||
           match.scoreB.trim() !== "" ||
+          (match.finalScoreA ?? "").trim() !== "" ||
+          (match.finalScoreB ?? "").trim() !== "" ||
           match.status !== "Scheduled",
       )
       .map((match) => ({
         match_id: match.id,
         score_a: match.scoreA,
         score_b: match.scoreB,
+        final_score_a: match.finalScoreA ?? "",
+        final_score_b: match.finalScoreB ?? "",
         status: match.status,
         updated_by: user.id,
       }));
@@ -3350,6 +3408,8 @@ export default function Home() {
       match_id: match.id,
       score_a: "",
       score_b: "",
+      final_score_a: "",
+      final_score_b: "",
       status: "Scheduled",
       updated_by: user.id,
     }));
@@ -3389,6 +3449,8 @@ export default function Home() {
       match_id: match.id,
       score_a: "",
       score_b: "",
+      final_score_a: "",
+      final_score_b: "",
       status: "Scheduled",
       updated_by: user.id,
     }));
@@ -3406,7 +3468,14 @@ export default function Home() {
     setMatches((current) =>
       current.map((match) =>
         match.id >= 73
-          ? { ...match, scoreA: "", scoreB: "", status: "Scheduled" }
+          ? {
+              ...match,
+              scoreA: "",
+              scoreB: "",
+              finalScoreA: "",
+              finalScoreB: "",
+              status: "Scheduled",
+            }
           : match,
       ),
     );
@@ -3725,11 +3794,23 @@ export default function Home() {
     if (!match) return null;
     if (match.scoreA.trim() === "" || match.scoreB.trim() === "") return null;
 
-    const scoreA = Number(match.scoreA);
-    const scoreB = Number(match.scoreB);
+    let scoreA = Number(match.scoreA);
+    let scoreB = Number(match.scoreB);
 
     if (Number.isNaN(scoreA) || Number.isNaN(scoreB)) return null;
-    if (scoreA === scoreB) return null;
+
+    if (
+      scoreA === scoreB &&
+      (match.finalScoreA ?? "").trim() !== "" &&
+      (match.finalScoreB ?? "").trim() !== ""
+    ) {
+      scoreA = Number(match.finalScoreA);
+      scoreB = Number(match.finalScoreB);
+    }
+
+    if (Number.isNaN(scoreA) || Number.isNaN(scoreB) || scoreA === scoreB) {
+      return null;
+    }
 
     return scoreA > scoreB
       ? resolveBracketTeam(match.teamA).name
@@ -3742,11 +3823,23 @@ export default function Home() {
     if (!match) return null;
     if (match.scoreA.trim() === "" || match.scoreB.trim() === "") return null;
 
-    const scoreA = Number(match.scoreA);
-    const scoreB = Number(match.scoreB);
+    let scoreA = Number(match.scoreA);
+    let scoreB = Number(match.scoreB);
 
     if (Number.isNaN(scoreA) || Number.isNaN(scoreB)) return null;
-    if (scoreA === scoreB) return null;
+
+    if (
+      scoreA === scoreB &&
+      (match.finalScoreA ?? "").trim() !== "" &&
+      (match.finalScoreB ?? "").trim() !== ""
+    ) {
+      scoreA = Number(match.finalScoreA);
+      scoreB = Number(match.finalScoreB);
+    }
+
+    if (Number.isNaN(scoreA) || Number.isNaN(scoreB) || scoreA === scoreB) {
+      return null;
+    }
 
     return scoreA < scoreB
       ? resolveBracketTeam(match.teamA).name
@@ -4211,78 +4304,85 @@ export default function Home() {
           />
 
           {/* SCORES */}
-          <div className="flex flex-shrink-0 items-center gap-2">
-            {isAdmin ? (
-              <input
-                value={match.scoreA}
-                onChange={(e) =>
-                  updateMatchScore(match.id, "scoreA", e.target.value)
-                }
-                className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
-                  isFinal
-                    ? "border-yellow-300 bg-white/95 text-yellow-900"
-                    : isBronze
-                      ? "border-amber-300 bg-white/95 text-amber-950"
-                      : isSpecialBracketCard
-                        ? "border-white/40 bg-white/95 text-gray-900"
-                        : "border-gray-300 bg-white text-gray-900"
-                }`}
-              />
-            ) : (
-              <div
-                className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
-                  isFinal
-                    ? "bg-white/95 text-yellow-900"
-                    : isBronze
-                      ? "bg-white/95 text-amber-950"
-                      : isSpecialBracketCard
-                        ? "bg-white/95 text-gray-900"
-                        : "bg-gray-100 text-gray-900"
+          <div className="flex flex-shrink-0 flex-col items-center gap-1">
+            {isFinal && (
+              <span className="text-[10px] font-black uppercase tracking-wide text-yellow-100">
+                90-Minute Score
+              </span>
+            )}
+            <div className="flex items-center gap-2">
+              {isAdmin ? (
+                <input
+                  value={match.scoreA}
+                  onChange={(e) =>
+                    updateMatchScore(match.id, "scoreA", e.target.value)
+                  }
+                  className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
+                    isFinal
+                      ? "border-yellow-300 bg-white/95 text-yellow-900"
+                      : isBronze
+                        ? "border-amber-300 bg-white/95 text-amber-950"
+                        : isSpecialBracketCard
+                          ? "border-white/40 bg-white/95 text-gray-900"
+                          : "border-gray-300 bg-white text-gray-900"
+                  }`}
+                />
+              ) : (
+                <div
+                  className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
+                    isFinal
+                      ? "bg-white/95 text-yellow-900"
+                      : isBronze
+                        ? "bg-white/95 text-amber-950"
+                        : isSpecialBracketCard
+                          ? "bg-white/95 text-gray-900"
+                          : "bg-gray-100 text-gray-900"
+                  }`}
+                >
+                  {hasScore ? match.scoreA : "-"}
+                </div>
+              )}
+
+              <span
+                className={`text-base font-extrabold ${
+                  isSpecialBracketCard ? "text-white/80" : "text-gray-400"
                 }`}
               >
-                {hasScore ? match.scoreA : "-"}
-              </div>
-            )}
+                -
+              </span>
 
-            <span
-              className={`text-base font-extrabold ${
-                isSpecialBracketCard ? "text-white/80" : "text-gray-400"
-              }`}
-            >
-              -
-            </span>
-
-            {isAdmin ? (
-              <input
-                value={match.scoreB}
-                onChange={(e) =>
-                  updateMatchScore(match.id, "scoreB", e.target.value)
-                }
-                className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
-                  isFinal
-                    ? "border-yellow-300 bg-white/95 text-yellow-900"
-                    : isBronze
-                      ? "border-amber-300 bg-white/95 text-amber-950"
-                      : isSpecialBracketCard
-                        ? "border-white/40 bg-white/95 text-gray-900"
-                        : "border-gray-300 bg-white text-gray-900"
-                }`}
-              />
-            ) : (
-              <div
-                className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
-                  isFinal
-                    ? "bg-white/95 text-yellow-900"
-                    : isBronze
-                      ? "bg-white/95 text-amber-950"
-                      : isSpecialBracketCard
-                        ? "bg-white/95 text-gray-900"
-                        : "bg-gray-100 text-gray-900"
-                }`}
-              >
-                {hasScore ? match.scoreB : "-"}
-              </div>
-            )}
+              {isAdmin ? (
+                <input
+                  value={match.scoreB}
+                  onChange={(e) =>
+                    updateMatchScore(match.id, "scoreB", e.target.value)
+                  }
+                  className={`h-9 w-10 rounded-xl border text-center text-base font-extrabold outline-none focus:border-blue-500 sm:w-11 sm:text-lg ${
+                    isFinal
+                      ? "border-yellow-300 bg-white/95 text-yellow-900"
+                      : isBronze
+                        ? "border-amber-300 bg-white/95 text-amber-950"
+                        : isSpecialBracketCard
+                          ? "border-white/40 bg-white/95 text-gray-900"
+                          : "border-gray-300 bg-white text-gray-900"
+                  }`}
+                />
+              ) : (
+                <div
+                  className={`flex h-9 w-10 items-center justify-center rounded-xl text-base font-extrabold sm:w-11 sm:text-lg ${
+                    isFinal
+                      ? "bg-white/95 text-yellow-900"
+                      : isBronze
+                        ? "bg-white/95 text-amber-950"
+                        : isSpecialBracketCard
+                          ? "bg-white/95 text-gray-900"
+                          : "bg-gray-100 text-gray-900"
+                  }`}
+                >
+                  {hasScore ? match.scoreB : "-"}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* RIGHT TEAM */}
@@ -4292,6 +4392,54 @@ export default function Home() {
             align="right"
           />
         </div>
+
+        {isFinal && (
+          <div className="relative z-10 mx-3 mb-3 rounded-xl border border-yellow-200 bg-white/95 p-3 text-yellow-950">
+            <p className="mb-1 text-center text-xs font-black uppercase tracking-wide">
+              Final Score Used to Decide the Winner
+            </p>
+            <p className="mb-2 text-center text-[10px] font-bold text-yellow-800">
+              Enter only when the 90-minute score is a draw. Exclude
+              penalty-shootout kicks.
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              {isAdmin ? (
+                <>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={match.finalScoreA ?? ""}
+                    onChange={(e) =>
+                      updateMatchScore(match.id, "finalScoreA", e.target.value)
+                    }
+                    className="h-9 w-12 rounded-lg border border-yellow-300 bg-white text-center font-extrabold"
+                    aria-label={`${teamAName} final score`}
+                  />
+                  <span className="font-black">-</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={match.finalScoreB ?? ""}
+                    onChange={(e) =>
+                      updateMatchScore(match.id, "finalScoreB", e.target.value)
+                    }
+                    className="h-9 w-12 rounded-lg border border-yellow-300 bg-white text-center font-extrabold"
+                    aria-label={`${teamBName} final score`}
+                  />
+                </>
+              ) : (
+                <span className="font-extrabold">
+                  {(match.finalScoreA ?? "").trim() !== "" &&
+                  (match.finalScoreB ?? "").trim() !== ""
+                    ? `${match.finalScoreA} - ${match.finalScoreB}`
+                    : "Pending"}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div
           className={`relative z-10 border-t px-3 pb-3 pt-2 ${
@@ -5826,8 +5974,50 @@ export default function Home() {
                       <b>Winner:</b> 25%
                     </div>
                     <div className="rounded-xl bg-white p-3">
-                      <b>Exact 90-min score:</b> 25%
+                      <b>Exact 90-minute score:</b> 25%
                     </div>
+                  </div>
+
+                  <div className="mt-4 rounded-2xl border border-purple-200 bg-white/90 p-4">
+                    <p className="text-xs font-black uppercase tracking-wide text-purple-700">
+                      Official Final Match Result
+                    </p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+                        <p className="text-xs font-black uppercase text-blue-700">
+                          90-Minute Score
+                        </p>
+                        <p className="mt-1 font-extrabold text-blue-950">
+                          {finalHasValidNinetyScore && finalMatch
+                            ? `${resolvedFinalTeamA} ${finalMatch.scoreA} - ${finalMatch.scoreB} ${resolvedFinalTeamB}`
+                            : "Pending"}
+                        </p>
+                        <p className="mt-1 text-xs text-blue-700">
+                          This is the score participants predict.
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-3">
+                        <p className="text-xs font-black uppercase text-yellow-800">
+                          Final Score
+                        </p>
+                        <p className="mt-1 font-extrabold text-yellow-950">
+                          {finalHasValidFinalScore && finalMatch
+                            ? `${resolvedFinalTeamA} ${finalMatch.finalScoreA} - ${finalMatch.finalScoreB} ${resolvedFinalTeamB}`
+                            : finalHasValidNinetyScore &&
+                                finalMatch &&
+                                finalMatch.scoreA !== finalMatch.scoreB
+                              ? `${resolvedFinalTeamA} ${finalMatch.scoreA} - ${finalMatch.scoreB} ${resolvedFinalTeamB}`
+                              : "Pending"}
+                        </p>
+                        <p className="mt-1 text-xs text-yellow-800">
+                          Used only to determine the champion when 90 minutes
+                          ends in a draw.
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm font-bold text-purple-950">
+                      Champion: {actualChampion ?? "Pending"}
+                    </p>
                   </div>
                 </section>
 
@@ -5841,7 +6031,7 @@ export default function Home() {
                       </h2>
                       <p className="mt-1 text-sm text-gray-500">
                         Available semifinal teams: {actualSemiFinalTeams.length}
-                        /4. Predictions lock when Match 104 starts.
+                        /4. Predictions lock July 14, 2026 at 12:00 AM PDT.
                       </p>
                     </div>
                     {myFinalPrediction && (
@@ -5914,7 +6104,7 @@ export default function Home() {
                     <div className="grid gap-4 md:grid-cols-3">
                       <Select
                         instanceId="predicted-winner"
-                        placeholder="Predicted Winner"
+                        placeholder="Predicted Final Winner"
                         value={
                           predictedWinner
                             ? {
@@ -5932,25 +6122,38 @@ export default function Home() {
                           <SelectTeamOption option={option} />
                         )}
                       />
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        className="rounded-xl border p-3"
-                        placeholder={`${finalist1 || "Finalist 1"} goals`}
-                        value={predictedScore1}
-                        onChange={(e) => setPredictedScore1(e.target.value)}
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        className="rounded-xl border p-3"
-                        placeholder={`${finalist2 || "Finalist 2"} goals`}
-                        value={predictedScore2}
-                        onChange={(e) => setPredictedScore2(e.target.value)}
-                      />
+
+                      <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 md:col-span-2">
+                        <p className="mb-2 text-sm font-extrabold text-blue-900">
+                          90-Minute Score
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            className="rounded-xl border bg-white p-3"
+                            placeholder={`${finalist1 || "Finalist 1"} at 90 min`}
+                            value={predictedNinetyScore1}
+                            onChange={(e) =>
+                              setPredictedNinetyScore1(e.target.value)
+                            }
+                          />
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            className="rounded-xl border bg-white p-3"
+                            placeholder={`${finalist2 || "Finalist 2"} at 90 min`}
+                            value={predictedNinetyScore2}
+                            onChange={(e) =>
+                              setPredictedNinetyScore2(e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
                     </div>
+
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="submit"
@@ -6029,8 +6232,12 @@ export default function Home() {
                                   {perfectWinner && "🏆"}
                                 </h3>
                                 <p className="text-sm text-gray-600">
-                                  {pick.finalist1} {pick.score1} – {pick.score2}{" "}
-                                  {pick.finalist2} • Winner: {pick.winner}
+                                  <b>90 min:</b> {pick.finalist1}{" "}
+                                  {pick.ninety_score1} – {pick.ninety_score2}{" "}
+                                  {pick.finalist2}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  <b>Winner:</b> {pick.winner}
                                 </p>
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
@@ -6080,7 +6287,7 @@ export default function Home() {
                                 = {pick.winnerPercentage}%
                               </div>
                               <div className="rounded-lg bg-gray-50 p-2">
-                                90-min score:{" "}
+                                90-minute score:{" "}
                                 {pick.scoreCorrect
                                   ? "Correct"
                                   : "Pending/Wrong"}{" "}
