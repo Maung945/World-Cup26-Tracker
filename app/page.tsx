@@ -61,6 +61,18 @@ type KnockoutPick = {
   paid?: boolean;
 };
 
+type FinalPrediction = {
+  id: number;
+  name: string;
+  finalist1: string;
+  finalist2: string;
+  winner: string;
+  score1: number;
+  score2: number;
+  user_id?: string;
+  paid?: boolean;
+};
+
 type GroupStanding = {
   team: string;
   group: string;
@@ -1500,6 +1512,8 @@ const KNOCKOUT_PICK_CUTOFF = new Date("2026-06-28T00:00:00-07:00");
 const ADMIN_EMAILS = ["ma_945@outlook.com"];
 const CONTRIBUTION_AMOUNT = 30;
 const KNOCKOUT_CONTRIBUTION_AMOUNT = 20;
+const FINAL_PREDICTION_CONTRIBUTION_AMOUNT = 20;
+const FINAL_PREDICTION_CUTOFF = new Date("2026-07-19T09:00:00-07:00");
 
 function flagText(teamName: string) {
   return teamName;
@@ -1523,13 +1537,35 @@ export default function Home() {
   const [pendingKnockoutPaidById, setPendingKnockoutPaidById] = useState<
     Record<number, boolean>
   >({});
+  const [finalPredictions, setFinalPredictions] = useState<FinalPrediction[]>(
+    [],
+  );
+  const [myFinalPrediction, setMyFinalPrediction] =
+    useState<FinalPrediction | null>(null);
+  const [finalPredictionName, setFinalPredictionName] = useState("");
+  const [finalist1, setFinalist1] = useState("");
+  const [finalist2, setFinalist2] = useState("");
+  const [predictedWinner, setPredictedWinner] = useState("");
+  const [predictedScore1, setPredictedScore1] = useState("");
+  const [predictedScore2, setPredictedScore2] = useState("");
+  const [finalPredictionMessage, setFinalPredictionMessage] = useState("");
+  const [pendingFinalPaidById, setPendingFinalPaidById] = useState<
+    Record<number, boolean>
+  >({});
+  const [adminEditingFinalPrediction, setAdminEditingFinalPrediction] =
+    useState<FinalPrediction | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [teamData, setTeamData] = useState<Team[]>(teams);
   const [matches, setMatches] = useState<Match[]>(starterMatches);
   const [search, setSearch] = useState("");
   const [matchSearch, setMatchSearch] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "participants" | "knockout" | "matches" | "bracket" | "groups"
+    | "participants"
+    | "knockout"
+    | "finalPrediction"
+    | "matches"
+    | "bracket"
+    | "groups"
   >("participants");
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
@@ -1593,6 +1629,7 @@ export default function Home() {
   React.useEffect(() => {
     fetchParticipants();
     fetchKnockoutPicks();
+    fetchFinalPredictions();
     fetchMatchScores();
 
     supabase.auth.getUser().then(({ data }) => {
@@ -1601,6 +1638,7 @@ export default function Home() {
       if (data.user) {
         fetchMyPick(data.user.id);
         fetchMyKnockoutPick(data.user.id);
+        fetchMyFinalPrediction(data.user.id);
       }
 
       setAuthLoaded(true);
@@ -1614,6 +1652,7 @@ export default function Home() {
         if (session?.user) {
           fetchMyPick(session.user.id);
           fetchMyKnockoutPick(session.user.id);
+          fetchMyFinalPrediction(session.user.id);
         } else {
           setMyPick(null);
           setParticipantName("");
@@ -1625,6 +1664,9 @@ export default function Home() {
           setKnockoutName("");
           setQuarterTeams(Array(8).fill(""));
           setSemiTeams(Array(4).fill(""));
+          resetFinalPredictionForm();
+          setMyFinalPrediction(null);
+          setAdminEditingFinalPrediction(null);
           setAdminEditingParticipant(null);
         }
       },
@@ -1703,6 +1745,62 @@ export default function Home() {
       setQuarterTeams(Array(8).fill(""));
       setSemiTeams(Array(4).fill(""));
     }
+  }
+
+  async function fetchFinalPredictions() {
+    const { data, error } = await supabase
+      .from("final_predictions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Final predictions fetch error:", error.message);
+      return;
+    }
+
+    if (data) {
+      setFinalPredictions(
+        data.map((pick) => ({ ...pick, paid: Boolean(pick.paid) })),
+      );
+    }
+  }
+
+  async function fetchMyFinalPrediction(userId: string) {
+    const { data, error } = await supabase
+      .from("final_predictions")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && data) {
+      const normalized = {
+        ...data,
+        paid: Boolean(data.paid),
+      } as FinalPrediction;
+      setMyFinalPrediction(normalized);
+      loadFinalPredictionIntoForm(normalized);
+    } else {
+      setMyFinalPrediction(null);
+      resetFinalPredictionForm();
+    }
+  }
+
+  function loadFinalPredictionIntoForm(pick: FinalPrediction) {
+    setFinalPredictionName(pick.name);
+    setFinalist1(pick.finalist1);
+    setFinalist2(pick.finalist2);
+    setPredictedWinner(pick.winner);
+    setPredictedScore1(String(pick.score1));
+    setPredictedScore2(String(pick.score2));
+  }
+
+  function resetFinalPredictionForm() {
+    setFinalPredictionName("");
+    setFinalist1("");
+    setFinalist2("");
+    setPredictedWinner("");
+    setPredictedScore1("");
+    setPredictedScore2("");
   }
 
   async function fetchMatchScores() {
@@ -1816,6 +1914,9 @@ export default function Home() {
     setPassword("");
     setAdminEditingParticipant(null);
     setAdminEditingKnockoutPick(null);
+    setAdminEditingFinalPrediction(null);
+    setMyFinalPrediction(null);
+    resetFinalPredictionForm();
   }
 
   const selectedByTeam = useMemo(() => {
@@ -2076,7 +2177,13 @@ export default function Home() {
   }
 
   function handleTabClick(
-    tab: "participants" | "knockout" | "matches" | "bracket" | "groups",
+    tab:
+      | "participants"
+      | "knockout"
+      | "finalPrediction"
+      | "matches"
+      | "bracket"
+      | "groups",
   ) {
     setActiveTab(tab);
 
@@ -2356,6 +2463,13 @@ export default function Home() {
   const hasUnsavedKnockoutPaymentChanges =
     Object.keys(pendingKnockoutPaidById).length > 0;
   const hasUnsavedPaymentChanges = Object.keys(pendingPaidById).length > 0;
+  const paidFinalPredictionCount = finalPredictions.filter(
+    (pick) => pick.paid,
+  ).length;
+  const finalPredictionPotMoney =
+    paidFinalPredictionCount * FINAL_PREDICTION_CONTRIBUTION_AMOUNT;
+  const hasUnsavedFinalPaymentChanges =
+    Object.keys(pendingFinalPaidById).length > 0;
 
   const selectedQuarterTeamSet = useMemo(
     () => new Set(quarterTeams.filter(Boolean)),
@@ -2616,6 +2730,207 @@ export default function Home() {
   const isKnockoutWinnerPick = (matchPercentage: number) =>
     highestKnockoutMatchPercentage !== null &&
     matchPercentage === highestKnockoutMatchPercentage;
+
+  const finalPredictionOptions = useMemo(
+    () =>
+      actualSemiFinalTeams.map((teamName) => ({
+        value: teamName,
+        label: teamName,
+        image: flagMap[teamName],
+      })),
+    [actualSemiFinalTeams],
+  );
+
+  const selectedFinalistOptions = [finalist1, finalist2]
+    .filter(Boolean)
+    .map((teamName) => ({
+      value: teamName,
+      label: teamName,
+      image: flagMap[teamName],
+    }));
+
+  const actualFinalTeams = useMemo(
+    () =>
+      [getMatchWinner(101), getMatchWinner(102)].filter(Boolean) as string[],
+    [matches, computedGroupStandings],
+  );
+  const actualChampion = useMemo(
+    () => getMatchWinner(104),
+    [matches, computedGroupStandings],
+  );
+  const finalMatch = matches.find((match) => match.id === 104);
+  const finalHasValidScore = Boolean(
+    finalMatch &&
+    finalMatch.scoreA.trim() !== "" &&
+    finalMatch.scoreB.trim() !== "" &&
+    !Number.isNaN(Number(finalMatch.scoreA)) &&
+    !Number.isNaN(Number(finalMatch.scoreB)),
+  );
+
+  function getFinalPredictionScore(pick: FinalPrediction) {
+    const pickedFinalists = [pick.finalist1, pick.finalist2];
+    const finalistMatches = pickedFinalists.filter((team) =>
+      actualFinalTeams.includes(team),
+    ).length;
+    const finalistPercentage = finalistMatches * 25;
+    const winnerCorrect = Boolean(
+      actualChampion && pick.winner === actualChampion,
+    );
+    const winnerPercentage = winnerCorrect ? 25 : 0;
+
+    let scoreCorrect = false;
+    if (finalHasValidScore && finalMatch) {
+      const actualByTeam: Record<string, number> = {
+        [resolveBracketTeam(finalMatch.teamA).name]: Number(finalMatch.scoreA),
+        [resolveBracketTeam(finalMatch.teamB).name]: Number(finalMatch.scoreB),
+      };
+      scoreCorrect =
+        actualByTeam[pick.finalist1] === Number(pick.score1) &&
+        actualByTeam[pick.finalist2] === Number(pick.score2);
+    }
+    const scorePercentage = scoreCorrect ? 25 : 0;
+    const totalPercentage =
+      finalistPercentage + winnerPercentage + scorePercentage;
+    return {
+      finalistMatches,
+      finalistPercentage,
+      winnerCorrect,
+      winnerPercentage,
+      scoreCorrect,
+      scorePercentage,
+      totalPercentage,
+    };
+  }
+
+  const scoredFinalPredictions = finalPredictions
+    .map((pick) => ({ ...pick, ...getFinalPredictionScore(pick) }))
+    .sort(
+      (a, b) =>
+        b.totalPercentage - a.totalPercentage ||
+        b.finalistMatches - a.finalistMatches ||
+        a.name.localeCompare(b.name),
+    );
+
+  const highestFinalPredictionPercentage =
+    scoredFinalPredictions[0]?.totalPercentage ?? null;
+
+  async function submitFinalPrediction(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setFinalPredictionMessage("");
+    if (!user)
+      return setFinalPredictionMessage(
+        "Please log in before submitting your prediction.",
+      );
+    if (new Date() >= FINAL_PREDICTION_CUTOFF && !isAdmin)
+      return setFinalPredictionMessage(
+        "Final predictions are locked because the Final has started.",
+      );
+    if (
+      !finalPredictionName.trim() ||
+      !finalist1 ||
+      !finalist2 ||
+      !predictedWinner ||
+      predictedScore1 === "" ||
+      predictedScore2 === ""
+    ) {
+      return setFinalPredictionMessage(
+        "Complete your name, two finalists, winner, and both 90-minute scores.",
+      );
+    }
+    if (finalist1 === finalist2)
+      return setFinalPredictionMessage("Choose two different finalist teams.");
+    if (![finalist1, finalist2].includes(predictedWinner))
+      return setFinalPredictionMessage(
+        "The predicted winner must be one of your two finalists.",
+      );
+    const score1 = Number(predictedScore1),
+      score2 = Number(predictedScore2);
+    if (
+      !Number.isInteger(score1) ||
+      !Number.isInteger(score2) ||
+      score1 < 0 ||
+      score2 < 0
+    )
+      return setFinalPredictionMessage(
+        "Scores must be non-negative whole numbers.",
+      );
+
+    const row = {
+      name: finalPredictionName.trim(),
+      finalist1,
+      finalist2,
+      winner: predictedWinner,
+      score1,
+      score2,
+      user_id: adminEditingFinalPrediction?.user_id ?? user.id,
+    };
+    const idToUpdate = adminEditingFinalPrediction?.id ?? myFinalPrediction?.id;
+    const { data, error } = idToUpdate
+      ? await supabase
+          .from("final_predictions")
+          .update(row)
+          .eq("id", idToUpdate)
+          .select("id")
+      : await supabase.from("final_predictions").insert([row]).select("id");
+    if (error) return setFinalPredictionMessage(error.message);
+    if (!data?.length)
+      return setFinalPredictionMessage(
+        "Save was blocked by Supabase Row Level Security.",
+      );
+    await fetchFinalPredictions();
+    if (user.id) await fetchMyFinalPrediction(user.id);
+    setAdminEditingFinalPrediction(null);
+    setFinalPredictionMessage("Final prediction saved successfully.");
+  }
+
+  function startAdminEditFinalPrediction(pick: FinalPrediction) {
+    setAdminEditingFinalPrediction(pick);
+    loadFinalPredictionIntoForm(pick);
+    setFinalPredictionMessage(`Editing ${pick.name}.`);
+    setActiveTab("finalPrediction");
+  }
+
+  async function deleteFinalPrediction(pick: FinalPrediction) {
+    if (!isAdmin || !window.confirm(`Delete ${pick.name}'s Final prediction?`))
+      return;
+    const { error } = await supabase
+      .from("final_predictions")
+      .delete()
+      .eq("id", pick.id);
+    if (error) return setFinalPredictionMessage(error.message);
+    await fetchFinalPredictions();
+    setFinalPredictionMessage("Final prediction deleted.");
+  }
+
+  function toggleFinalPredictionPaid(pick: FinalPrediction) {
+    if (!isAdmin) return;
+    const nextPaid = !(pendingFinalPaidById[pick.id] ?? pick.paid ?? false);
+    setPendingFinalPaidById((current) => ({ ...current, [pick.id]: nextPaid }));
+    setFinalPredictions((current) =>
+      current.map((item) =>
+        item.id === pick.id ? { ...item, paid: nextPaid } : item,
+      ),
+    );
+  }
+
+  async function saveFinalPredictionPayments() {
+    if (!isAdmin) return;
+    const entries = Object.entries(pendingFinalPaidById);
+    if (!entries.length)
+      return setFinalPredictionMessage(
+        "No Final pool payment changes to save.",
+      );
+    for (const [id, paid] of entries) {
+      const { error } = await supabase
+        .from("final_predictions")
+        .update({ paid })
+        .eq("id", Number(id));
+      if (error) return setFinalPredictionMessage(error.message);
+    }
+    setPendingFinalPaidById({});
+    await fetchFinalPredictions();
+    setFinalPredictionMessage("Final pool payment changes saved.");
+  }
 
   async function submitKnockoutPick(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -4420,6 +4735,7 @@ export default function Home() {
                   [
                     "participants",
                     "knockout",
+                    "finalPrediction",
                     "matches",
                     "bracket",
                     "groups",
@@ -4438,7 +4754,9 @@ export default function Home() {
                       ? "GROUPS/TEAMS"
                       : tab === "knockout"
                         ? "QF/SEMI PICKS"
-                        : tab}
+                        : tab === "finalPrediction"
+                          ? "FINAL PICKS"
+                          : tab}
                   </button>
                 ))}
               </div>
@@ -5478,6 +5796,306 @@ export default function Home() {
               </>
             )}
 
+            {activeTab === "finalPrediction" && (
+              <>
+                <section className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 p-4 shadow sm:p-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wide text-purple-700">
+                        Separate $20 Final Pool
+                      </p>
+                      <h2 className="mt-1 text-2xl font-extrabold text-purple-950 sm:text-3xl">
+                        Final Prediction Pot: $
+                        {finalPredictionPotMoney.toLocaleString()}
+                      </h2>
+                      <p className="mt-2 text-sm text-purple-800">
+                        Pick two finalists from the four semifinal teams, the
+                        champion, and the exact score after 90 minutes.
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-purple-800 shadow-sm">
+                      {paidFinalPredictionCount} paid × $
+                      {FINAL_PREDICTION_CONTRIBUTION_AMOUNT}
+                    </div>
+                  </div>
+                  <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+                    <div className="rounded-xl bg-white p-3">
+                      <b>Finalists:</b> 25% each (50% total)
+                    </div>
+                    <div className="rounded-xl bg-white p-3">
+                      <b>Winner:</b> 25%
+                    </div>
+                    <div className="rounded-xl bg-white p-3">
+                      <b>Exact 90-min score:</b> 25%
+                    </div>
+                  </div>
+                </section>
+
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-xl font-bold">
+                        {adminEditingFinalPrediction
+                          ? `Admin Edit: ${adminEditingFinalPrediction.name}`
+                          : "Submit Final Prediction"}
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Available semifinal teams: {actualSemiFinalTeams.length}
+                        /4. Predictions lock when Match 104 starts.
+                      </p>
+                    </div>
+                    {myFinalPrediction && (
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-700">
+                        Submitted
+                      </span>
+                    )}
+                  </div>
+                  <form onSubmit={submitFinalPrediction} className="space-y-4">
+                    <input
+                      className="w-full rounded-xl border p-3"
+                      placeholder="Participant name"
+                      value={finalPredictionName}
+                      onChange={(e) => setFinalPredictionName(e.target.value)}
+                      disabled={
+                        !user ||
+                        (new Date() >= FINAL_PREDICTION_CUTOFF && !isAdmin)
+                      }
+                    />
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Select
+                        instanceId="finalist-1"
+                        placeholder="Finalist 1"
+                        value={
+                          finalist1
+                            ? {
+                                value: finalist1,
+                                label: finalist1,
+                                image: flagMap[finalist1],
+                              }
+                            : null
+                        }
+                        options={finalPredictionOptions.filter(
+                          (o) => o.value !== finalist2,
+                        )}
+                        onChange={(selected) => {
+                          setFinalist1(selected?.value || "");
+                          if (predictedWinner && predictedWinner === finalist1)
+                            setPredictedWinner("");
+                        }}
+                        formatOptionLabel={(option: any) => (
+                          <SelectTeamOption option={option} />
+                        )}
+                      />
+                      <Select
+                        instanceId="finalist-2"
+                        placeholder="Finalist 2"
+                        value={
+                          finalist2
+                            ? {
+                                value: finalist2,
+                                label: finalist2,
+                                image: flagMap[finalist2],
+                              }
+                            : null
+                        }
+                        options={finalPredictionOptions.filter(
+                          (o) => o.value !== finalist1,
+                        )}
+                        onChange={(selected) => {
+                          setFinalist2(selected?.value || "");
+                          if (predictedWinner && predictedWinner === finalist2)
+                            setPredictedWinner("");
+                        }}
+                        formatOptionLabel={(option: any) => (
+                          <SelectTeamOption option={option} />
+                        )}
+                      />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Select
+                        instanceId="predicted-winner"
+                        placeholder="Predicted Winner"
+                        value={
+                          predictedWinner
+                            ? {
+                                value: predictedWinner,
+                                label: predictedWinner,
+                                image: flagMap[predictedWinner],
+                              }
+                            : null
+                        }
+                        options={selectedFinalistOptions}
+                        onChange={(selected) =>
+                          setPredictedWinner(selected?.value || "")
+                        }
+                        formatOptionLabel={(option: any) => (
+                          <SelectTeamOption option={option} />
+                        )}
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="rounded-xl border p-3"
+                        placeholder={`${finalist1 || "Finalist 1"} goals`}
+                        value={predictedScore1}
+                        onChange={(e) => setPredictedScore1(e.target.value)}
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="rounded-xl border p-3"
+                        placeholder={`${finalist2 || "Finalist 2"} goals`}
+                        value={predictedScore2}
+                        onChange={(e) => setPredictedScore2(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="submit"
+                        className="rounded-xl bg-purple-700 px-5 py-3 font-bold text-white hover:bg-purple-800"
+                      >
+                        {adminEditingFinalPrediction || myFinalPrediction
+                          ? "Save Prediction"
+                          : "Submit Prediction"}
+                      </button>
+                      {adminEditingFinalPrediction && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdminEditingFinalPrediction(null);
+                            if (myFinalPrediction)
+                              loadFinalPredictionIntoForm(myFinalPrediction);
+                            else resetFinalPredictionForm();
+                          }}
+                          className="rounded-xl bg-gray-200 px-5 py-3 font-bold"
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={saveFinalPredictionPayments}
+                          disabled={!hasUnsavedFinalPaymentChanges}
+                          className="rounded-xl bg-emerald-700 px-5 py-3 font-bold text-white disabled:opacity-40"
+                        >
+                          Save $ Changes
+                        </button>
+                      )}
+                    </div>
+                    {finalPredictionMessage && (
+                      <p className="rounded-xl bg-gray-50 p-3 text-sm font-semibold text-gray-700">
+                        {finalPredictionMessage}
+                      </p>
+                    )}
+                  </form>
+                </section>
+
+                <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
+                  <h2 className="mb-4 text-xl font-bold">
+                    Final Prediction Leaderboard
+                  </h2>
+                  {scoredFinalPredictions.length === 0 ? (
+                    <p className="text-gray-500">
+                      No Final predictions submitted yet.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {scoredFinalPredictions.map((pick, index) => {
+                        const isTop =
+                          highestFinalPredictionPercentage !== null &&
+                          pick.totalPercentage ===
+                            highestFinalPredictionPercentage;
+                        const perfectWinner = pick.totalPercentage === 100;
+                        return (
+                          <div
+                            key={pick.id}
+                            className={`rounded-2xl border p-4 ${perfectWinner ? "border-yellow-400 bg-yellow-50 ring-2 ring-yellow-200" : isTop ? "border-purple-300 bg-purple-50" : "border-gray-200"}`}
+                          >
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <p className="text-xs font-bold uppercase text-gray-500">
+                                  Rank #{index + 1}
+                                </p>
+                                <h3 className="text-lg font-extrabold">
+                                  {pick.name}{" "}
+                                  {pick.paid && (
+                                    <span className="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-700">
+                                      $20
+                                    </span>
+                                  )}{" "}
+                                  {perfectWinner && "🏆"}
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                  {pick.finalist1} {pick.score1} – {pick.score2}{" "}
+                                  {pick.finalist2} • Winner: {pick.winner}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-purple-700 px-3 py-1 font-black text-white">
+                                  {pick.totalPercentage}%
+                                </span>
+                                {isAdmin && (
+                                  <>
+                                    <button
+                                      onClick={() =>
+                                        startAdminEditFinalPrediction(pick)
+                                      }
+                                      className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        toggleFinalPredictionPaid(pick)
+                                      }
+                                      className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white"
+                                    >
+                                      {pick.paid ? "Remove $20" : "Add $20"}
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        deleteFinalPrediction(pick)
+                                      }
+                                      className="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white"
+                                    >
+                                      Delete
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+                              <div className="rounded-lg bg-gray-50 p-2">
+                                Finalists: {pick.finalistMatches}/2 ={" "}
+                                {pick.finalistPercentage}%
+                              </div>
+                              <div className="rounded-lg bg-gray-50 p-2">
+                                Winner:{" "}
+                                {pick.winnerCorrect
+                                  ? "Correct"
+                                  : "Pending/Wrong"}{" "}
+                                = {pick.winnerPercentage}%
+                              </div>
+                              <div className="rounded-lg bg-gray-50 p-2">
+                                90-min score:{" "}
+                                {pick.scoreCorrect
+                                  ? "Correct"
+                                  : "Pending/Wrong"}{" "}
+                                = {pick.scorePercentage}%
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              </>
+            )}
+
             {activeTab === "matches" && (
               <>
                 <section className="space-y-6">
@@ -5862,7 +6480,10 @@ export default function Home() {
                 const finalTop = topForSide(finalRound.roundDepth, 0);
                 const logoTop = Math.max(headerOffset + 18, finalTop - 122);
                 const bronzeTop = finalTop + cardHeight + 44;
-                const clampedBracketZoom = Math.min(1.2, Math.max(0.5, bracketZoom));
+                const clampedBracketZoom = Math.min(
+                  1.2,
+                  Math.max(0.5, bracketZoom),
+                );
                 const zoomedBracketWidth = bracketWidth * clampedBracketZoom;
                 const zoomedBracketHeight = bracketHeight * clampedBracketZoom;
                 const bracketZoomPercent = Math.round(clampedBracketZoom * 100);
@@ -5875,7 +6496,10 @@ export default function Home() {
                   const viewportWidth =
                     bracketViewportRef.current?.clientWidth ?? bracketWidth;
                   const sidePadding = 48;
-                  const nextZoom = Math.min(1, (viewportWidth - sidePadding) / bracketWidth);
+                  const nextZoom = Math.min(
+                    1,
+                    (viewportWidth - sidePadding) / bracketWidth,
+                  );
                   updateBracketZoom(nextZoom);
                 };
 
@@ -6126,14 +6750,17 @@ export default function Home() {
                             Bracket Zoom: {bracketZoomPercent}%
                           </p>
                           <p className="mt-1 text-xs font-semibold text-gray-500">
-                            Zoom out for the full bracket view, or zoom in to read team cards clearly.
+                            Zoom out for the full bracket view, or zoom in to
+                            read team cards clearly.
                           </p>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => updateBracketZoom(clampedBracketZoom - 0.1)}
+                            onClick={() =>
+                              updateBracketZoom(clampedBracketZoom - 0.1)
+                            }
                             className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-black text-gray-700 shadow-sm hover:bg-gray-50"
                           >
                             − Zoom Out
@@ -6145,14 +6772,20 @@ export default function Home() {
                             max="120"
                             step="5"
                             value={bracketZoomPercent}
-                            onChange={(event) => updateBracketZoom(Number(event.target.value) / 100)}
+                            onChange={(event) =>
+                              updateBracketZoom(
+                                Number(event.target.value) / 100,
+                              )
+                            }
                             className="h-2 w-44 cursor-pointer accent-blue-600"
                             aria-label="Bracket zoom"
                           />
 
                           <button
                             type="button"
-                            onClick={() => updateBracketZoom(clampedBracketZoom + 0.1)}
+                            onClick={() =>
+                              updateBracketZoom(clampedBracketZoom + 0.1)
+                            }
                             className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-black text-gray-700 shadow-sm hover:bg-gray-50"
                           >
                             + Zoom In
@@ -6196,232 +6829,249 @@ export default function Home() {
                               transformOrigin: "top left",
                             }}
                           >
-                        <svg
-                          className="pointer-events-none absolute left-0 top-0 z-0"
-                          width={bracketWidth}
-                          height={bracketHeight}
-                        >
-                          {leftSideRounds
-                            .slice(0, -1)
-                            .flatMap((round, roundIndex) => {
-                              const nextRound = leftSideRounds[roundIndex + 1];
+                            <svg
+                              className="pointer-events-none absolute left-0 top-0 z-0"
+                              width={bracketWidth}
+                              height={bracketHeight}
+                            >
+                              {leftSideRounds
+                                .slice(0, -1)
+                                .flatMap((round, roundIndex) => {
+                                  const nextRound =
+                                    leftSideRounds[roundIndex + 1];
 
-                              return nextRound.matches.map((_, nextIndex) => {
-                                const sourceIndexA = nextIndex * 2;
-                                const sourceIndexB = nextIndex * 2 + 1;
-                                const sourceYA = centerYForSide(
-                                  round.roundDepth,
-                                  sourceIndexA,
-                                );
-                                const sourceYB = centerYForSide(
-                                  round.roundDepth,
-                                  sourceIndexB,
-                                );
-                                const targetY = centerYForSide(
-                                  nextRound.roundDepth,
-                                  nextIndex,
-                                );
-                                const sourceX =
-                                  columnLeft(round.columnIndex) + cardWidth;
-                                const targetX = columnLeft(
-                                  nextRound.columnIndex,
-                                );
-                                const midX = sourceX + colGap / 2;
+                                  return nextRound.matches.map(
+                                    (_, nextIndex) => {
+                                      const sourceIndexA = nextIndex * 2;
+                                      const sourceIndexB = nextIndex * 2 + 1;
+                                      const sourceYA = centerYForSide(
+                                        round.roundDepth,
+                                        sourceIndexA,
+                                      );
+                                      const sourceYB = centerYForSide(
+                                        round.roundDepth,
+                                        sourceIndexB,
+                                      );
+                                      const targetY = centerYForSide(
+                                        nextRound.roundDepth,
+                                        nextIndex,
+                                      );
+                                      const sourceX =
+                                        columnLeft(round.columnIndex) +
+                                        cardWidth;
+                                      const targetX = columnLeft(
+                                        nextRound.columnIndex,
+                                      );
+                                      const midX = sourceX + colGap / 2;
 
-                                return (
-                                  <g key={`left-${round.stage}-${nextIndex}`}>
-                                    <path
-                                      d={`
+                                      return (
+                                        <g
+                                          key={`left-${round.stage}-${nextIndex}`}
+                                        >
+                                          <path
+                                            d={`
                                       M ${sourceX} ${sourceYA}
                                       H ${midX}
                                       V ${sourceYB}
                                       H ${sourceX}
                                     `}
-                                      fill="none"
-                                      stroke="#60A5FA"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
+                                            fill="none"
+                                            stroke="#60A5FA"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
 
-                                    <path
-                                      d={`
+                                          <path
+                                            d={`
                                       M ${midX} ${targetY}
                                       H ${targetX}
                                     `}
-                                      fill="none"
-                                      stroke="#60A5FA"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </g>
-                                );
-                              });
-                            })}
+                                            fill="none"
+                                            stroke="#60A5FA"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                        </g>
+                                      );
+                                    },
+                                  );
+                                })}
 
-                          {rightSideRounds
-                            .slice(1)
-                            .flatMap((round, roundIndex) => {
-                              const nextRound = rightSideRounds[roundIndex];
+                              {rightSideRounds
+                                .slice(1)
+                                .flatMap((round, roundIndex) => {
+                                  const nextRound = rightSideRounds[roundIndex];
 
-                              return nextRound.matches.map((_, nextIndex) => {
-                                const sourceIndexA = nextIndex * 2;
-                                const sourceIndexB = nextIndex * 2 + 1;
-                                const sourceYA = centerYForSide(
-                                  round.roundDepth,
-                                  sourceIndexA,
-                                );
-                                const sourceYB = centerYForSide(
-                                  round.roundDepth,
-                                  sourceIndexB,
-                                );
-                                const targetY = centerYForSide(
-                                  nextRound.roundDepth,
-                                  nextIndex,
-                                );
-                                const sourceX = columnLeft(round.columnIndex);
-                                const targetX =
-                                  columnLeft(nextRound.columnIndex) + cardWidth;
-                                const midX = sourceX - colGap / 2;
+                                  return nextRound.matches.map(
+                                    (_, nextIndex) => {
+                                      const sourceIndexA = nextIndex * 2;
+                                      const sourceIndexB = nextIndex * 2 + 1;
+                                      const sourceYA = centerYForSide(
+                                        round.roundDepth,
+                                        sourceIndexA,
+                                      );
+                                      const sourceYB = centerYForSide(
+                                        round.roundDepth,
+                                        sourceIndexB,
+                                      );
+                                      const targetY = centerYForSide(
+                                        nextRound.roundDepth,
+                                        nextIndex,
+                                      );
+                                      const sourceX = columnLeft(
+                                        round.columnIndex,
+                                      );
+                                      const targetX =
+                                        columnLeft(nextRound.columnIndex) +
+                                        cardWidth;
+                                      const midX = sourceX - colGap / 2;
 
-                                return (
-                                  <g key={`right-${round.stage}-${nextIndex}`}>
-                                    <path
-                                      d={`
+                                      return (
+                                        <g
+                                          key={`right-${round.stage}-${nextIndex}`}
+                                        >
+                                          <path
+                                            d={`
                                       M ${sourceX} ${sourceYA}
                                       H ${midX}
                                       V ${sourceYB}
                                       H ${sourceX}
                                     `}
-                                      fill="none"
-                                      stroke="#60A5FA"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
+                                            fill="none"
+                                            stroke="#60A5FA"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
 
-                                    <path
-                                      d={`
+                                          <path
+                                            d={`
                                       M ${midX} ${targetY}
                                       H ${targetX}
                                     `}
-                                      fill="none"
-                                      stroke="#60A5FA"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </g>
-                                );
-                              });
-                            })}
+                                            fill="none"
+                                            stroke="#60A5FA"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                        </g>
+                                      );
+                                    },
+                                  );
+                                })}
 
-                          {finalRound.matches.length > 0 && (
-                            <>
-                              <path
-                                d={`
+                              {finalRound.matches.length > 0 && (
+                                <>
+                                  <path
+                                    d={`
                                   M ${columnLeft(leftSideRounds[3].columnIndex) + cardWidth} ${centerYForSide(3, 0)}
                                   H ${columnLeft(finalRound.columnIndex)}
                                 `}
-                                fill="none"
-                                stroke="#60A5FA"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d={`
+                                    fill="none"
+                                    stroke="#60A5FA"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                  <path
+                                    d={`
                                   M ${columnLeft(rightSideRounds[0].columnIndex)} ${centerYForSide(3, 0)}
                                   H ${columnLeft(finalRound.columnIndex) + cardWidth}
                                 `}
-                                fill="none"
-                                stroke="#60A5FA"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </>
-                          )}
-                        </svg>
+                                    fill="none"
+                                    stroke="#60A5FA"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </>
+                              )}
+                            </svg>
 
-                        {[
-                          ...leftSideRounds,
-                          finalRound,
-                          ...rightSideRounds,
-                        ].map((round) => (
-                          <div
-                            key={`desktop-${round.stage}-${round.columnIndex}`}
-                          >
-                            <h3
-                              className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
-                              style={{
-                                left: columnLeft(round.columnIndex),
-                                width: cardWidth,
-                              }}
-                            >
-                              {round.title}
-                            </h3>
-
-                            {round.stage === "Final" && (
+                            {[
+                              ...leftSideRounds,
+                              finalRound,
+                              ...rightSideRounds,
+                            ].map((round) => (
                               <div
-                                className="absolute z-10 flex justify-center"
-                                style={{
-                                  left: columnLeft(round.columnIndex),
-                                  top: logoTop,
-                                  width: cardWidth,
-                                }}
+                                key={`desktop-${round.stage}-${round.columnIndex}`}
                               >
-                                <img
-                                  src="/logos/fifa-world-cup-2026-logo.png"
-                                  alt="FIFA World Cup 2026"
-                                  className="h-24 w-auto object-contain drop-shadow-xl"
-                                />
-                              </div>
-                            )}
+                                <h3
+                                  className="absolute top-0 z-10 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-gray-900 shadow"
+                                  style={{
+                                    left: columnLeft(round.columnIndex),
+                                    width: cardWidth,
+                                  }}
+                                >
+                                  {round.title}
+                                </h3>
 
-                            {round.matches.map((match, matchIndex) => (
+                                {round.stage === "Final" && (
+                                  <div
+                                    className="absolute z-10 flex justify-center"
+                                    style={{
+                                      left: columnLeft(round.columnIndex),
+                                      top: logoTop,
+                                      width: cardWidth,
+                                    }}
+                                  >
+                                    <img
+                                      src="/logos/fifa-world-cup-2026-logo.png"
+                                      alt="FIFA World Cup 2026"
+                                      className="h-24 w-auto object-contain drop-shadow-xl"
+                                    />
+                                  </div>
+                                )}
+
+                                {round.matches.map((match, matchIndex) => (
+                                  <div
+                                    key={`desktop-${match.id}`}
+                                    ref={(element) => {
+                                      bracketMatchRefs.current[match.id] =
+                                        element;
+                                    }}
+                                    className="absolute z-10"
+                                    style={{
+                                      left: columnLeft(round.columnIndex),
+                                      top: topForSide(
+                                        round.roundDepth,
+                                        matchIndex,
+                                      ),
+                                      width: cardWidth,
+                                      height: cardHeight,
+                                    }}
+                                  >
+                                    <BracketMatchCard match={match} />
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+
+                            {bronzeFinalMatches.length > 0 && (
                               <div
-                                key={`desktop-${match.id}`}
-                                ref={(element) => {
-                                  bracketMatchRefs.current[match.id] = element;
-                                }}
                                 className="absolute z-10"
                                 style={{
-                                  left: columnLeft(round.columnIndex),
-                                  top: topForSide(round.roundDepth, matchIndex),
+                                  left: columnLeft(centerColumnIndex),
+                                  top: bronzeTop,
                                   width: cardWidth,
                                   height: cardHeight,
                                 }}
                               >
-                                <BracketMatchCard match={match} />
+                                <h3 className="mb-3 rounded-full border border-amber-300 bg-amber-100 px-3 py-1.5 text-center text-xs font-black uppercase tracking-wide text-amber-950 shadow">
+                                  Third Place Winner
+                                </h3>
+                                {bronzeFinalMatches.map((match) => (
+                                  <BracketMatchCard
+                                    key={match.id}
+                                    match={match}
+                                    variant="bronze"
+                                  />
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        ))}
-
-                        {bronzeFinalMatches.length > 0 && (
-                          <div
-                            className="absolute z-10"
-                            style={{
-                              left: columnLeft(centerColumnIndex),
-                              top: bronzeTop,
-                              width: cardWidth,
-                              height: cardHeight,
-                            }}
-                          >
-                            <h3 className="mb-3 rounded-full border border-amber-300 bg-amber-100 px-3 py-1.5 text-center text-xs font-black uppercase tracking-wide text-amber-950 shadow">
-                              Third Place Winner
-                            </h3>
-                            {bronzeFinalMatches.map((match) => (
-                              <BracketMatchCard
-                                key={match.id}
-                                match={match}
-                                variant="bronze"
-                              />
-                            ))}
-                          </div>
-                        )}
+                            )}
                           </div>
                         </div>
                       </div>
