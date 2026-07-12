@@ -71,6 +71,9 @@ type FinalPrediction = {
   winner: string;
   ninety_score1: number;
   ninety_score2: number;
+  // Legacy columns retained for backward compatibility with the existing table.
+  score1?: number;
+  score2?: number;
   user_id?: string;
   paid?: boolean;
 };
@@ -1762,7 +1765,12 @@ export default function Home() {
 
     if (data) {
       setFinalPredictions(
-        data.map((pick) => ({ ...pick, paid: Boolean(pick.paid) })),
+        data.map((pick) => ({
+          ...pick,
+          ninety_score1: Number(pick.ninety_score1 ?? pick.score1 ?? 0),
+          ninety_score2: Number(pick.ninety_score2 ?? pick.score2 ?? 0),
+          paid: Boolean(pick.paid),
+        })),
       );
     }
   }
@@ -1777,6 +1785,8 @@ export default function Home() {
     if (!error && data) {
       const normalized = {
         ...data,
+        ninety_score1: Number(data.ninety_score1 ?? data.score1 ?? 0),
+        ninety_score2: Number(data.ninety_score2 ?? data.score2 ?? 0),
         paid: Boolean(data.paid),
       } as FinalPrediction;
       setMyFinalPrediction(normalized);
@@ -2636,7 +2646,10 @@ export default function Home() {
     return new Set(
       matches
         .filter((match) => {
-          if (match.id < 73) return false;
+          // Grey out eliminated teams only through the Quarter Final.
+          // Teams are no longer greyed out for Semi Final, Third Place, or Final games.
+          if (match.id < 73 || match.id >= 101) return false;
+
           if (match.scoreA.trim() === "" || match.scoreB.trim() === "") {
             return false;
           }
@@ -2904,6 +2917,9 @@ export default function Home() {
       winner: predictedWinner,
       ninety_score1: ninetyScore1,
       ninety_score2: ninetyScore2,
+      // Keep the older columns populated until the database migration is applied.
+      score1: ninetyScore1,
+      score2: ninetyScore2,
       user_id: adminEditingFinalPrediction?.user_id ?? user.id,
     };
 
