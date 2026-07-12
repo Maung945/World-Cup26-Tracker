@@ -1524,6 +1524,20 @@ function flagText(teamName: string) {
   return teamName;
 }
 
+function renderFlagOnly(teamName: string) {
+  const flag = flagMap[teamName];
+  if (!flag) return null;
+
+  return (
+    <img
+      src={flag}
+      alt={teamName}
+      title={teamName}
+      className="w-8 h-6 rounded object-cover inline-block"
+    />
+  );
+}
+
 export default function Home() {
   const [participantName, setParticipantName] = useState("");
   const [team1, setTeam1] = useState("");
@@ -6259,14 +6273,26 @@ export default function Home() {
                                   )}{" "}
                                   {perfectWinner && "🏆"}
                                 </h3>
-                                <p className="text-sm text-gray-600">
-                                  <b>90 min:</b> {pick.finalist1}{" "}
-                                  {pick.ninety_score1} – {pick.ninety_score2}{" "}
-                                  {pick.finalist2}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  <b>Winner:</b> {pick.winner}
-                                </p>
+                                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                                  <b>90 min:</b>
+                                  <span className="inline-flex items-center gap-2">
+                                    {renderFlagOnly(pick.finalist1)}
+                                    <span className="font-bold">
+                                      {pick.ninety_score1}
+                                    </span>
+                                  </span>
+                                  <span className="font-bold text-gray-400">–</span>
+                                  <span className="inline-flex items-center gap-2">
+                                    <span className="font-bold">
+                                      {pick.ninety_score2}
+                                    </span>
+                                    {renderFlagOnly(pick.finalist2)}
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                                  <b>Winner:</b>
+                                  {renderFlagOnly(pick.winner)}
+                                </div>
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="rounded-full bg-purple-700 px-3 py-1 font-black text-white">
